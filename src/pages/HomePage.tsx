@@ -684,35 +684,22 @@ export const HomePage: React.FC = () => {
                       />
                     </div>
 
-                    {/* Tile 2: TO (DESTINATION DROP WITH MAPS AUTO-FETCH) */}
+                    {/* Tile 2: TO (DESTINATION CITY / DROP) */}
                     <div className="md:col-span-4 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative group">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-red-500" />
                           DESTINATION DROP
                         </span>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setShowMapPicker(true)}
-                            className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 transition-colors cursor-pointer shadow-2xs"
-                            title="Open map and drop pin on exact doorstep, custom location, or hotel"
-                          >
-                            <Compass className="w-2.5 h-2.5 text-red-600" />
-                            <span>Choose on Map</span>
-                          </button>
-                          {isFetchingMapRoute ? (
-                            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-200 animate-pulse">
-                              <RefreshCw className="w-2.5 h-2.5 animate-spin" />
-                              <span>Route...</span>
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
-                              <Check className="w-2.5 h-2.5 text-emerald-600" />
-                              <span>Map</span>
-                            </span>
-                          )}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowMapPicker(true)}
+                          className="shrink-0 whitespace-nowrap text-[10px] font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 cursor-pointer bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-full transition-all border border-red-200/80 shadow-2xs"
+                          title="Open map to pick destination, drop pin, or paste Google Maps link"
+                        >
+                          <Compass className="w-2.5 h-2.5 text-red-600" />
+                          <span>Choose on Map</span>
+                        </button>
                       </div>
 
                       <div className="relative">
@@ -725,7 +712,7 @@ export const HomePage: React.FC = () => {
                             setToCity(e.target.value);
                             setShowDestSuggestions(true);
                           }}
-                          placeholder="City, hotel, resort, or paste Google Maps link"
+                          placeholder="e.g. Tirupati Balaji, AP"
                           className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none placeholder-neutral-400 pr-6"
                         />
                         {toCity && (
@@ -743,51 +730,31 @@ export const HomePage: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center justify-between mt-0.5">
                         <input
                           type="text"
                           value={toDropDetails}
                           onChange={(e) => setToDropDetails(e.target.value)}
-                          placeholder="Hotel, Landmark, or Doorstep Drop"
+                          placeholder="Hotel, Temple, or Doorstep Drop"
                           className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none truncate"
                         />
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              const clip = await navigator.clipboard?.readText();
-                              if (clip) {
-                                setToCity(clip);
-                                setShowDestSuggestions(true);
-                              }
-                            } catch {}
-                          }}
-                          className="text-[9px] font-bold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 px-2 py-0.5 rounded shrink-0 transition-colors cursor-pointer ml-1"
-                          title="Paste Google Maps URL or coordinates from clipboard"
-                        >
-                          Paste Link
-                        </button>
-                      </div>
-
-                      {/* Reach Time & Distance Summary Chip directly inside the Destination tile */}
-                      <div className="mt-2.5 pt-2 border-t border-neutral-200/60 flex items-center justify-between text-[11px]">
-                        <span className="text-slate-700 font-bold flex items-center gap-1">
-                          <Compass className="w-3 h-3 text-red-500" />
-                          <span>{routeCalc.distanceKm} km</span>
-                          <span className="text-slate-400 font-normal">({routeCalc.durationFormatted})</span>
-                        </span>
-                        <span className="text-emerald-800 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 flex items-center gap-1 shadow-2xs">
-                          <Clock className="w-3 h-3 text-emerald-600" />
-                          <span>{routeCalc.reachTimeFormatted}</span>
-                        </span>
                       </div>
 
                       {/* Map Autocomplete Suggestions Dropdown */}
                       {showDestSuggestions && (
                         <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-40 animate-in fade-in zoom-in-95 max-h-72 overflow-y-auto">
                           <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                            <span>OpenStreetMap Indian Destinations</span>
-                            {isSearchingPlaces && <RefreshCw className="w-2.5 h-2.5 animate-spin text-red-500" />}
+                            <span>Indian Destinations & Google Maps</span>
+                            <div className="flex items-center gap-1.5">
+                              {isSearchingPlaces && <RefreshCw className="w-2.5 h-2.5 animate-spin text-red-500" />}
+                              <button
+                                type="button"
+                                onClick={() => setShowDestSuggestions(false)}
+                                className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           </div>
 
                           {destinationSuggestions.length > 0 ? (
@@ -811,7 +778,7 @@ export const HomePage: React.FC = () => {
                             ))
                           ) : (
                             <div className="p-2 text-center text-xs text-slate-400">
-                              {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city or temple in India'}
+                              {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city, hotel, or paste Google Maps link'}
                             </div>
                           )}
 
@@ -1020,16 +987,21 @@ export const HomePage: React.FC = () => {
 
                     {/* Tile 6: FARE INCLUSIONS */}
                     <div className="lg:col-span-2 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors flex flex-col justify-between">
-                      <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
-                        TARIFF POLICY
-                      </span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                          TARIFF POLICY
+                        </span>
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/70">
+                          Fixed
+                        </span>
+                      </div>
                       <div>
-                        <div className="text-sm font-bold text-emerald-700 flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <div className="text-sm font-bold text-emerald-700 flex items-center gap-1.5">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>All Inclusive</span>
                         </div>
-                        <div className="text-[10px] text-neutral-500 font-medium mt-0.5">
-                          Tolls + Driver Beta + GST
+                        <div className="text-[10px] text-neutral-500 font-medium mt-1">
+                          Tolls + Driver Batta + GST
                         </div>
                       </div>
                     </div>
@@ -1038,7 +1010,7 @@ export const HomePage: React.FC = () => {
                     <div className="lg:col-span-4 h-full flex items-stretch">
                       <button
                         type="submit"
-                        className="w-full h-full min-h-[64px] sm:min-h-[72px] bg-[#E11D48] hover:bg-[#BE123C] text-white font-extrabold text-sm sm:text-base tracking-wider uppercase rounded-2xl px-6 py-4 flex items-center justify-center gap-2.5 shadow-xl shadow-red-500/25 active:scale-98 transition-all cursor-pointer"
+                        className="w-full h-full min-h-[64px] sm:min-h-[72px] bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-extrabold text-sm sm:text-base tracking-wider uppercase rounded-2xl px-6 py-4 flex items-center justify-center gap-2.5 shadow-xl shadow-red-500/25 active:scale-[0.99] transition-all cursor-pointer"
                       >
                         <Car className="w-5 h-5 text-white" />
                         <span>SEARCH CABS & FARES</span>
@@ -1049,51 +1021,56 @@ export const HomePage: React.FC = () => {
                   </div>
 
                   {/* Dynamic Live Distance & Auto Calculated Fare Preview Bar */}
-                  <div className="mt-4 pt-4 border-t border-neutral-200/80 flex flex-wrap items-center justify-between gap-3 text-xs bg-gradient-to-r from-red-50/70 via-white to-emerald-50/70 p-3.5 rounded-2xl border border-red-100/60 shadow-xs">
-                    <div className="flex items-center flex-wrap gap-2.5">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white font-extrabold text-[11px] shadow-xs">
-                        <Navigation className="w-3 h-3" />
-                        <span>LIVE RADAR</span>
-                      </span>
-                      <div className="flex items-center gap-1.5 text-neutral-800 font-bold text-xs">
-                        <span className="text-neutral-500 font-normal">Route:</span>
-                        <span className="text-red-950 truncate max-w-[140px] sm:max-w-[200px]">
-                          {fromCity.split(',')[0]}
+                  <div className="mt-5 pt-4 border-t border-neutral-200/60 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-gradient-to-r from-[#F8FAFC] via-white to-red-50/20 p-4 rounded-2xl border border-neutral-200/70 shadow-xs">
+                    {/* Left: Journey Route & Real-Time Stats */}
+                    <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white font-black text-[10px] shadow-xs tracking-wider uppercase">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                          <span>LIVE RADAR</span>
                         </span>
-                        <span className="text-red-500">➔</span>
-                        <span className="text-red-950 truncate max-w-[140px] sm:max-w-[200px]">
-                          {toCity.split(',')[0]}
-                        </span>
+                        <div className="flex items-center gap-1 text-neutral-900 font-bold text-xs sm:text-sm">
+                          <span className="truncate max-w-[130px] sm:max-w-[180px]">{fromCity.split(',')[0]}</span>
+                          <span className="text-red-500 font-black">➔</span>
+                          <span className="text-red-700 truncate max-w-[130px] sm:max-w-[180px]">{toCity.split(',')[0] || 'Destination'}</span>
+                        </div>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
-                        <Compass className="w-3 h-3 text-red-500" />
-                        <span>{routeCalc.distanceKm} km</span>
-                        <span className="text-neutral-400 font-normal">({tripMode === 'One-Way Drop' ? 'One-Way' : 'Round Trip'})</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
-                        <Clock className="w-3 h-3 text-amber-500" />
-                        <span>Drive {routeCalc.durationFormatted}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
-                        <span>🏁</span>
-                        <span>{routeCalc.fullReachString}</span>
-                      </span>
-                      {routeCalc.isLiveMapRoute && (
-                        <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                          <Navigation className="w-2.5 h-2.5 text-blue-600" />
-                          <span>{routeCalc.highwaySummary}</span>
+
+                      {/* Micro Metric Badges */}
+                      <div className="flex items-center flex-wrap gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+                          <Compass className="w-3.5 h-3.5 text-red-500" />
+                          <span>{routeCalc.distanceKm} km</span>
+                          <span className="text-neutral-400 font-normal">({tripMode === 'One-Way Drop' ? 'One-Way' : 'Round Trip'})</span>
                         </span>
-                      )}
+
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+                          <Clock className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Drive {routeCalc.durationFormatted}</span>
+                        </span>
+
+                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/80 shadow-2xs">
+                          <span>🏁</span>
+                          <span>{routeCalc.fullReachString}</span>
+                        </span>
+
+                        {routeCalc.isLiveMapRoute && routeCalc.highwaySummary && (
+                          <span className="hidden xl:inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200/80">
+                            <Navigation className="w-3 h-3 text-blue-600" />
+                            <span className="truncate max-w-[140px]">{routeCalc.highwaySummary}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Auto-Calculated Price for Selected Cab */}
-                    <div className="flex items-center gap-3 ml-auto">
-                      <div className="text-right">
-                        <div className="text-[10px] text-neutral-500 font-semibold uppercase tracking-wider flex items-center justify-end gap-1">
-                          <span>Auto Fare ({selectedCab.name.split(' ')[0]})</span>
-                          <span className="text-emerald-600 font-bold">● Fixed</span>
+                    {/* Right: Auto-Calculated Guaranteed Fare for Selected Cab */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-neutral-200/60 shrink-0">
+                      <div className="text-left sm:text-right">
+                        <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider flex items-center sm:justify-end gap-1">
+                          <span>Fare ({selectedCab.name.split(' ')[0]})</span>
+                          <span className="text-emerald-600 font-extrabold">● All-Inclusive</span>
                         </div>
-                        <div className="text-base sm:text-lg font-black text-red-600 tracking-tight">
+                        <div className="text-xl sm:text-2xl font-black text-red-600 tracking-tight leading-none mt-0.5">
                           ₹{(
                             routeCalc.rates[selectedCab.id as keyof typeof routeCalc.rates]?.totalFare ||
                             Math.round(routeCalc.distanceKm * parseInt(selectedCab.rate.replace(/\D/g, '') || '15'))
@@ -1103,10 +1080,10 @@ export const HomePage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openBookingModal(`${selectedCab.name} · ${fromCity} to ${toCity}`)}
-                        className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                        className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs hover:shadow cursor-pointer flex items-center gap-1.5"
                       >
                         <span>Lock Fare</span>
-                        <ArrowRight className="w-3 h-3" />
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
