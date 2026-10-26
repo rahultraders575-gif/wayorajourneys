@@ -30,8 +30,8 @@ export const Header: React.FC = () => {
     <>
       {/* Top Universal Minimal & Premium Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4 h-18 sm:h-20">
+        <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 h-18 sm:h-20">
             
             {/* Zone 1: Official Wayora Journeys Brand Logo */}
             <button
@@ -55,14 +55,14 @@ export const Header: React.FC = () => {
             </button>
 
             {/* Zone 2: Minimal Universal Navigation Links */}
-            <nav className="hidden xl:flex items-center gap-6 2xl:gap-7 text-sm font-medium">
+            <nav className="hidden xl:flex items-center gap-2.5 xl:gap-3.5 2xl:gap-5 text-xs 2xl:text-sm font-semibold">
               {navItems.map((item) => {
                 const isActive = activePage === item.id;
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer relative py-2 font-medium text-xs 2xl:text-sm tracking-wide ${
+                    className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer relative py-2 tracking-wide ${
                       isActive ? 'text-red-600 font-bold' : 'text-slate-600 hover:text-red-600'
                     }`}
                   >
@@ -75,13 +75,13 @@ export const Header: React.FC = () => {
               })}
             </nav>
 
-            {/* Zone 3: Actions + 24/7 Concierge + Captain + Rider + Primary CTA */}
+            {/* Zone 3: Actions + Captain + Rider + Primary CTA */}
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
 
-              {/* 24/7 Hotline Pill */}
+              {/* 24/7 Hotline Pill (Visible on ultra-wide screens to prevent header clutter) */}
               <a
                 href={`tel:${settings.phone}`}
-                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50/40 transition-colors"
+                className="hidden 2xl:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-slate-50 border border-slate-200 text-slate-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50/40 transition-colors"
                 title="Call 24/7 Concierge Hotline"
               >
                 <Phone className="w-3.5 h-3.5 text-red-600" />
@@ -91,7 +91,7 @@ export const Header: React.FC = () => {
               {/* Captain Cockpit Trigger */}
               <button
                 onClick={() => handleNavClick('captain')}
-                className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer ${
+                className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer ${
                   activePage === 'captain'
                     ? 'bg-red-50 text-red-700 border-red-300 shadow-xs'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600'
@@ -111,7 +111,7 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={openAuthModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
                 title={currentRider ? `Signed in as ${currentRider.name}` : 'Rider Sign In'}
               >
                 <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black">
@@ -131,7 +131,7 @@ export const Header: React.FC = () => {
                     openBookingModal('Express Booking');
                   }
                 }}
-                className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 active:scale-95 rounded-full transition-all shadow-md shadow-red-600/25 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
+                className="px-3.5 sm:px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 active:scale-95 rounded-full transition-all shadow-md shadow-red-600/25 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <Car className="w-3.5 h-3.5" />
                 <span>Book Chauffeur</span>
