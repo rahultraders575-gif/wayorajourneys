@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Users, User, Phone, MapPin, Heart, ShieldCheck, 
-  Sparkles, Check, X, AlertCircle, MessageSquare
+  Sparkles, Check, X, AlertCircle, MessageSquare,
+  HeartHandshake, Briefcase, Activity, Baby, Luggage, Accessibility, PhoneCall, Wind, Car
 } from 'lucide-react';
 
 export interface FamilyRideDetails {
@@ -24,20 +25,20 @@ interface FamilyRideModalProps {
 }
 
 const PRESET_RELATIONS = [
-  { label: '👴 Parents / Elders', tag: 'Parents', note: 'Senior citizen passenger. Gentle highway cruising and courteous chauffeur care.' },
-  { label: '👨‍👩‍👧 Family Member', tag: 'Family', note: 'Family travel. Assistance with boarding and luggage.' },
-  { label: '👶 Spouse & Kids', tag: 'Spouse & Kids', note: 'Family trip. Child safety conscious driving.' },
-  { label: '💼 Guest / Colleague', tag: 'Guest', note: 'Corporate guest / VIP transfer. Professional greeting required.' },
-  { label: '🏥 Medical / Hospital Visit', tag: 'Medical', note: 'Hospital visit. Slow over speed-breakers and curb-side doorstep stop.' },
+  { label: 'Parents / Elders', tag: 'Parents', note: 'Senior citizen passenger. Gentle highway cruising and courteous chauffeur care.', icon: HeartHandshake },
+  { label: 'Family Member', tag: 'Family', note: 'Family travel. Assistance with boarding and luggage.', icon: Users },
+  { label: 'Spouse & Kids', tag: 'Spouse & Kids', note: 'Family trip. Child safety conscious driving.', icon: Baby },
+  { label: 'Guest / Colleague', tag: 'Guest', note: 'Corporate guest / VIP transfer. Professional greeting required.', icon: Briefcase },
+  { label: 'Medical / Hospital Visit', tag: 'Medical', note: 'Hospital visit. Slow over speed-breakers and curb-side doorstep stop.', icon: Activity },
 ];
 
 const PRESET_ASSISTANCE_TAGS = [
-  '🧰 Doorstep Luggage Help',
-  '👴 Senior Citizen Care',
-  '♿ Wheelchair Assistance',
-  '📞 Call 15 Min Before',
-  '❄️ Moderate AC',
-  '🚗 Smooth Highway Drive',
+  { label: 'Doorstep Luggage Help', tag: 'Doorstep Luggage Help', icon: Luggage },
+  { label: 'Senior Citizen Care', tag: 'Senior Citizen Care', icon: HeartHandshake },
+  { label: 'Wheelchair Assistance', tag: 'Wheelchair Assistance', icon: Accessibility },
+  { label: 'Call 15 Min Before', tag: 'Call 15 Min Before', icon: PhoneCall },
+  { label: 'Moderate AC', tag: 'Moderate AC', icon: Wind },
+  { label: 'Smooth Highway Drive', tag: 'Smooth Highway Drive', icon: Car },
 ];
 
 export const FamilyRideModal: React.FC<FamilyRideModalProps> = ({
@@ -54,14 +55,23 @@ export const FamilyRideModal: React.FC<FamilyRideModalProps> = ({
   const [relationship, setRelationship] = useState(initialDetails?.relationship || 'Parents');
   const [doorstepAddress, setDoorstepAddress] = useState(initialDetails?.doorstepAddress || '');
   const [notes, setNotes] = useState(initialDetails?.notes || '');
-  const [selectedTags, setSelectedTags] = useState<string[]>(initialDetails?.assistanceTags || ['🧰 Doorstep Luggage Help']);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialDetails?.assistanceTags || ['Doorstep Luggage Help']);
 
   if (!isOpen) return null;
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) => 
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+  const isTagActive = (tagKey: string) => {
+    return selectedTags.some(t => t.toLowerCase().includes(tagKey.toLowerCase()));
+  };
+
+  const toggleTag = (tagKey: string) => {
+    setSelectedTags((prev) => {
+      const exists = prev.some(t => t.toLowerCase().includes(tagKey.toLowerCase()));
+      if (exists) {
+        return prev.filter(t => !t.toLowerCase().includes(tagKey.toLowerCase()));
+      } else {
+        return [...prev, tagKey];
+      }
+    });
   };
 
   const handleSelectPresetRelation = (preset: typeof PRESET_RELATIONS[0]) => {
@@ -137,19 +147,21 @@ export const FamilyRideModal: React.FC<FamilyRideModalProps> = ({
             <div className="flex flex-wrap gap-1.5">
               {PRESET_RELATIONS.map((preset) => {
                 const isSelected = relationship === preset.tag;
+                const RelationIcon = preset.icon;
                 return (
                   <button
                     key={preset.tag}
                     type="button"
                     onClick={() => handleSelectPresetRelation(preset)}
-                    className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1 border ${
+                    className={`px-2.5 py-1.5 rounded-xl font-bold transition-all cursor-pointer text-xs flex items-center gap-1.5 border ${
                       isSelected
                         ? 'bg-rose-600 text-white border-rose-600 shadow-xs scale-102'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                     }`}
                   >
+                    <RelationIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>{preset.label}</span>
-                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                    {isSelected && <Check className="w-3 h-3 text-white ml-0.5" />}
                   </button>
                 );
               })}
@@ -231,21 +243,23 @@ export const FamilyRideModal: React.FC<FamilyRideModalProps> = ({
               Special Chauffeur Assistance
             </label>
             <div className="flex flex-wrap gap-1.5">
-              {PRESET_ASSISTANCE_TAGS.map((tag) => {
-                const active = selectedTags.includes(tag);
+              {PRESET_ASSISTANCE_TAGS.map((item) => {
+                const active = isTagActive(item.tag);
+                const TagIcon = item.icon;
                 return (
                   <button
-                    key={tag}
+                    key={item.tag}
                     type="button"
-                    onClick={() => toggleTag(tag)}
-                    className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer flex items-center gap-1 ${
+                    onClick={() => toggleTag(item.tag)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors cursor-pointer flex items-center gap-1.5 ${
                       active
                         ? 'bg-rose-50 text-rose-700 border-rose-300 font-bold'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
                     }`}
                   >
-                    <span>{tag}</span>
-                    {active && <Check className="w-2.5 h-2.5 text-rose-600" />}
+                    <TagIcon className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span>{item.label}</span>
+                    {active && <Check className="w-2.5 h-2.5 text-rose-600 ml-0.5" />}
                   </button>
                 );
               })}

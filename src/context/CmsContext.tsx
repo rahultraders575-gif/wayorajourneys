@@ -395,14 +395,14 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setUserLocation(detected);
           setUserCoords({ lat, lng });
           setIsLocating(false);
-          showToast(`📍 Live location detected: ${detected}`, 'success');
+          showToast(`Live location detected: ${detected}`, 'success');
           resolve(detected);
         },
         (err) => {
           setIsLocating(false);
           if (err.code === 1) {
             // PERMISSION_DENIED
-            showToast('⚠️ Location permission denied. Please allow location access in your browser bar.', 'error');
+            showToast('Location permission denied. Please allow location access in your browser bar.', 'error');
           } else if (err.code === 2) {
             // POSITION_UNAVAILABLE
             showToast('Unable to detect GPS position. Please enter pickup city manually.', 'info');

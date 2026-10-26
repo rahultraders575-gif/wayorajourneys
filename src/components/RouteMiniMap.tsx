@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { 
   MapPin, Navigation, Clock, ShieldCheck, Compass, 
   Layers, ZoomIn, ZoomOut, Car, Sparkles, Check,
-  AlertCircle, Fuel, Zap, Route, RefreshCw
+  AlertCircle, Fuel, Zap, Route, RefreshCw, Flag, ArrowRight
 } from 'lucide-react';
 import { 
   calculateTripRouteAndPrice, 
@@ -275,7 +275,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       className: 'custom-real-map-marker',
       html: `
         <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-full shadow-2xl border-2 border-white whitespace-nowrap cursor-pointer">
-          <span>🏁</span>
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
           <span>${cleanDestination}</span>
         </div>
       `,
@@ -289,7 +289,8 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       className: 'custom-real-map-marker',
       html: `
         <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-amber-500 text-slate-900 font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-md border border-white whitespace-nowrap">
-          <span>⚡ Fastag Toll Plaza</span>
+          <svg style="width: 12px; height: 12px;" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Fastag Toll Plaza</span>
         </div>
       `,
       iconSize: [0, 0],
@@ -370,7 +371,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
           <div>
             <div className="font-black flex items-center gap-1.5 text-xs sm:text-sm text-slate-900">
               <span className="truncate max-w-[130px] sm:max-w-[190px]">{cleanOrigin}</span>
-              <span className="text-red-500 font-bold">➔</span>
+              <ArrowRight className="w-3.5 h-3.5 text-red-500 shrink-0" />
               <span className="truncate max-w-[130px] sm:max-w-[190px]">{cleanDestination}</span>
             </div>
             <div className="text-[10px] font-semibold text-slate-500 flex items-center gap-2 mt-0.5">
@@ -397,7 +398,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
           </span>
 
           <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-1.5 shadow-2xs">
-            <span>🏁</span>
+            <Flag className="w-3.5 h-3.5 text-emerald-600" />
             <span>{computed.fullReachString}</span>
           </span>
 

@@ -156,7 +156,10 @@ export const PlannerPage: React.FC = () => {
                     }}
                     className="text-[10px] font-bold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-full border border-red-100 shadow-2xs"
                   >
-                    <span>{isLocating ? 'Detecting GPS...' : '📍 Use Live GPS'}</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-2.5 h-2.5" />
+                      <span>{isLocating ? 'Detecting GPS...' : 'Use Live GPS'}</span>
+                    </span>
                   </button>
                 </div>
                 <div className="relative">
