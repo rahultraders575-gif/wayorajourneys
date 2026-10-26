@@ -1,0 +1,6 @@
+{
+  "name": "Wayora Journeys - Red Edition",
+  "description": "Production-ready luxury car rental and tour packages platform featuring red theme styling, multi-page layout, interactive trip planner, and integrated content management system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

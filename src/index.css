@@ -1,0 +1,102 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+    color: #0f172a;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* ================= LENIS BASELINE SMOOTH SCROLL STYLES ================= */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ================= 3D HARDWARE ACCELERATION & PRESERVE-3D ================= */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.perspective-stage {
+  perspective: 1700px;
+  perspective-origin: 50% 50%;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Royal Molded Door Recesses */
+.royal-door-recess {
+  box-shadow: 
+    inset 2px 2px 8px rgba(248, 244, 235, 0.25),
+    inset -3px -3px 10px rgba(18, 1, 4, 0.9),
+    0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.gilded-bevel {
+  box-shadow: 
+    0 0 0 1.5px #D4AF37,
+    0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Custom Red-Themed Light Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #fdfbf7;
+}
+::-webkit-scrollbar-thumb {
+  background: #800020;
+  border-radius: 9999px;
+  border: 1px solid #AA771C;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6b1124;
+}
+
+/* Luxury ambient background grid for light theme */
+.luxury-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(220, 38, 38, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(220, 38, 38, 0.04) 1px, transparent 1px);
+}
+
+.luxury-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.luxury-card:hover {
+  border-color: #fca5a5;
+  box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.08), 0 4px 6px -4px rgba(220, 38, 38, 0.04);
+}

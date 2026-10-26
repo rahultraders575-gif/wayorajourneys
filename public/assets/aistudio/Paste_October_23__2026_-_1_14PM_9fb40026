@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wayora Journeys – Car Trips & Tour Packages | Hyderabad Outstation Cabs</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            wayora: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#15803d',
+              600: '#166534',
+              700: '#14532d',
+              emerald: '#059669',
+              gold: '#eab308',
+              navy: '#0f172a',
+              accent: '#f97316'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom subtle scrollbar & sleek styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .hero-pattern {
+      background-color: #0b132b;
+      background-image: radial-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+    .badge-pill {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ================= TOP NOTIFICATION BAR ================= -->
+  <div class="bg-slate-900 text-slate-200 text-xs sm:text-sm py-2 px-4 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center gap-1.5 text-emerald-400 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          24/7 Doorstep Pickup Across Telangana & AP
+        </span>
+        <span class="hidden md:inline text-slate-400">|</span>
+        <span class="hidden md:inline text-slate-300">
+          <i class="fa-solid fa-phone mr-1 text-emerald-400"></i> +91 91824 71876
+        </span>
+      </div>
+      <div class="flex items-center gap-4 text-xs font-medium ml-auto">
+        <button onclick="openAdminModal()" class="text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+          <i class="fa-solid fa-lock text-[10px]"></i> Admin
+        </button>
+        <a href="https://wa.me/919182471876?text=Hi%20Wayora%20Journeys,%20I%20would%20like%20to%20inquire%20about%20a%20car%20trip." target="_blank" class="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">
+          <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Us
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN HEADER & NAV ================= -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur shadow-sm border-b border-slate-100 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo -->
+        <a href="#" class="flex items-center space-x-3 group">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-car-side text-xl"></i>
+          </div>
+          <div>
+            <span class="text-2xl font-black tracking-tight text-slate-900 block leading-tight">
+              Wayora<span class="text-emerald-600">Journeys</span>
+            </span>
+            <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block">Car Trips & Tour Packages</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden lg:flex items-center space-x-8 text-sm font-semibold text-slate-700">
+          <a href="#home" class="text-emerald-700 hover:text-emerald-800 transition-colors">Home</a>
+          <a href="#packages" class="hover:text-emerald-700 transition-colors">Packages</a>
+          <a href="#fleet" class="hover:text-emerald-700 transition-colors">Our Fleet</a>
+          <a href="#corporate" class="hover:text-emerald-700 transition-colors">Corporate</a>
+          <a href="#about" class="hover:text-emerald-700 transition-colors">About Us</a>
+          <a href="#contact" class="hover:text-emerald-700 transition-colors">Contact</a>
+        </nav>
+
+        <!-- Right CTA Phone & Booking -->
+        <div class="hidden sm:flex items-center space-x-3">
+          <a href="tel:+919182471876" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition flex items-center gap-2">
+            <i class="fa-solid fa-phone text-emerald-600"></i>
+            <span>+91 91824 71876</span>
+          </a>
+          <button onclick="openBookingModal('General Trip')" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-md shadow-emerald-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+            <span>Book Trip</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button onclick="toggleMobileNav()" type="button" class="lg:hidden p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition" aria-label="Toggle navigation">
+          <i id="menuIcon" class="fa-solid fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown -->
+    <div id="mobileMenu" class="hidden lg:hidden border-t border-slate-100 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl">
+      <a href="#home" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-900 border-b border-slate-50">Home</a>
+      <a href="#packages" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-700 border-b border-slate-50">Packages</a>
+      <a href="#fleet" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-700 border-b border-slate-50">Our Fleet</a>
+      <a href="#corporate" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-700 border-b border-slate-50">Corporate</a>
+      <a href="#about" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-700 border-b border-slate-50">About Us</a>
+      <a href="#contact" onclick="toggleMobileNav()" class="block py-2 text-base font-semibold text-slate-700 border-b border-slate-50">Contact</a>
+      <div class="pt-3 flex flex-col gap-2.5">
+        <a href="tel:+919182471876" class="w-full text-center py-2.5 border border-slate-300 rounded-xl font-bold text-slate-800">
+          <i class="fa-solid fa-phone text-emerald-600 mr-2"></i> +91 91824 71876
+        </a>
+        <button onclick="toggleMobileNav(); openBookingModal('General Mobile');" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-md">
+          Book Your Journey Now
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="home" class="relative hero-pattern text-white overflow-hidden py-16 lg:py-24">
+    <!-- Ambient glowing blurs -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 right-0 w-80 h-80 bg-teal-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Hero Content -->
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-route"></i> WAYORA JOURNEYS · CAR TRIPS & TOURS
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            Welcome to <br />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-white">
+              Wayora Journeys
+            </span>
+          </h1>
+
+          <p class="text-lg sm:text-xl font-medium text-emerald-100/90">
+            Reliable Travel. Professional Service.
+          </p>
+
+          <div class="inline-block bg-slate-800/80 backdrop-blur border border-slate-700/80 rounded-xl px-4 py-2 text-sm text-slate-300 font-medium">
+            <span class="text-emerald-400 font-bold">Popular Routes:</span> Hyderabad → Tirupati | Goa | Araku | Shirdi & More
+          </div>
+
+          <!-- John Muir Quote -->
+          <blockquote class="italic text-slate-300 border-l-2 border-emerald-500 pl-4 py-1 font-serif text-base sm:text-lg">
+            “The mountains are calling and I must go.” 
+            <span class="not-italic text-xs block text-slate-400 mt-1 font-sans font-medium">— John Muir</span>
+          </blockquote>
+
+          <p class="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
+            Temples, hill stations, beaches and heritage tours. Round trip, one-way and airport rides from your doorstep, at clear per-km prices.
+          </p>
+
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            <button onclick="document.getElementById('bookingWidget').scrollIntoView({behavior:'smooth'})" class="px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base shadow-lg shadow-emerald-500/25 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+              <span>Book Your Journey</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <a href="https://wa.me/919182471876?text=Hello%20Wayora%20Journeys!%20I%20want%20to%20plan%20a%20trip." target="_blank" class="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-base backdrop-blur transition flex items-center gap-2">
+              <i class="fa-brands fa-whatsapp text-emerald-400 text-lg"></i>
+              <span>WhatsApp Us</span>
+            </a>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-semibold text-slate-300">
+            <div class="flex items-center gap-2 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+              <i class="fa-solid fa-check-circle text-emerald-400"></i> Free cancellation
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+              <i class="fa-solid fa-check-circle text-emerald-400"></i> Full advance refund
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+              <i class="fa-solid fa-check-circle text-emerald-400"></i> Doorstep pickup
+            </div>
+            <div class="flex items-center gap-2 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+              <i class="fa-solid fa-check-circle text-emerald-400"></i> Pay 25% to book
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Trip Planner Card -->
+        <div id="bookingWidget" class="lg:col-span-5">
+          <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-7 text-slate-800 border border-slate-100">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-600 block">Instant Estimate</span>
+                <h3 class="text-xl font-black text-slate-900">Plan Your Ride</h3>
+              </div>
+              <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-100">
+                ₹15 / km onwards
+              </span>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex rounded-xl bg-slate-100 p-1 mt-4">
+              <button onclick="setTripType('ROUND_TRIP')" id="btnTabRound" class="flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition bg-white text-emerald-700 shadow-sm">
+                ROUND TRIP
+              </button>
+              <button onclick="setTripType('ONE_WAY')" id="btnTabOneWay" class="flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition text-slate-600 hover:text-slate-900">
+                ONE WAY
+              </button>
+              <button onclick="setTripType('AIRPORT')" id="btnTabAirport" class="flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition text-slate-600 hover:text-slate-900">
+                AIRPORT
+              </button>
+            </div>
+
+            <!-- Form Body -->
+            <form id="heroTripForm" onsubmit="handleHeroSubmit(event)" class="space-y-4 mt-5">
+              
+              <!-- Pickup -->
+              <div>
+                <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-1">
+                  <label for="pickupInput">FROM (PICKUP)</label>
+                  <button type="button" onclick="useCurrentLocation()" class="text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-crosshairs"></i> Use current location
+                  </button>
+                </div>
+                <div class="relative">
+                  <i class="fa-solid fa-location-dot absolute left-3.5 top-3.5 text-slate-400"></i>
+                  <input type="text" id="pickupInput" required placeholder="Enter pickup city or locality" value="Hyderabad" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                </div>
+                <!-- Quick City Chips -->
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  <button type="button" onclick="setPickupCity('Hyderabad')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Hyderabad</button>
+                  <button type="button" onclick="setPickupCity('Secunderabad')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Secunderabad</button>
+                  <button type="button" onclick="setPickupCity('Vijayawada')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Vijayawada</button>
+                  <button type="button" onclick="setPickupCity('Visakhapatnam')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Visakhapatnam</button>
+                  <button type="button" onclick="setPickupCity('Bengaluru')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Bengaluru</button>
+                  <button type="button" onclick="setPickupCity('Chennai')" class="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition">Chennai</button>
+                </div>
+              </div>
+
+              <!-- Destination or Airport Select -->
+              <div id="destinationWrapper">
+                <label for="destinationInput" class="block text-xs font-bold text-slate-600 mb-1">TO (DESTINATION)</label>
+                <div class="relative">
+                  <i class="fa-solid fa-flag-checkered absolute left-3.5 top-3.5 text-slate-400"></i>
+                  <input type="text" id="destinationInput" placeholder="Enter destination (e.g. Tirupati, Srisailam, Goa)" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">
+                  Tip: type any place, or open Google Maps, long-press the place, copy the coordinates or link and paste here.
+                </p>
+              </div>
+
+              <!-- Airport select (shown only in airport mode) -->
+              <div id="airportSelectWrapper" class="hidden">
+                <label for="airportSelect" class="block text-xs font-bold text-slate-600 mb-1">CHOOSE AIRPORT</label>
+                <div class="relative">
+                  <i class="fa-solid fa-plane-departure absolute left-3.5 top-3.5 text-slate-400"></i>
+                  <select id="airportSelect" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white">
+                    <option value="Hyderabad Rajiv Gandhi International Airport (RGIA)">Hyderabad Airport (RGIA)</option>
+                    <option value="Tirupati International Airport">Tirupati Airport</option>
+                    <option value="Visakhapatnam International Airport">Visakhapatnam Airport</option>
+                    <option value="Vijayawada International Airport">Vijayawada Airport</option>
+                    <option value="Bengaluru Kempegowda International Airport">Bengaluru Airport</option>
+                    <option value="Chennai International Airport">Chennai Airport</option>
+                    <option value="Goa Dabolim / Mopa Airport">Goa Airport</option>
+                    <option value="Pune Airport">Pune Airport</option>
+                    <option value="Mumbai Chhatrapati Shivaji Airport">Mumbai Airport</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Date & Time & People Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">PICK UP DATE</label>
+                  <input type="date" id="heroDateInput" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">TIME</label>
+                  <input type="time" id="heroTimeInput" value="06:00" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">PEOPLE</label>
+                  <select id="heroPeopleInput" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium bg-white">
+                    <option value="1-4">1–4 (Sedan)</option>
+                    <option value="5-7">5–7 (SUV)</option>
+                    <option value="8-16">8–16 (Tempo)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Submit Explorer Button -->
+              <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                <span>EXPLORE CARS & PRICE</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VALUE PROPOSITION FEATURES ================= -->
+  <section class="py-12 bg-white border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+        
+        <div class="p-4 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200 group">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i class="fa-solid fa-id-card-clip"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-sm">Professional Drivers</h4>
+          <p class="text-xs text-slate-500 mt-1">Verified, polite & route expert chauffeurs</p>
+        </div>
+
+        <div class="p-4 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200 group">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i class="fa-solid fa-car"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-sm">Clean & Comfortable</h4>
+          <p class="text-xs text-slate-500 mt-1">Sanitized AC cars for smooth family travel</p>
+        </div>
+
+        <div class="p-4 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200 group">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-sm">Transparent Pricing</h4>
+          <p class="text-xs text-slate-500 mt-1">No hidden charges. Clear km rates</p>
+        </div>
+
+        <div class="p-4 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200 group">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-sm">On-Time Pickup</h4>
+          <p class="text-xs text-slate-500 mt-1">Punctual doorstep arrival guaranteed</p>
+        </div>
+
+        <div class="col-span-2 md:col-span-1 p-4 rounded-2xl hover:bg-slate-50 transition border border-transparent hover:border-slate-200 group">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-800 text-sm">24/7 Support</h4>
+          <p class="text-xs text-slate-500 mt-1">Dedicated helpline throughout your journey</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= POPULAR TOUR PACKAGES ================= -->
+  <section id="packages" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div>
+          <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-100/70 px-3 py-1 rounded-md">
+            Wayora Curated Trips
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+            Popular Tour Packages
+          </h2>
+          <p class="text-slate-600 mt-2 max-w-2xl text-sm sm:text-base">
+            Explore the best destinations with our comfortable and safe travel services. Round trip from your location. Tap Book Now or send an Enquiry.
+          </p>
+        </div>
+        <!-- Filters -->
+        <div class="mt-6 md:mt-0 flex flex-wrap gap-2 text-xs font-bold">
+          <button onclick="filterPackages('all')" class="pkg-filter-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm" data-filter="all">All</button>
+          <button onclick="filterPackages('spiritual')" class="pkg-filter-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200" data-filter="spiritual">Spiritual</button>
+          <button onclick="filterPackages('hill')" class="pkg-filter-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200" data-filter="hill">Hill Stations</button>
+          <button onclick="filterPackages('heritage')" class="pkg-filter-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200" data-filter="heritage">Heritage</button>
+          <button onclick="filterPackages('beach')" class="pkg-filter-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200" data-filter="beach">Beach</button>
+        </div>
+      </div>
+
+      <!-- Packages Grid (All 12 from Wayora) -->
+      <div id="packagesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Rendered dynamically via JavaScript with exact data -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= CORPORATE TRAVEL SECTION ================= -->
+  <section id="corporate" class="py-20 bg-slate-900 text-white relative overflow-hidden">
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <div class="lg:col-span-7 space-y-6">
+          <span class="px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs uppercase tracking-wider border border-emerald-500/30">
+            Corporate & Business Travel
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            Your Business. Our Priority.
+          </h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            We provide reliable and professional transportation solutions for your corporate needs – employee transportation, airport transfers, client travel and outstation business trips. Guaranteed GST invoicing, pristine executive cabs, and courteous chauffeurs.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+              <div class="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 mt-1">
+                <i class="fa-solid fa-users-gear text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Employee Transportation</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Daily shifts and monthly contract cabs</p>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+              <div class="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 mt-1">
+                <i class="fa-solid fa-plane-arrival text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Airport Transfers</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Meet & greet airport executive rides</p>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+              <div class="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 mt-1">
+                <i class="fa-solid fa-briefcase text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Client Travel</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Luxury sedans & premium SUVs</p>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+              <div class="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 mt-1">
+                <i class="fa-solid fa-city text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">Outstation Business Trips</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Multi-day executive business tours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button onclick="openCorporateQuoteModal()" class="px-7 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg transition flex items-center gap-2">
+              <span>Get a Corporate Quote</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-8 rounded-3xl shadow-2xl relative">
+            <div class="text-emerald-400 text-4xl mb-4">
+              <i class="fa-solid fa-handshake"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-2">Corporate Account Benefits</h3>
+            <ul class="space-y-3.5 text-slate-300 text-sm mt-4">
+              <li class="flex items-center gap-3">
+                <i class="fa-solid fa-check text-emerald-400"></i> Monthly consolidated GST invoicing
+              </li>
+              <li class="flex items-center gap-3">
+                <i class="fa-solid fa-check text-emerald-400"></i> Dedicated corporate account relationship manager
+              </li>
+              <li class="flex items-center gap-3">
+                <i class="fa-solid fa-check text-emerald-400"></i> Priority cab allocation even during peak rush
+              </li>
+              <li class="flex items-center gap-3">
+                <i class="fa-solid fa-check text-emerald-400"></i> Flexible credit billing terms for registered enterprises
+              </li>
+              <li class="flex items-center gap-3">
+                <i class="fa-solid fa-check text-emerald-400"></i> Experienced English and Hindi speaking chauffeurs
+              </li>
+            </ul>
+            <div class="mt-8 pt-6 border-t border-slate-700/80 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-slate-400 block">Direct Corporate Desk</span>
+                <span class="font-bold text-white text-base">+91 91824 71876</span>
+              </div>
+              <a href="mailto:wayorajourneys12@gmail.com?subject=Corporate%20Travel%20Inquiry" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition">
+                Email Desk
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT US ================= -->
+  <section id="about" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div>
+          <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-100/70 px-3 py-1 rounded-md">
+            About Us
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+            About Wayora Journeys
+          </h2>
+          <p class="text-slate-600 mt-4 text-base leading-relaxed">
+            Wayora Journeys is a trusted travel partner, offering safe, comfortable and affordable car rental services for individuals, families and businesses.
+          </p>
+          <p class="text-slate-600 mt-3 text-base leading-relaxed">
+            Based in Hyderabad, we specialize in seamless pilgrimage tours to temples like Tirupati, Srisailam, Shirdi, and Kashi, as well as picturesque hill station holidays to Araku, Ooty, and Munnar. We take pride in delivering spotless vehicles, verified drivers who treat you like family, and transparent per-kilometer billing with zero surprise charges.
+          </p>
+          
+          <div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-100 text-center">
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="text-2xl font-black text-emerald-700 block">10,000+</span>
+              <span class="text-xs text-slate-500 font-semibold">Happy Journeys</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="text-2xl font-black text-emerald-700 block">100%</span>
+              <span class="text-xs text-slate-500 font-semibold">Doorstep Pickups</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <span class="text-2xl font-black text-emerald-700 block">4.9/5</span>
+              <span class="text-xs text-slate-500 font-semibold">Customer Rating</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative">
+          <div class="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-tr from-emerald-900 to-slate-800 p-8 text-white min-h-[380px] flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-emerald-400 text-2xl backdrop-blur">
+                <i class="fa-solid fa-shield-heart"></i>
+              </div>
+              <h3 class="text-2xl font-bold">Safe, Sanitized & Transparent Travel Guarantee</h3>
+              <p class="text-slate-300 text-sm leading-relaxed">
+                Every vehicle in our fleet goes through regular mechanical health checks, deep interior cleaning, and air-conditioning maintenance before embarking on outstation tours.
+              </p>
+            </div>
+            <div class="mt-8 flex items-center gap-4 bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/10">
+              <i class="fa-solid fa-map-location-dot text-3xl text-emerald-400"></i>
+              <div>
+                <span class="text-xs font-semibold text-slate-300 block">Headquartered In</span>
+                <span class="font-bold text-white text-base">Ameerpet, Hyderabad, Telangana</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= OUR FLEET SECTION ================= -->
+  <section id="fleet" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-100/70 px-3 py-1 rounded-md">
+          Our Fleet
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+          Choose Your Ride
+        </h2>
+        <p class="text-slate-600 mt-2 text-sm sm:text-base">
+          From budget-friendly hatchbacks to premium sedans and spacious 7-seater family SUVs. Well maintained, air-conditioned, and insured.
+        </p>
+      </div>
+
+      <!-- Fleet Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        
+        <!-- Wagon R / Swift -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+          <div>
+            <div class="h-32 flex items-center justify-center bg-slate-50 rounded-xl group-hover:bg-emerald-50/50 transition">
+              <i class="fa-solid fa-car-side text-5xl text-slate-700 group-hover:text-emerald-600 transition"></i>
+            </div>
+            <div class="mt-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Hatchback</span>
+              <h3 class="text-lg font-bold text-slate-900 mt-1">Wagon R / Swift</h3>
+              <p class="text-xs text-slate-500 mt-1">4 seater AC · Ideal for city and budget tours</p>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-xs text-slate-500 font-medium">Rate:</span>
+              <span class="text-lg font-black text-slate-900">₹15 <span class="text-xs font-normal text-slate-500">/ km</span></span>
+            </div>
+            <button onclick="openBookingModal('Wagon R / Swift')" class="w-full py-2 bg-slate-100 hover:bg-emerald-600 text-slate-800 hover:text-white rounded-xl text-xs font-bold transition">
+              Select Car
+            </button>
+          </div>
+        </div>
+
+        <!-- Dzire -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+          <div>
+            <div class="h-32 flex items-center justify-center bg-slate-50 rounded-xl group-hover:bg-emerald-50/50 transition">
+              <i class="fa-solid fa-car text-5xl text-slate-700 group-hover:text-emerald-600 transition"></i>
+            </div>
+            <div class="mt-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Sedan</span>
+              <h3 class="text-lg font-bold text-slate-900 mt-1">Dzire</h3>
+              <p class="text-xs text-slate-500 mt-1">4 seater AC · Comfortable boot space & legroom</p>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-xs text-slate-500 font-medium">Rate:</span>
+              <span class="text-lg font-black text-slate-900">₹15 <span class="text-xs font-normal text-slate-500">/ km</span></span>
+            </div>
+            <button onclick="openBookingModal('Dzire')" class="w-full py-2 bg-slate-100 hover:bg-emerald-600 text-slate-800 hover:text-white rounded-xl text-xs font-bold transition">
+              Select Car
+            </button>
+          </div>
+        </div>
+
+        <!-- Etios -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+          <div>
+            <div class="h-32 flex items-center justify-center bg-slate-50 rounded-xl group-hover:bg-emerald-50/50 transition">
+              <i class="fa-solid fa-car-rear text-5xl text-slate-700 group-hover:text-emerald-600 transition"></i>
+            </div>
+            <div class="mt-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Executive Sedan</span>
+              <h3 class="text-lg font-bold text-slate-900 mt-1">Etios</h3>
+              <p class="text-xs text-slate-500 mt-1">4 seater AC · Smooth highway cruise ride</p>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-xs text-slate-500 font-medium">Rate:</span>
+              <span class="text-lg font-black text-slate-900">₹19 <span class="text-xs font-normal text-slate-500">/ km</span></span>
+            </div>
+            <button onclick="openBookingModal('Etios')" class="w-full py-2 bg-slate-100 hover:bg-emerald-600 text-slate-800 hover:text-white rounded-xl text-xs font-bold transition">
+              Select Car
+            </button>
+          </div>
+        </div>
+
+        <!-- Ertiga -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+          <div>
+            <div class="h-32 flex items-center justify-center bg-slate-50 rounded-xl group-hover:bg-emerald-50/50 transition">
+              <i class="fa-solid fa-van-shuttle text-5xl text-slate-700 group-hover:text-emerald-600 transition"></i>
+            </div>
+            <div class="mt-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">MUV / Family</span>
+              <h3 class="text-lg font-bold text-slate-900 mt-1">Ertiga</h3>
+              <p class="text-xs text-slate-500 mt-1">6 seater AC · Perfect for family temple trips</p>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-xs text-slate-500 font-medium">Rate:</span>
+              <span class="text-lg font-black text-slate-900">₹19 <span class="text-xs font-normal text-slate-500">/ km</span></span>
+            </div>
+            <button onclick="openBookingModal('Ertiga')" class="w-full py-2 bg-slate-100 hover:bg-emerald-600 text-slate-800 hover:text-white rounded-xl text-xs font-bold transition">
+              Select Car
+            </button>
+          </div>
+        </div>
+
+        <!-- Innova -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+          <div>
+            <div class="h-32 flex items-center justify-center bg-slate-50 rounded-xl group-hover:bg-emerald-50/50 transition">
+              <i class="fa-solid fa-truck-monster text-5xl text-slate-700 group-hover:text-emerald-600 transition"></i>
+            </div>
+            <div class="mt-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Premium SUV</span>
+              <h3 class="text-lg font-bold text-slate-900 mt-1">Innova</h3>
+              <p class="text-xs text-slate-500 mt-1">7 seater AC · Utmost luxury & long distance comfort</p>
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+              <span class="text-xs text-slate-500 font-medium">Rate:</span>
+              <span class="text-lg font-black text-slate-900">₹19 <span class="text-xs font-normal text-slate-500">/ km</span></span>
+            </div>
+            <button onclick="openBookingModal('Innova')" class="w-full py-2 bg-slate-100 hover:bg-emerald-600 text-slate-800 hover:text-white rounded-xl text-xs font-bold transition">
+              Select Car
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PLAN YOUR OWN TRIP (CUSTOM ROUTE) ================= -->
+  <section class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="text-center max-w-xl mx-auto mb-8">
+          <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-400 bg-emerald-500/20 px-3 py-1 rounded-md">
+            Custom Itinerary
+          </span>
+          <h2 class="text-3xl font-extrabold mt-3">Plan Your Own Trip</h2>
+          <p class="text-slate-300 text-sm mt-2">
+            Choose your pickup and any destination. We will calculate the route and send you the best transparent quote.
+          </p>
+        </div>
+
+        <form id="planOwnTripForm" onsubmit="handleCustomPlanSubmit(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Your Name</label>
+              <input type="text" id="custName" required placeholder="Enter full name" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Phone Number</label>
+              <input type="tel" id="custPhone" required placeholder="10-digit mobile number" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Pickup Location</label>
+              <input type="text" id="custPickup" required placeholder="e.g. Hyderabad, Secunderabad" value="Hyderabad" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Destination(s)</label>
+              <input type="text" id="custDest" required placeholder="e.g. Srisailam, Mantralayam, Goa" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Travel Date</label>
+              <input type="date" id="custDate" required class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Number of Days</label>
+              <input type="number" id="custDays" min="1" max="30" value="2" required class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">Car Type</label>
+              <select id="custCar" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="Sedan (4 seats)">Sedan (4 seats)</option>
+                <option value="SUV (7 seats)">SUV (7 seats)</option>
+                <option value="Tempo Traveller (12–17)">Tempo Traveller (12–17)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-500/30 transition flex items-center justify-center gap-2">
+              <i class="fa-brands fa-whatsapp text-lg"></i>
+              <span>Send on WhatsApp</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="py-20 bg-slate-50 border-t border-slate-200/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-100/70 px-3 py-1 rounded-md">
+          How It Works
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+          Booking is super easy.
+        </h2>
+        <p class="text-slate-600 mt-2 text-sm sm:text-base">Three simple steps to hit the road without any hassle.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Step 1 -->
+        <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition">
+          <div class="text-6xl font-black text-slate-100 group-hover:text-emerald-50 transition absolute -right-2 -top-2 select-none">
+            01
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold mb-6">
+            <i class="fa-solid fa-map-pin"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Choose</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Pick a package or plan your own trip with pickup and drop destinations of your choice.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition">
+          <div class="text-6xl font-black text-slate-100 group-hover:text-emerald-50 transition absolute -right-2 -top-2 select-none">
+            02
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold mb-6">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Get Quote</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            We confirm the car and a clear price. No hidden charges. Pay just 25% advance to reserve.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition">
+          <div class="text-6xl font-black text-slate-100 group-hover:text-emerald-50 transition absolute -right-2 -top-2 select-none">
+            03
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold mb-6">
+            <i class="fa-solid fa-champagne-glasses"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Enjoy</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Driver picks you up on time from your doorstep. Sit back, relax, and create wonderful memories.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= TERMS & CANCELLATION ================= -->
+  <section class="py-20 bg-white border-t border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-700 bg-emerald-100/70 px-3 py-1 rounded-md">
+          Terms & Cancellation
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+          Simple and clear. No surprises.
+        </h2>
+        <p class="text-slate-600 mt-2 text-sm sm:text-base">Transparent customer policies built on trust.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/70">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-4">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-900 mb-2 text-base">Free Cancellation</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            No cancellation charges. Cancel your booking anytime before pickup and the full advance amount is refunded.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/70">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-4">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-900 mb-2 text-base">Advance Payment</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Part Pay (25%) or Full Pay is refunded in full if you cancel. Remainder paid directly to the chauffeur.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/70">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-4">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-900 mb-2 text-base">Km & Price</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Price is based on estimated distance. Extra km are charged at your car's per-km rate (₹15 or ₹19 per km).
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200/70">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-4">
+            <i class="fa-solid fa-road-barrier"></i>
+          </div>
+          <h4 class="font-extrabold text-slate-900 mb-2 text-base">Toll, Parking & Others</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Toll, parking, state tax, and night charges, if any, are told to you clearly before the trip is confirmed.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= READY TO GO CTA BANNER ================= -->
+  <section class="py-16 bg-gradient-to-r from-emerald-800 to-teal-900 text-white relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <h2 class="text-3xl sm:text-4xl font-extrabold">Ready to Go?</h2>
+      <p class="text-emerald-100 mt-2 text-lg">Call or WhatsApp us for your best quote</p>
+      
+      <div class="text-3xl sm:text-4xl font-black text-white mt-4 tracking-tight">
+        +91 91824 71876
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 mt-8">
+        <button onclick="openBookingModal('CTA Trip')" class="px-8 py-3.5 bg-white text-slate-900 hover:bg-slate-100 font-extrabold rounded-xl shadow-lg transition">
+          Book Your Trip
+        </button>
+        <a href="tel:+919182471876" class="px-8 py-3.5 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500/50 text-white font-extrabold rounded-xl shadow-lg transition flex items-center gap-2">
+          <i class="fa-solid fa-phone"></i> Call Now
+        </a>
+        <a href="https://wa.me/919182471876?text=Hi%20Wayora%20Journeys,%20I%20am%20ready%20to%20book%20a%20cab." target="_blank" class="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold rounded-xl shadow-lg transition flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer id="contact" class="bg-slate-950 text-slate-400 text-sm pt-16 pb-12 border-t border-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800/80">
+        
+        <!-- Brand Info -->
+        <div class="space-y-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white">
+              <i class="fa-solid fa-car-side"></i>
+            </div>
+            <span class="text-xl font-black text-white">Wayora<span class="text-emerald-500">Journeys</span></span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Wayora Journeys – Reliable Travel. Professional Service. Comfortable car trips to temples, hill stations, beaches and heritage places.
+          </p>
+          <div class="flex items-center gap-3 text-slate-400">
+            <a href="https://wa.me/919182471876" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="tel:+919182471876" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition"><i class="fa-solid fa-phone"></i></a>
+            <a href="mailto:wayorajourneys12@gmail.com" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition"><i class="fa-solid fa-envelope"></i></a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Quick links</h4>
+          <ul class="space-y-2.5 text-xs">
+            <li><a href="#packages" class="hover:text-emerald-400 transition">Packages</a></li>
+            <li><a href="#about" class="hover:text-emerald-400 transition">Why choose us</a></li>
+            <li><a href="#fleet" class="hover:text-emerald-400 transition">Our Fleet</a></li>
+            <li><a href="#corporate" class="hover:text-emerald-400 transition">Corporate Travel</a></li>
+            <li><a href="#" onclick="openBookingModal('Footer Book'); return false;" class="hover:text-emerald-400 transition">Book your trip</a></li>
+          </ul>
+        </div>
+
+        <!-- Top Destinations -->
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Top Routes</h4>
+          <ul class="space-y-2.5 text-xs">
+            <li><a href="javascript:void(0)" onclick="quickSelectPackage(0)" class="hover:text-emerald-400 transition">Hyderabad to Tirupati Cab</a></li>
+            <li><a href="javascript:void(0)" onclick="quickSelectPackage(4)" class="hover:text-emerald-400 transition">Hyderabad to Srisailam Round Trip</a></li>
+            <li><a href="javascript:void(0)" onclick="quickSelectPackage(2)" class="hover:text-emerald-400 transition">Hyderabad to Goa Road Trip</a></li>
+            <li><a href="javascript:void(0)" onclick="quickSelectPackage(3)" class="hover:text-emerald-400 transition">Hyderabad to Araku Valley Cab</a></li>
+            <li><a href="javascript:void(0)" onclick="quickSelectPackage(6)" class="hover:text-emerald-400 transition">Hyderabad to Shirdi Sai Darshan</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Box -->
+        <div>
+          <h4 class="text-white font-bold text-sm mb-4 uppercase tracking-wider">Contact</h4>
+          <ul class="space-y-3 text-xs">
+            <li class="flex items-start gap-2.5">
+              <i class="fa-solid fa-location-dot text-emerald-400 mt-0.5"></i>
+              <span>Ameerpet, Hyderabad, Telangana, India</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i class="fa-solid fa-phone text-emerald-400"></i>
+              <a href="tel:+919182471876" class="hover:text-white transition">+91 91824 71876</a>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i class="fa-solid fa-envelope text-emerald-400"></i>
+              <a href="mailto:wayorajourneys12@gmail.com" class="hover:text-white transition">wayorajourneys12@gmail.com</a>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i>
+              <a href="https://wa.me/919182471876" target="_blank" class="hover:text-white transition">Chat on WhatsApp</a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Copyright & Bottom Nav -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+        <div>
+          © Wayora Journeys · Travel with comfort, return with memories
+        </div>
+        <div class="flex items-center gap-4">
+          <button onclick="openAdminModal()" class="text-slate-400 hover:text-slate-200 transition">
+            🔒 Admin
+          </button>
+          <span>·</span>
+          <span>Hyderabad, IN</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= FLOATING ACTION BUTTONS (MOBILE & DESKTOP) ================= -->
+  <div class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+    <!-- Call Quick Button -->
+    <a href="tel:+919182471876" class="w-12 h-12 bg-white text-emerald-700 rounded-full shadow-xl flex items-center justify-center border border-slate-200 hover:scale-110 transition active:scale-95" title="Call Us">
+      <i class="fa-solid fa-phone text-base"></i>
+    </a>
+    <!-- WhatsApp Floating Pulse -->
+    <a href="https://wa.me/919182471876?text=Hi%20Wayora%20Journeys,%20I%20would%20like%20to%20enquire%20about%20a%20car%20rental." target="_blank" class="w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition active:scale-95 relative" title="Chat on WhatsApp">
+      <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+      <i class="fa-brands fa-whatsapp text-2xl relative z-10"></i>
+    </a>
+  </div>
+
+  <!-- ================= MODAL: MULTI-STEP TRIP BOOKING FLOW ================= -->
+  <div id="bookingModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div>
+          <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-400">Wayora Journeys</span>
+          <h3 id="modalHeading" class="text-lg font-bold">Book Trip</h3>
+        </div>
+        <button onclick="closeBookingModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-lg">
+          &times;
+        </button>
+      </div>
+
+      <!-- Step Indicator Bar -->
+      <div class="flex border-b border-slate-100 text-xs font-bold text-center bg-slate-50">
+        <div id="stepTab1" class="flex-1 py-3 text-emerald-700 border-b-2 border-emerald-600 bg-white">1. Details</div>
+        <div id="stepTab2" class="flex-1 py-3 text-slate-400">2. Choose Car</div>
+        <div id="stepTab3" class="flex-1 py-3 text-slate-400">3. Review & Pay</div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto flex-1 text-slate-800">
+        
+        <!-- STEP 1: Details -->
+        <div id="step1Content" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name *</label>
+            <input type="text" id="bmName" placeholder="Enter your full name" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+            <input type="tel" id="bmPhone" placeholder="10-digit mobile number" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700">Pickup Location *</label>
+              <button type="button" onclick="modalUseCurrentLocation()" class="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <i class="fa-solid fa-crosshairs"></i> Use current location
+              </button>
+            </div>
+            <input type="text" id="bmPickup" value="Hyderabad" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div class="flex flex-wrap gap-1 mt-2">
+              <button type="button" onclick="document.getElementById('bmPickup').value='Hyderabad'" class="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-emerald-50 text-slate-700">Hyderabad</button>
+              <button type="button" onclick="document.getElementById('bmPickup').value='Secunderabad'" class="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-emerald-50 text-slate-700">Secunderabad</button>
+              <button type="button" onclick="document.getElementById('bmPickup').value='Vijayawada'" class="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-emerald-50 text-slate-700">Vijayawada</button>
+              <button type="button" onclick="document.getElementById('bmPickup').value='Visakhapatnam'" class="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-emerald-50 text-slate-700">Visakhapatnam</button>
+              <button type="button" onclick="document.getElementById('bmPickup').value='Bengaluru'" class="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-emerald-50 text-slate-700">Bengaluru</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Destination / Tour *</label>
+            <input type="text" id="bmDestination" placeholder="e.g. Tirupati, Goa, Araku" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Travel Date *</label>
+              <input type="date" id="bmDate" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">People *</label>
+              <select id="bmPeople" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                <option value="1">1 Person</option>
+                <option value="2">2 Persons</option>
+                <option value="3">3 Persons</option>
+                <option value="4" selected>4 Persons</option>
+                <option value="5">5 Persons</option>
+                <option value="6">6 Persons</option>
+                <option value="7">7 Persons</option>
+                <option value="8+">8+ Group</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Choose Car -->
+        <div id="step2Content" class="space-y-3 hidden">
+          <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-800 flex items-center gap-2">
+            <i class="fa-solid fa-shield-check text-emerald-600 text-base"></i>
+            <span><strong>Free cancellation:</strong> No cancellation charges. Full refund of your advance if cancelled.</span>
+          </div>
+
+          <div class="space-y-2.5">
+            <label class="flex items-center justify-between p-3.5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer transition car-option active-car">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="modalCarRadio" value="Wagon R / Swift" checked class="text-emerald-600 focus:ring-emerald-500">
+                <div>
+                  <h5 class="text-sm font-bold text-slate-900">Wagon R / Swift</h5>
+                  <p class="text-[11px] text-slate-500">4 seater AC · Hatchback</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-slate-900">₹15/km</span>
+                <span class="block text-[10px] text-emerald-600 font-semibold">Best Value</span>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer transition car-option">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="modalCarRadio" value="Dzire" class="text-emerald-600 focus:ring-emerald-500">
+                <div>
+                  <h5 class="text-sm font-bold text-slate-900">Dzire</h5>
+                  <p class="text-[11px] text-slate-500">4 seater AC · Sedan</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-slate-900">₹15/km</span>
+                <span class="block text-[10px] text-slate-400">Popular</span>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer transition car-option">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="modalCarRadio" value="Etios" class="text-emerald-600 focus:ring-emerald-500">
+                <div>
+                  <h5 class="text-sm font-bold text-slate-900">Etios</h5>
+                  <p class="text-[11px] text-slate-500">4 seater AC · Executive Sedan</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-slate-900">₹19/km</span>
+                <span class="block text-[10px] text-slate-400">Comfort</span>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer transition car-option">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="modalCarRadio" value="Ertiga" class="text-emerald-600 focus:ring-emerald-500">
+                <div>
+                  <h5 class="text-sm font-bold text-slate-900">Ertiga</h5>
+                  <p class="text-[11px] text-slate-500">6 seater AC · MUV Family</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-slate-900">₹19/km</span>
+                <span class="block text-[10px] text-emerald-600 font-semibold">6 Seater</span>
+              </div>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer transition car-option">
+              <div class="flex items-center gap-3">
+                <input type="radio" name="modalCarRadio" value="Innova" class="text-emerald-600 focus:ring-emerald-500">
+                <div>
+                  <h5 class="text-sm font-bold text-slate-900">Innova</h5>
+                  <p class="text-[11px] text-slate-500">7 seater AC · Premium SUV</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-slate-900">₹19/km</span>
+                <span class="block text-[10px] text-slate-400">7 Seater</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- STEP 3: Review & Payment Options -->
+        <div id="step3Content" class="space-y-4 hidden">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+            <h5 class="font-bold text-slate-900 text-sm border-b border-slate-200 pb-1.5">Review Your Booking</h5>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Guest Name:</span>
+              <span id="revName" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Contact Phone:</span>
+              <span id="revPhone" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Pickup Location:</span>
+              <span id="revPickup" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Destination:</span>
+              <span id="revDest" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Travel Date:</span>
+              <span id="revDate" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Selected Vehicle:</span>
+              <span id="revCar" class="font-bold text-emerald-700"></span>
+            </div>
+          </div>
+
+          <!-- Coupon code -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Coupon & Offers</label>
+            <div class="flex gap-2">
+              <input type="text" id="bmCouponInput" placeholder="Try WAYORA100" class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase focus:outline-none">
+              <button type="button" onclick="applyCoupon()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">Apply</button>
+            </div>
+            <span id="couponMsg" class="text-[11px] text-emerald-600 font-semibold mt-1 block hidden">Coupon applied! ₹200 off advance</span>
+          </div>
+
+          <!-- Payment Options -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-2">Payment Options</label>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <label class="p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 cursor-pointer block">
+                <input type="radio" name="payType" value="25%" checked class="mr-1 text-emerald-600">
+                <span class="font-bold text-slate-900">Pay 25% to Book</span>
+                <p class="text-[10px] text-slate-500 mt-0.5">Pay remaining amount to driver</p>
+              </label>
+              <label class="p-3 rounded-xl border-2 border-slate-200 hover:border-emerald-500 cursor-pointer block">
+                <input type="radio" name="payType" value="100%" class="mr-1 text-emerald-600">
+                <span class="font-bold text-slate-900">Full Advance (100%)</span>
+                <p class="text-[10px] text-slate-500 mt-0.5">Hassle-free digital receipt</p>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2">
+            <i class="fa-solid fa-circle-info mt-0.5 text-amber-600"></i>
+            <div>
+              <strong>Inclusions:</strong> Car, professional driver, fuel, sanitized interior. Toll & parking charges paid directly or added per state rules.
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: SUCCESS VIEW -->
+        <div id="stepSuccessContent" class="space-y-5 py-4 text-center hidden">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-md">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div>
+            <h4 class="text-2xl font-black text-slate-900">Booking Successful!</h4>
+            <p class="text-slate-600 text-xs mt-1">Your reservation request has been created in our dispatch system.</p>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl text-left text-xs font-mono border border-slate-200 max-h-44 overflow-y-auto" id="successSummaryBox">
+            <!-- Details generated by JS -->
+          </div>
+
+          <div class="space-y-2">
+            <button onclick="sendSuccessViaWhatsApp()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+              <i class="fa-brands fa-whatsapp text-lg"></i>
+              <span>Send confirmation on WhatsApp</span>
+            </button>
+            <p class="text-[11px] text-slate-400">
+              Tap the button above to send your booking on WhatsApp. If it does not open, copy the details and send them to +91 91824 71876.
+            </p>
+            <button onclick="copyBookingDetailsToClipboard()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+              <i class="fa-regular fa-copy"></i>
+              <span id="copyBtnText">Copy booking details</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer (Step buttons) -->
+      <div id="modalFooterNav" class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <button id="modalPrevBtn" onclick="modalPrevStep()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hidden transition">
+          ← Back
+        </button>
+        <button id="modalNextBtn" onclick="modalNextStep()" class="ml-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold shadow-md transition flex items-center gap-1.5">
+          <span>Next: Choose Car</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL: ADMIN / OWNER DASHBOARD ================= -->
+  <div id="adminModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      
+      <!-- Admin Bar -->
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white text-sm">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider">WAYORA DASHBOARD</h3>
+            <span class="text-[10px] text-slate-400">Wayora Journeys Dispatch & Fleet Management</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="adminBackup()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md">Backup</button>
+          <button onclick="adminRestore()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md">Restore</button>
+          <button onclick="closeAdminModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">✕</button>
+        </div>
+      </div>
+
+      <!-- Admin Tabs & Content -->
+      <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+        
+        <!-- Stats overview -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-xs text-slate-500 font-semibold">Total Bookings</span>
+            <span id="admTotalCount" class="text-2xl font-black text-slate-900 block mt-1">24</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-xs text-slate-500 font-semibold">Active Fleet</span>
+            <span class="text-2xl font-black text-emerald-600 block mt-1">14 Cars</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-xs text-slate-500 font-semibold">Today's Pickups</span>
+            <span class="text-2xl font-black text-amber-600 block mt-1">6</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-xs text-slate-500 font-semibold">Avg Trip Rating</span>
+            <span class="text-2xl font-black text-teal-600 block mt-1">4.9 ★</span>
+          </div>
+        </div>
+
+        <!-- Filter and Add Row -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex flex-wrap gap-2 text-xs font-bold">
+              <button class="px-3 py-1.5 rounded-lg bg-slate-900 text-white">All Statuses</button>
+              <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">New</button>
+              <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Assigned</button>
+              <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Confirmed</button>
+              <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Completed</button>
+              <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Cancelled</button>
+            </div>
+            <button onclick="showQuickAddPrompt()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-plus"></i> Add Car Owner / Cab
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Booking Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-700 flex items-center justify-between">
+            <span>Recent WhatsApp & Web Trip Dispatches</span>
+            <span class="text-[10px] text-slate-400 font-normal">Real-time simulation</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100/70 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Customer</th>
+                  <th class="p-3">Route</th>
+                  <th class="p-3">Car Assigned</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminBookingsTable" class="divide-y divide-slate-100">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-3 bg-slate-100 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+        <span>Logged in as: <strong>Owner / Administrator</strong></span>
+        <button onclick="closeAdminModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-bold">
+          Close Panel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= INLINE JAVASCRIPT LOGIC ================= -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. DATA: 12 EXACT WAYORA TOUR PACKAGES
+    // -------------------------------------------------------------
+    const TOUR_PACKAGES = [
+      {
+        id: "tirupati",
+        category: "spiritual",
+        badge: "Spiritual",
+        badgeIcon: "fa-om",
+        title: "Tirupati",
+        tagline: "Spiritual Tirupati trip",
+        desc: "Tirumala Venkateswara darshan with Tiruchanur and Kapila Theertham.",
+        duration: "2–3 days",
+        fromPrice: "₹16,800",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-amber-600 to-orange-700",
+        icon: "fa-gopuram"
+      },
+      {
+        id: "tuljapur",
+        category: "spiritual",
+        badge: "Spiritual",
+        badgeIcon: "fa-om",
+        title: "Tuljapur",
+        tagline: "Spiritual Tuljapur trip",
+        desc: "Tuljabhavani Mata temple trip, can combine with Solapur and Pandharpur.",
+        duration: "2 days",
+        fromPrice: "₹10,350",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-orange-600 to-amber-700",
+        icon: "fa-bell"
+      },
+      {
+        id: "goa",
+        category: "beach",
+        badge: "Beach",
+        badgeIcon: "fa-umbrella-beach",
+        title: "Goa",
+        tagline: "Beach Goa trip",
+        desc: "Beaches, churches, sunset cruises and Old Goa sightseeing.",
+        duration: "4–5 days",
+        fromPrice: "₹20,400",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-teal-600 to-cyan-700",
+        icon: "fa-water"
+      },
+      {
+        id: "araku",
+        category: "hill",
+        badge: "Hill Station",
+        badgeIcon: "fa-mountain-sun",
+        title: "Araku Valley",
+        tagline: "Hill Station Araku Valley trip",
+        desc: "Coffee plantations, Borra Caves, tribal museum and Vizag beaches.",
+        duration: "3–4 days",
+        fromPrice: "₹18,600",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-emerald-600 to-green-700",
+        icon: "fa-tree"
+      },
+      {
+        id: "srisailam",
+        category: "spiritual",
+        badge: "Spiritual",
+        badgeIcon: "fa-om",
+        title: "Srisailam",
+        tagline: "Spiritual Srisailam trip",
+        desc: "Mallikarjuna Jyotirlinga, Nagarjuna Sagar and forest ghat drive.",
+        duration: "1–2 days",
+        fromPrice: "₹6,000",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-blue-700 to-indigo-800",
+        icon: "fa-place-of-worship"
+      },
+      {
+        id: "hampi",
+        category: "heritage",
+        badge: "Heritage",
+        badgeIcon: "fa-monument",
+        title: "Hampi",
+        tagline: "Heritage Hampi trip",
+        desc: "Vijayanagara ruins, Virupaksha temple and boulder landscapes.",
+        duration: "2–3 days",
+        fromPrice: "₹12,300",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-amber-700 to-stone-800",
+        icon: "fa-archway"
+      },
+      {
+        id: "shirdi",
+        category: "spiritual",
+        badge: "Spiritual 🕉️",
+        badgeIcon: "fa-om",
+        title: "Shirdi",
+        tagline: "Spiritual Shirdi trip",
+        desc: "Sai Baba Samadhi Mandir darshan, can combine with Shani Shingnapur.",
+        duration: "2–3 days",
+        fromPrice: "₹19,500",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-amber-600 to-yellow-700",
+        icon: "fa-hands-praying"
+      },
+      {
+        id: "ooty",
+        category: "hill",
+        badge: "Hill Station 🌄",
+        badgeIcon: "fa-mountain",
+        title: "Ooty",
+        tagline: "Hill Station Ooty trip",
+        desc: "Tea gardens, Botanical Garden, Ooty lake and the Nilgiri hills.",
+        duration: "4–5 days",
+        fromPrice: "₹27,000",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-emerald-700 to-teal-800",
+        icon: "fa-cloud-sun"
+      },
+      {
+        id: "kashi",
+        category: "spiritual",
+        badge: "Spiritual 🪔",
+        badgeIcon: "fa-fire",
+        title: "Kashi",
+        tagline: "Spiritual Kashi trip",
+        desc: "Kashi Vishwanath darshan, Ganga aarti and Sarnath, with Ayodhya on request.",
+        duration: "7–8 days",
+        fromPrice: "₹39,000",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-orange-700 to-red-800",
+        icon: "fa-torii-gate"
+      },
+      {
+        id: "munnar",
+        category: "hill",
+        badge: "Hill Station 🍃",
+        badgeIcon: "fa-leaf",
+        title: "Munnar",
+        tagline: "Hill Station Munnar trip",
+        desc: "Tea estates, waterfalls, Eravikulam park and misty mountain roads.",
+        duration: "4–5 days",
+        fromPrice: "₹32,250",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-green-700 to-emerald-900",
+        icon: "fa-cloud-rain"
+      },
+      {
+        id: "rameswaram",
+        category: "spiritual",
+        badge: "Spiritual 🌊",
+        badgeIcon: "fa-water",
+        title: "Rameswaram",
+        tagline: "Spiritual Rameswaram trip",
+        desc: "Ramanathaswamy temple, Pamban bridge and Dhanushkodi, with Madurai.",
+        duration: "5–6 days",
+        fromPrice: "₹35,400",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-cyan-700 to-blue-900",
+        icon: "fa-bridge-water"
+      },
+      {
+        id: "mysore",
+        category: "heritage",
+        badge: "Heritage 🏰",
+        badgeIcon: "fa-landmark",
+        title: "Mysore",
+        tagline: "Heritage Mysore trip",
+        desc: "Mysore Palace, Chamundi Hills, Brindavan Gardens and Srirangapatna.",
+        duration: "3 days",
+        fromPrice: "₹23,400",
+        rateNote: "Round trip from Hyderabad · ₹15/km. Price changes with your pickup location.",
+        bgGradient: "from-amber-700 to-rose-900",
+        icon: "fa-chess-rook"
+      }
+    ];
+
+    // Simulated initial administrative bookings
+    let adminBookings = [
+      { id: "WY-8120", name: "Venkat Rao", route: "Hyderabad ➔ Tirupati", car: "Ertiga", date: "Tomorrow", status: "Confirmed" },
+      { id: "WY-8121", name: "Ananya Sharma", route: "Secunderabad ➔ Srisailam", car: "Dzire", date: "24 Oct", status: "Assigned" },
+      { id: "WY-8122", name: "Kiran Kumar", route: "Hyderabad ➔ Goa", car: "Innova", date: "26 Oct", status: "New" },
+      { id: "WY-8123", name: "Pooja Reddy", route: "Hyderabad ➔ Araku Valley", car: "Etios", date: "28 Oct", status: "Completed" }
+    ];
+
+    // -------------------------------------------------------------
+    // 2. RENDER PACKAGES
+    // -------------------------------------------------------------
+    function renderPackages(filter = 'all') {
+      const container = document.getElementById('packagesContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const filtered = filter === 'all' 
+        ? TOUR_PACKAGES 
+        : TOUR_PACKAGES.filter(p => p.category === filter);
+
+      filtered.forEach((pkg, index) => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group";
+        
+        card.innerHTML = `
+          <div>
+            <!-- Banner / Header Image simulation -->
+            <div class="h-44 bg-gradient-to-br ${pkg.bgGradient} p-6 relative flex flex-col justify-between text-white overflow-hidden">
+              <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+              <div class="flex items-center justify-between relative z-10">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur text-xs font-semibold tracking-wide">
+                  <i class="fa-solid ${pkg.badgeIcon} text-emerald-300"></i> ${pkg.badge}
+                </span>
+                <span class="text-xs bg-white/20 backdrop-blur px-2.5 py-1 rounded-full font-medium">
+                  🚗 ${pkg.duration}
+                </span>
+              </div>
+              <div class="relative z-10 flex items-end justify-between">
+                <div>
+                  <h3 class="text-2xl font-black tracking-tight">${pkg.title}</h3>
+                  <span class="text-xs text-white/80 font-medium">${pkg.tagline}</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl">
+                  <i class="fa-solid ${pkg.icon}"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Body Details -->
+            <div class="p-6">
+              <p class="text-slate-600 text-sm leading-relaxed mb-4 min-h-[42px]">
+                ${pkg.desc}
+              </p>
+              
+              <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                <div class="flex items-baseline justify-between">
+                  <span class="text-xs font-semibold text-slate-500">Starting from</span>
+                  <span class="text-xl font-black text-emerald-700">${pkg.fromPrice}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1 leading-normal">
+                  ${pkg.rateNote}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card CTAs -->
+          <div class="px-6 pb-6 pt-1 grid grid-cols-2 gap-3">
+            <button onclick="openBookingModal('${pkg.title} Trip')" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm hover:shadow text-center">
+              Book Now
+            </button>
+            <a href="https://wa.me/919182471876?text=Hi%20Wayora%20Journeys,%20I%20am%20interested%20in%20the%20${encodeURIComponent(pkg.title)}%20package." target="_blank" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition text-center flex items-center justify-center gap-1.5">
+              <i class="fa-brands fa-whatsapp text-emerald-600"></i>
+              <span>Enquiry</span>
+            </a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterPackages(category) {
+      document.querySelectorAll('.pkg-filter-btn').forEach(btn => {
+        if (btn.dataset.filter === category) {
+          btn.className = "pkg-filter-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm";
+        } else {
+          btn.className = "pkg-filter-btn px-4 py-2 rounded-xl bg-white text-slate-700 hover:bg-slate-100 border border-slate-200";
+        }
+      });
+      renderPackages(category);
+    }
+
+    function quickSelectPackage(index) {
+      const pkg = TOUR_PACKAGES[index];
+      if (pkg) {
+        openBookingModal(`${pkg.title} Tour`);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. TRIP PLANNER WIDGET STATE & HANDLERS
+    // -------------------------------------------------------------
+    let currentTripType = 'ROUND_TRIP';
+
+    function setTripType(type) {
+      currentTripType = type;
+      const bRound = document.getElementById('btnTabRound');
+      const bOne = document.getElementById('btnTabOneWay');
+      const bAir = document.getElementById('btnTabAirport');
+      const destWrap = document.getElementById('destinationWrapper');
+      const airWrap = document.getElementById('airportSelectWrapper');
+
+      [bRound, bOne, bAir].forEach(btn => {
+        btn.className = "flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+      });
+
+      if (type === 'ROUND_TRIP') {
+        bRound.className = "flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition bg-white text-emerald-700 shadow-sm";
+        destWrap.classList.remove('hidden');
+        airWrap.classList.add('hidden');
+      } else if (type === 'ONE_WAY') {
+        bOne.className = "flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition bg-white text-emerald-700 shadow-sm";
+        destWrap.classList.remove('hidden');
+        airWrap.classList.add('hidden');
+      } else if (type === 'AIRPORT') {
+        bAir.className = "flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition bg-white text-emerald-700 shadow-sm";
+        destWrap.classList.add('hidden');
+        airWrap.classList.remove('hidden');
+      }
+    }
+
+    function setPickupCity(city) {
+      document.getElementById('pickupInput').value = city;
+    }
+
+    function useCurrentLocation() {
+      const pickup = document.getElementById('pickupInput');
+      pickup.value = "Locating...";
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            pickup.value = `Near Lat: ${pos.coords.latitude.toFixed(3)}, Lng: ${pos.coords.longitude.toFixed(3)} (Hyderabad Area)`;
+          },
+          err => {
+            pickup.value = "Hyderabad (Default)";
+          }
+        );
+      } else {
+        pickup.value = "Hyderabad (Default)";
+      }
+    }
+
+    function modalUseCurrentLocation() {
+      const pickup = document.getElementById('bmPickup');
+      pickup.value = "Locating...";
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            pickup.value = `Current Location (${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)})`;
+          },
+          () => {
+            pickup.value = "Hyderabad";
+          }
+        );
+      } else {
+        pickup.value = "Hyderabad";
+      }
+    }
+
+    function handleHeroSubmit(e) {
+      e.preventDefault();
+      const pickup = document.getElementById('pickupInput').value;
+      let dest = "";
+      if (currentTripType === 'AIRPORT') {
+        dest = document.getElementById('airportSelect').value;
+      } else {
+        dest = document.getElementById('destinationInput').value || "Tirupati";
+      }
+      const date = document.getElementById('heroDateInput').value;
+      const people = document.getElementById('heroPeopleInput').value;
+
+      openBookingModal(`${dest} (${currentTripType.replace('_', ' ')})`);
+      document.getElementById('bmPickup').value = pickup;
+      document.getElementById('bmDestination').value = dest;
+      if (date) document.getElementById('bmDate').value = date;
+    }
+
+    function handleCustomPlanSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('custName').value;
+      const phone = document.getElementById('custPhone').value;
+      const pickup = document.getElementById('custPickup').value;
+      const dest = document.getElementById('custDest').value;
+      const date = document.getElementById('custDate').value;
+      const days = document.getElementById('custDays').value;
+      const car = document.getElementById('custCar').value;
+
+      const message = `*Wayora Journeys Custom Trip Request*%0A` +
+        `👤 Name: ${encodeURIComponent(name)}%0A` +
+        `📞 Phone: ${encodeURIComponent(phone)}%0A` +
+        `📍 Pickup: ${encodeURIComponent(pickup)}%0A` +
+        `🎯 Destination: ${encodeURIComponent(dest)}%0A` +
+        `📅 Date: ${encodeURIComponent(date)} (${days} Days)%0A` +
+        `🚗 Car: ${encodeURIComponent(car)}`;
+
+      window.open(`https://wa.me/919182471876?text=${message}`, '_blank');
+    }
+
+    // -------------------------------------------------------------
+    // 4. MULTI-STEP BOOKING MODAL LOGIC
+    // -------------------------------------------------------------
+    let modalStep = 1;
+    let selectedBookingData = {};
+
+    function openBookingModal(tourTitle = "Trip") {
+      modalStep = 1;
+      updateModalStepUI();
+      document.getElementById('modalHeading').innerText = `Book ${tourTitle}`;
+      if (tourTitle && !tourTitle.includes('General') && !tourTitle.includes('CTA') && !tourTitle.includes('Footer')) {
+        document.getElementById('bmDestination').value = tourTitle;
+      }
+      
+      // Default tomorrow's date if empty
+      const today = new Date();
+      today.setDate(today.getDate() + 1);
+      const tomorrowStr = today.toISOString().split('T')[0];
+      if (!document.getElementById('bmDate').value) {
+        document.getElementById('bmDate').value = tomorrowStr;
+      }
+      
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.add('hidden');
+    }
+
+    function modalNextStep() {
+      if (modalStep === 1) {
+        const name = document.getElementById('bmName').value.trim();
+        const phone = document.getElementById('bmPhone').value.trim();
+        const pickup = document.getElementById('bmPickup').value.trim();
+        const dest = document.getElementById('bmDestination').value.trim();
+        const date = document.getElementById('bmDate').value;
+
+        if (!name || !phone || !dest) {
+          alertCustom("Please fill your Name, Phone Number, and Destination to continue.");
+          return;
+        }
+
+        selectedBookingData.name = name;
+        selectedBookingData.phone = phone;
+        selectedBookingData.pickup = pickup;
+        selectedBookingData.destination = dest;
+        selectedBookingData.date = date;
+        selectedBookingData.people = document.getElementById('bmPeople').value;
+
+        modalStep = 2;
+        updateModalStepUI();
+      } else if (modalStep === 2) {
+        const selectedCarRadio = document.querySelector('input[name="modalCarRadio"]:checked');
+        selectedBookingData.car = selectedCarRadio ? selectedCarRadio.value : "Wagon R / Swift";
+
+        // populate step 3
+        document.getElementById('revName').innerText = selectedBookingData.name;
+        document.getElementById('revPhone').innerText = selectedBookingData.phone;
+        document.getElementById('revPickup').innerText = selectedBookingData.pickup;
+        document.getElementById('revDest').innerText = selectedBookingData.destination;
+        document.getElementById('revDate').innerText = selectedBookingData.date;
+        document.getElementById('revCar').innerText = selectedBookingData.car;
+
+        modalStep = 3;
+        updateModalStepUI();
+      } else if (modalStep === 3) {
+        // Complete booking
+        const payType = document.querySelector('input[name="payType"]:checked').value;
+        selectedBookingData.payType = payType;
+        selectedBookingData.bookingId = 'WY-' + Math.floor(1000 + Math.random() * 9000);
+
+        // Add to simulated admin dashboard
+        adminBookings.unshift({
+          id: selectedBookingData.bookingId,
+          name: selectedBookingData.name,
+          route: `${selectedBookingData.pickup} ➔ ${selectedBookingData.destination}`,
+          car: selectedBookingData.car,
+          date: selectedBookingData.date,
+          status: "New"
+        });
+        renderAdminTable();
+
+        modalStep = 4;
+        updateModalStepUI();
+        renderSuccessDetails();
+      }
+    }
+
+    function modalPrevStep() {
+      if (modalStep > 1 && modalStep < 4) {
+        modalStep--;
+        updateModalStepUI();
+      }
+    }
+
+    function updateModalStepUI() {
+      const s1 = document.getElementById('step1Content');
+      const s2 = document.getElementById('step2Content');
+      const s3 = document.getElementById('step3Content');
+      const sSuccess = document.getElementById('stepSuccessContent');
+
+      const tab1 = document.getElementById('stepTab1');
+      const tab2 = document.getElementById('stepTab2');
+      const tab3 = document.getElementById('stepTab3');
+
+      const prevBtn = document.getElementById('modalPrevBtn');
+      const nextBtn = document.getElementById('modalNextBtn');
+      const footerNav = document.getElementById('modalFooterNav');
+
+      [s1, s2, s3, sSuccess].forEach(el => el.classList.add('hidden'));
+
+      if (modalStep === 1) {
+        s1.classList.remove('hidden');
+        tab1.className = "flex-1 py-3 text-emerald-700 border-b-2 border-emerald-600 bg-white";
+        tab2.className = "flex-1 py-3 text-slate-400";
+        tab3.className = "flex-1 py-3 text-slate-400";
+        prevBtn.classList.add('hidden');
+        footerNav.classList.remove('hidden');
+        nextBtn.innerHTML = `<span>Next: Choose Car</span> <i class="fa-solid fa-arrow-right"></i>`;
+      } else if (modalStep === 2) {
+        s2.classList.remove('hidden');
+        tab1.className = "flex-1 py-3 text-emerald-700";
+        tab2.className = "flex-1 py-3 text-emerald-700 border-b-2 border-emerald-600 bg-white";
+        tab3.className = "flex-1 py-3 text-slate-400";
+        prevBtn.classList.remove('hidden');
+        footerNav.classList.remove('hidden');
+        nextBtn.innerHTML = `<span>Next: Review & Inclusions</span> <i class="fa-solid fa-arrow-right"></i>`;
+      } else if (modalStep === 3) {
+        s3.classList.remove('hidden');
+        tab1.className = "flex-1 py-3 text-emerald-700";
+        tab2.className = "flex-1 py-3 text-emerald-700";
+        tab3.className = "flex-1 py-3 text-emerald-700 border-b-2 border-emerald-600 bg-white";
+        prevBtn.classList.remove('hidden');
+        footerNav.classList.remove('hidden');
+        nextBtn.innerHTML = `<span>Confirm Booking</span> <i class="fa-solid fa-check"></i>`;
+      } else if (modalStep === 4) {
+        sSuccess.classList.remove('hidden');
+        footerNav.classList.add('hidden');
+      }
+    }
+
+    function renderSuccessDetails() {
+      const box = document.getElementById('successSummaryBox');
+      box.innerHTML = `
+        <div class="space-y-1">
+          <div><strong class="text-slate-900">BOOKING ID:</strong> ${selectedBookingData.bookingId}</div>
+          <div><strong class="text-slate-900">PASSENGER:</strong> ${selectedBookingData.name} (${selectedBookingData.phone})</div>
+          <div><strong class="text-slate-900">ROUTE:</strong> ${selectedBookingData.pickup} ➔ ${selectedBookingData.destination}</div>
+          <div><strong class="text-slate-900">VEHICLE:</strong> ${selectedBookingData.car}</div>
+          <div><strong class="text-slate-900">TRAVEL DATE:</strong> ${selectedBookingData.date}</div>
+          <div><strong class="text-slate-900">ADVANCE TYPE:</strong> ${selectedBookingData.payType}</div>
+          <div><strong class="text-emerald-700">STATUS:</strong> CONFIRMED IN DISPATCH</div>
+        </div>
+      `;
+    }
+
+    function sendSuccessViaWhatsApp() {
+      const msg = `*Wayora Journeys New Booking Confirmation*%0A` +
+        `🆔 ID: ${selectedBookingData.bookingId}%0A` +
+        `👤 Name: ${encodeURIComponent(selectedBookingData.name)}%0A` +
+        `📞 Phone: ${encodeURIComponent(selectedBookingData.phone)}%0A` +
+        `📍 Pickup: ${encodeURIComponent(selectedBookingData.pickup)}%0A` +
+        `🎯 Destination: ${encodeURIComponent(selectedBookingData.destination)}%0A` +
+        `🚗 Car: ${encodeURIComponent(selectedBookingData.car)}%0A` +
+        `📅 Date: ${encodeURIComponent(selectedBookingData.date)}%0A` +
+        `💳 Advance Option: ${selectedBookingData.payType}%0A` +
+        `Please confirm chauffeur details and invoice.`;
+
+      window.open(`https://wa.me/919182471876?text=${msg}`, '_blank');
+    }
+
+    function copyBookingDetailsToClipboard() {
+      const text = `Wayora Journeys Booking\nID: ${selectedBookingData.bookingId}\nName: ${selectedBookingData.name}\nPhone: ${selectedBookingData.phone}\nFrom: ${selectedBookingData.pickup}\nTo: ${selectedBookingData.destination}\nCar: ${selectedBookingData.car}\nDate: ${selectedBookingData.date}`;
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        const btn = document.getElementById('copyBtnText');
+        btn.innerText = "Copied to Clipboard!";
+        setTimeout(() => btn.innerText = "Copy booking details", 2500);
+      } catch (err) {
+        console.error("Copy failed", err);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function applyCoupon() {
+      const val = document.getElementById('bmCouponInput').value.trim();
+      const msg = document.getElementById('couponMsg');
+      if (val.toUpperCase() === 'WAYORA100' || val.toUpperCase() === 'FREE200') {
+        msg.classList.remove('hidden');
+      } else {
+        alertCustom("Invalid Coupon. Try 'WAYORA100' for ₹200 off.");
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 5. ADMIN / OWNER MODAL LOGIC
+    // -------------------------------------------------------------
+    function openAdminModal() {
+      renderAdminTable();
+      document.getElementById('adminModal').classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('adminBookingsTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      document.getElementById('admTotalCount').innerText = adminBookings.length;
+
+      adminBookings.forEach((b, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50";
+
+        let badgeClass = "bg-emerald-100 text-emerald-800";
+        if (b.status === "New") badgeClass = "bg-blue-100 text-blue-800";
+        if (b.status === "Assigned") badgeClass = "bg-amber-100 text-amber-800";
+        if (b.status === "Completed") badgeClass = "bg-slate-100 text-slate-800";
+
+        tr.innerHTML = `
+          <td class="p-3 font-semibold text-slate-900">
+            ${b.name} <span class="block text-[10px] text-slate-400 font-mono">${b.id}</span>
+          </td>
+          <td class="p-3 text-slate-700">${b.route}</td>
+          <td class="p-3 font-medium text-emerald-700">${b.car}</td>
+          <td class="p-3 text-slate-500">${b.date}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+              ${b.status}
+            </span>
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="changeBookingStatus(${idx})" class="text-emerald-600 hover:text-emerald-800 font-bold text-[11px]">
+              Next Status →
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function changeBookingStatus(idx) {
+      const statuses = ["New", "Assigned", "Confirmed", "Completed"];
+      const curr = adminBookings[idx].status;
+      const nextIdx = (statuses.indexOf(curr) + 1) % statuses.length;
+      adminBookings[idx].status = statuses[nextIdx];
+      renderAdminTable();
+    }
+
+    function showQuickAddPrompt() {
+      const name = prompt("Enter Car Owner / Chauffeur Name:");
+      if (name) {
+        alertCustom(`Chauffeur ${name} registered to Wayora Journeys dispatch pool.`);
+      }
+    }
+
+    function adminBackup() {
+      alertCustom("Backup created! JSON state stored in browser storage.");
+    }
+
+    function adminRestore() {
+      alertCustom("System in sync with official Wayora fleet database.");
+    }
+
+    function openCorporateQuoteModal() {
+      openBookingModal('Corporate Account');
+      document.getElementById('bmDestination').value = "Corporate Business Fleet Contract";
+    }
+
+    // -------------------------------------------------------------
+    // 6. UI HELPERS
+    // -------------------------------------------------------------
+    function toggleMobileNav() {
+      const menu = document.getElementById('mobileMenu');
+      const icon = document.getElementById('menuIcon');
+      menu.classList.toggle('hidden');
+      if (menu.classList.contains('hidden')) {
+        icon.className = "fa-solid fa-bars text-xl";
+      } else {
+        icon.className = "fa-solid fa-xmark text-xl";
+      }
+    }
+
+    // Custom friendly message toast instead of alert()
+    function alertCustom(message) {
+      const toast = document.createElement('div');
+      toast.className = "fixed top-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-2.5 border border-slate-700 animate-bounce";
+      toast.innerHTML = `<i class="fa-solid fa-circle-info text-emerald-400 text-sm"></i> <span>${message}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3500);
+    }
+
+    // Set default pickup date in hero
+    window.addEventListener('DOMContentLoaded', () => {
+      const heroDate = document.getElementById('heroDateInput');
+      if (heroDate) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        heroDate.value = tomorrow.toISOString().split('T')[0];
+      }
+      renderPackages('all');
+    });
+  </script>
+</body>
+</html>
