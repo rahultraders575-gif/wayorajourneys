@@ -222,6 +222,109 @@ apiRouter.post('/contact', (req: Request, res: Response) => {
   });
 });
 
+/**
+ * Backend Live Geolocation, Distance & Price Calculator
+ * POST /api/route/estimate
+ */
+apiRouter.post('/route/estimate', (req: Request, res: Response) => {
+  try {
+    const {
+      origin = 'Hyderabad',
+      originCoords,
+      destination = 'Tirupati',
+      destinationCoords,
+      tripType = 'Round Trip',
+      vehicleClass = 'innova',
+    } = req.body;
+
+    // Approximate known coordinates
+    const cityMap: Record<string, { lat: number; lng: number }> = {
+      hyderabad: { lat: 17.385, lng: 78.4867 },
+      tirupati: { lat: 13.6288, lng: 79.4192 },
+      srisailam: { lat: 16.0737, lng: 78.8686 },
+      goa: { lat: 15.2993, lng: 74.124 },
+      araku: { lat: 18.3273, lng: 82.8775 },
+      shirdi: { lat: 19.7667, lng: 74.4764 },
+      ooty: { lat: 11.4102, lng: 76.695 },
+      vijayawada: { lat: 16.5062, lng: 80.648 },
+      bengaluru: { lat: 12.9716, lng: 77.5946 },
+      chennai: { lat: 13.0827, lng: 80.2707 },
+      mumbai: { lat: 19.076, lng: 72.8777 },
+      delhi: { lat: 28.6139, lng: 77.209 },
+      airport: { lat: 17.2403, lng: 78.4294 },
+    };
+
+    const findCoords = (name: string, custom?: { lat: number; lng: number }) => {
+      if (custom && typeof custom.lat === 'number' && typeof custom.lng === 'number') {
+        return custom;
+      }
+      const lower = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const [key, c] of Object.entries(cityMap)) {
+        if (lower.includes(key) || key.includes(lower)) return c;
+      }
+      return cityMap.hyderabad;
+    };
+
+    const c1 = findCoords(origin, originCoords);
+    const c2 = findCoords(destination, destinationCoords);
+
+    // Haversine with highway road factor
+    const R = 6371;
+    const dLat = ((c2.lat - c1.lat) * Math.PI) / 180;
+    const dLng = ((c2.lng - c1.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((c1.lat * Math.PI) / 180) *
+        Math.cos((c2.lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const crowFlies = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const oneWayKm = Math.max(35, Math.round(crowFlies * 1.28));
+
+    const isRound = tripType === 'Round Trip' || tripType === 'ROUND_TRIP';
+    const totalKm = isRound ? oneWayKm * 2 : oneWayKm;
+    const durationHours = (oneWayKm / 55).toFixed(1);
+
+    const rates: Record<string, { rate: number; name: string; driverPerDay: number }> = {
+      sedan: { rate: 13, name: 'Executive Sedan', driverPerDay: 400 },
+      innova: { rate: 19, name: 'Innova Crysta', driverPerDay: 500 },
+      suv: { rate: 28, name: 'Toyota Fortuner VIP', driverPerDay: 600 },
+      tempo: { rate: 26, name: 'Tempo Traveller 12-Seater', driverPerDay: 700 },
+      ev: { rate: 14, name: 'Urban Green EV', driverPerDay: 400 },
+    };
+
+    const selectedRate = rates[vehicleClass] || rates.innova;
+    const driverDays = Math.max(1, isRound ? Math.ceil(totalKm / 450) : 1);
+    const driverTotal = selectedRate.driverPerDay * driverDays;
+    const estimatedTotal = Math.round(totalKm * selectedRate.rate + driverTotal);
+    const advance25 = Math.round(estimatedTotal * 0.25);
+
+    return res.status(200).json({
+      success: true,
+      origin,
+      destination,
+      tripType,
+      isGpsAccurate: Boolean(originCoords),
+      distanceKm: totalKm,
+      oneWayKm,
+      durationHours: `${durationHours} hrs`,
+      vehicleClass: selectedRate.name,
+      ratePerKm: selectedRate.rate,
+      driverAllowance: driverTotal,
+      estimatedTotal,
+      advance25,
+      breakdown: {
+        baseDistanceCost: totalKm * selectedRate.rate,
+        driverAllowance: driverTotal,
+        gstIncluded: '5% GST Included',
+        tollTaxes: 'Fastag Tolls Included',
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ================= 1. OTP SERVICE ENDPOINTS =================
 
 /**

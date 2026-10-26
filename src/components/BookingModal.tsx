@@ -8,11 +8,13 @@ import {
   MapPin, Calendar, Clock, Car, User, Phone, Sparkles, RefreshCw, CheckCircle2 
 } from 'lucide-react';
 
+import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+
 export const BookingModal: React.FC = () => {
   const { 
     isBookingModalOpen, closeBookingModal, modalDefaultTour, 
     vehicles, addBooking, currentRider, loginRider, openAuthModal,
-    userLocation, isLocating, detectUserLocation 
+    userLocation, userCoords, isLocating, detectUserLocation 
   } = useCms();
 
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -67,19 +69,15 @@ export const BookingModal: React.FC = () => {
 
   const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId) || vehicles[0];
 
-  // Estimation calculation
-  const estimatedKm = destination.toLowerCase().includes('srisailam')
-    ? 450
-    : destination.toLowerCase().includes('tirupati')
-    ? 1120
-    : destination.toLowerCase().includes('goa')
-    ? 1350
-    : destination.toLowerCase().includes('araku')
-    ? 1240
-    : destination.toLowerCase().includes('airport')
-    ? 90
-    : 600;
+  // Dynamic route distance & price calculation from real live location
+  const routeCalc = calculateTripRouteAndPrice({
+    originName: pickup || 'Hyderabad',
+    originCoords: userCoords,
+    destinationName: destination || 'Tirupati',
+    tripType,
+  });
 
+  const estimatedKm = routeCalc.distanceKm;
   const baseFare = Math.round(estimatedKm * (selectedVehicle?.ratePerKm || 15));
   const driverAllowance = selectedVehicle?.driverAllowancePerDay || 400;
   const totalWithDriver = baseFare + driverAllowance;
@@ -387,17 +385,30 @@ export const BookingModal: React.FC = () => {
               </div>
 
               {/* LIVE FARE PREVIEW CARD */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-red-50/60 via-slate-50 to-emerald-50/60 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-slate-500 block">Estimated Distance & Tariff</span>
-                  <span className="text-xs font-bold text-slate-900">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-md bg-red-600 text-white">
+                      Live GPS
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      Est. {routeCalc.durationFormatted}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-900 block">
                     ~{estimatedKm} km · {selectedVehicle.name}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-medium">
+                    {tripType === 'ONE_WAY' ? 'One-Way Tariff' : 'Round-Trip All Inclusive'}
                   </span>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-emerald-700 font-bold block">Pay 25% to confirm</span>
                   <span className="text-base font-black text-slate-900">
                     ₹{totalWithDriver.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-[9px] text-slate-500 block">
+                    Advance: ₹{advanceAmount.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>

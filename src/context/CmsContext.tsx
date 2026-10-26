@@ -43,6 +43,8 @@ interface CmsContextType {
   // Auto Geolocation Detect
   userLocation: string;
   setUserLocation: (loc: string) => void;
+  userCoords: { lat: number; lng: number } | null;
+  setUserCoords: (coords: { lat: number; lng: number } | null) => void;
   isLocating: boolean;
   detectUserLocation: (userInitiated?: boolean) => Promise<string | null>;
 
@@ -148,6 +150,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return 'Banjara Hills, Hyderabad';
     }
   });
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
   // Dedicated Booking Page Search Details
@@ -385,6 +388,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
 
           setUserLocation(detected);
+          setUserCoords({ lat, lng });
           setIsLocating(false);
           showToast(`📍 Live location detected: ${detected}`, 'success');
           resolve(detected);
@@ -713,6 +717,8 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         navigateToBooking,
         userLocation,
         setUserLocation,
+        userCoords,
+        setUserCoords,
         isLocating,
         detectUserLocation,
         packages,

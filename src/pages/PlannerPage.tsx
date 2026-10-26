@@ -28,10 +28,12 @@ const DISTANCE_MATRIX: Record<string, number> = {
   chennai: 1280,
 };
 
-export const PlannerPage: React.FC = () => {
-  const { vehicles, openBookingModal } = useCms();
+import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
 
-  const [pickupCity, setPickupCity] = useState('Hyderabad');
+export const PlannerPage: React.FC = () => {
+  const { vehicles, openBookingModal, userLocation, userCoords, isLocating, detectUserLocation } = useCms();
+
+  const [pickupCity, setPickupCity] = useState(userLocation || 'Hyderabad');
   const [destination, setDestination] = useState('Tirupati');
   const [tripFormat, setTripFormat] = useState<'round' | 'oneway'>('round');
   const [selectedVehicleId, setSelectedVehicleId] = useState('car-sedan');
@@ -44,17 +46,16 @@ export const PlannerPage: React.FC = () => {
 
   const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId) || vehicles[0];
 
-  // Calculate distance
-  const cleanDest = destination.trim().toLowerCase();
-  let matchedDistance = 600;
-  for (const [key, dist] of Object.entries(DISTANCE_MATRIX)) {
-    if (cleanDest.includes(key)) {
-      matchedDistance = dist;
-      break;
-    }
-  }
+  // Dynamic live calculation engine
+  const routeCalc = calculateTripRouteAndPrice({
+    originName: pickupCity,
+    originCoords: userCoords,
+    destinationName: destination,
+    tripType: tripFormat === 'oneway' ? 'One-Way Drop' : 'Round Trip',
+    driverDays: tripDays,
+  });
 
-  const finalKm = tripFormat === 'oneway' ? Math.round(matchedDistance / 2) : matchedDistance;
+  const finalKm = routeCalc.distanceKm;
   const minimumKmForDays = tripDays * (selectedVehicle?.minimumKmPerDay || 300);
   const billableKm = Math.max(finalKm, minimumKmForDays);
 
@@ -143,9 +144,21 @@ export const PlannerPage: React.FC = () => {
             {/* Pickup and Destination */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Pickup City / Address
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-slate-700">
+                    Pickup City / Address
+                  </label>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const loc = await detectUserLocation(true);
+                      if (loc) setPickupCity(loc);
+                    }}
+                    className="text-[10px] font-bold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-full border border-red-100 shadow-2xs"
+                  >
+                    <span>{isLocating ? 'Detecting GPS...' : '📍 Use Live GPS'}</span>
+                  </button>
+                </div>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-red-600 absolute left-3 top-3" />
                   <input

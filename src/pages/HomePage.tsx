@@ -12,10 +12,12 @@ import {
   UserCheck, User, Menu, ChevronUp, Shield, X, Luggage, Plane, Hotel, Home, BookOpen
 } from 'lucide-react';
 
+import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+
 export const HomePage: React.FC = () => {
   const {
     packages, vehicles, openBookingModal, setActivePage, activePage,
-    settings, themeMode, userLocation, isLocating, detectUserLocation,
+    settings, themeMode, userLocation, userCoords, isLocating, detectUserLocation,
     currentRider, openAuthModal, currentCaptain, navigateToBooking
   } = useCms();
 
@@ -74,6 +76,27 @@ export const HomePage: React.FC = () => {
       setFromAddress('GPS Verified · Doorstep Pickup');
     }
   }, [userLocation]);
+
+  // Real-time automatic route & price calculation
+  const [routeCalc, setRouteCalc] = useState(() =>
+    calculateTripRouteAndPrice({
+      originName: fromCity,
+      originCoords: userCoords,
+      destinationName: toCity,
+      tripType: tripMode,
+    })
+  );
+
+  // Recalculate whenever live location, pickup city, destination city, or trip mode changes
+  useEffect(() => {
+    const calc = calculateTripRouteAndPrice({
+      originName: fromCity,
+      originCoords: userCoords,
+      destinationName: toCity,
+      tripType: tripMode,
+    });
+    setRouteCalc(calc);
+  }, [fromCity, toCity, tripMode, userCoords]);
 
   const handleGetLiveLocation = async () => {
     const loc = await detectUserLocation(true);
@@ -739,6 +762,59 @@ export const HomePage: React.FC = () => {
                       </button>
                     </div>
 
+                  </div>
+
+                  {/* Dynamic Live Distance & Auto Calculated Fare Preview Bar */}
+                  <div className="mt-4 pt-4 border-t border-neutral-200/80 flex flex-wrap items-center justify-between gap-3 text-xs bg-gradient-to-r from-red-50/70 via-white to-emerald-50/70 p-3.5 rounded-2xl border border-red-100/60 shadow-xs">
+                    <div className="flex items-center flex-wrap gap-2.5">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white font-extrabold text-[11px] shadow-xs">
+                        <Navigation className="w-3 h-3" />
+                        <span>LIVE RADAR</span>
+                      </span>
+                      <div className="flex items-center gap-1.5 text-neutral-800 font-bold text-xs">
+                        <span className="text-neutral-500 font-normal">Route:</span>
+                        <span className="text-red-950 truncate max-w-[140px] sm:max-w-[200px]">
+                          {fromCity.split(',')[0]}
+                        </span>
+                        <span className="text-red-500">➔</span>
+                        <span className="text-red-950 truncate max-w-[140px] sm:max-w-[200px]">
+                          {toCity.split(',')[0]}
+                        </span>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                        <Compass className="w-3 h-3 text-red-500" />
+                        <span>{routeCalc.distanceKm} km</span>
+                        <span className="text-neutral-400 font-normal">({tripMode === 'One-Way Drop' ? 'One-Way' : 'Round Trip'})</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                        <Clock className="w-3 h-3 text-amber-500" />
+                        <span>Est. {routeCalc.durationFormatted}</span>
+                      </span>
+                    </div>
+
+                    {/* Auto-Calculated Price for Selected Cab */}
+                    <div className="flex items-center gap-3 ml-auto">
+                      <div className="text-right">
+                        <div className="text-[10px] text-neutral-500 font-semibold uppercase tracking-wider flex items-center justify-end gap-1">
+                          <span>Auto Fare ({selectedCab.name.split(' ')[0]})</span>
+                          <span className="text-emerald-600 font-bold">● Fixed</span>
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-red-600 tracking-tight">
+                          ₹{(
+                            routeCalc.rates[selectedCab.id as keyof typeof routeCalc.rates]?.totalFare ||
+                            Math.round(routeCalc.distanceKm * parseInt(selectedCab.rate.replace(/\D/g, '') || '15'))
+                          ).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => openBookingModal(`${selectedCab.name} · ${fromCity} to ${toCity}`)}
+                        className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1"
+                      >
+                        <span>Lock Fare</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
 
                 </form>
