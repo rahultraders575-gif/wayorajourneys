@@ -145,6 +145,14 @@ export const BackendConnectionIndicator: React.FC = () => {
                       <span className="block text-[9px] text-emerald-600 font-semibold">Active</span>
                     </div>
                   </div>
+
+                  <div className="p-2 rounded-xl bg-emerald-50/50 border border-emerald-200 flex items-center gap-2 shadow-xs col-span-2">
+                    <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                    <div>
+                      <span className="block font-bold text-slate-800 text-[10px]">Supabase Database</span>
+                      <span className="block text-[9px] text-emerald-600 font-semibold">Live & Connected (Seoul ap-northeast-2)</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
