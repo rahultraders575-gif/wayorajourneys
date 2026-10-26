@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { 
   MapPin, Search, Check, X, Navigation, Compass, 
   ExternalLink, Sparkles, RefreshCw, Layers, Link as LinkIcon
@@ -78,38 +79,43 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
 
   // Initialize Leaflet map instance once the modal DOM renders
   useEffect(() => {
-    if (!isOpen || !mapContainerRef.current) return;
+    if (!isOpen) return;
 
-    // Small delay to ensure container dimensions are calculated
-    const timer = setTimeout(() => {
-      if (!mapContainerRef.current) return;
+    let map: L.Map | null = null;
+    let timer: any = null;
 
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+    const setupMap = () => {
+      const container = mapContainerRef.current;
+      if (!container) return;
+
+      // Clean up previous instance or leaflet IDs to prevent map container errors
+      if ((container as any)._leaflet_id) {
+        (container as any)._leaflet_id = null;
       }
+      container.innerHTML = '';
 
-      const map = L.map(mapContainerRef.current, {
-        center: [currentCoords.lat, currentCoords.lng],
-        zoom: 12,
-        zoomControl: false,
+      const lat = currentCoords.lat || initialLat || 13.6288;
+      const lng = currentCoords.lng || initialLng || 79.4192;
+
+      map = L.map(container, {
+        center: [lat, lng],
+        zoom: 13,
+        zoomControl: true,
       });
       mapInstanceRef.current = map;
 
-      // Clean OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Direct OpenStreetMap high-speed tile layer
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map);
 
-      L.control.zoom({ position: 'topright' }).addTo(map);
-
       // Custom Red Chauffeur Pin Icon
       const pinHtml = `
-        <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
           <span style="position: absolute; width: 38px; height: 38px; background-color: rgba(225, 29, 72, 0.35); border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-          <div style="position: relative; width: 30px; height: 30px; background: #E11D48; border: 2.5px solid #FFFFFF; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 16px rgba(225,29,72,0.5); display: flex; align-items: center; justify-content: center;">
-            <div style="width: 8px; height: 8px; background: white; border-radius: 50%; transform: rotate(45deg);"></div>
+          <div style="position: relative; width: 32px; height: 32px; background: #E11D48; border: 2.5px solid #FFFFFF; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 16px rgba(225,29,72,0.5); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 10px; height: 10px; background: white; border-radius: 50%; transform: rotate(45deg);"></div>
           </div>
         </div>
       `;
@@ -117,11 +123,11 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
       const customIcon = L.divIcon({
         className: 'custom-wayora-pin',
         html: pinHtml,
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
+        iconSize: [42, 42],
+        iconAnchor: [21, 42],
       });
 
-      const marker = L.marker([currentCoords.lat, currentCoords.lng], {
+      const marker = L.marker([lat, lng], {
         icon: customIcon,
         draggable: true,
       }).addTo(map);
@@ -141,13 +147,18 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
         updateAddressForCoords(pos.lat, pos.lng);
       });
 
-      map.invalidateSize();
-    }, 150);
+      // Multiple size invalidation triggers to guarantee full rendering inside modal
+      setTimeout(() => map?.invalidateSize(), 150);
+      setTimeout(() => map?.invalidateSize(), 400);
+      setTimeout(() => map?.invalidateSize(), 800);
+    };
+
+    timer = setTimeout(setupMap, 100);
 
     return () => {
-      clearTimeout(timer);
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+      if (timer) clearTimeout(timer);
+      if (map) {
+        map.remove();
         mapInstanceRef.current = null;
       }
     };
@@ -267,7 +278,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -320,12 +331,16 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           )}
         </div>
 
-        {/* Leaflet Interactive Map Viewport */}
-        <div className="relative flex-1 w-full min-h-[380px] sm:min-h-[440px] bg-slate-100">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        {/* Leaflet Interactive Map Viewport with guaranteed height & z-index */}
+        <div className="relative w-full h-[420px] sm:h-[480px] bg-slate-100 overflow-hidden">
+          <div 
+            ref={mapContainerRef} 
+            className="w-full h-full" 
+            style={{ width: '100%', height: '100%', minHeight: '420px', zIndex: 1 }}
+          />
 
           {/* Map Overlay Instruction Banner */}
-          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+          <div className="absolute top-3 left-3 z-[400] pointer-events-none">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/85 backdrop-blur-sm text-white text-[11px] font-bold shadow-lg">
               <Compass className="w-3.5 h-3.5 text-red-400" />
               <span>Click or drag pin to exact drop point</span>
@@ -333,7 +348,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           </div>
 
           {/* Coordinates readout badge */}
-          <div className="absolute top-3 right-12 z-10 pointer-events-none">
+          <div className="absolute top-3 right-14 z-[400] pointer-events-none">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-mono font-bold shadow-sm border border-slate-200">
               <span>{currentCoords.lat.toFixed(5)}° N, {currentCoords.lng.toFixed(5)}° E</span>
             </span>
