@@ -824,46 +824,38 @@ export const HomePage: React.FC = () => {
 
                       {/* Map Autocomplete Suggestions Dropdown with Nearby Airport & Terminals */}
                       {showDestSuggestions && (
-                        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 sm:p-3 z-40 animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto">
+                        <div className="absolute left-0 sm:-left-4 md:-left-8 w-[calc(100vw-2.5rem)] sm:w-[500px] md:w-[560px] max-w-[94vw] top-full mt-2 bg-white rounded-3xl shadow-2xl border border-slate-200/90 p-3.5 sm:p-4 z-50 animate-in fade-in zoom-in-95 max-h-[480px] overflow-y-auto custom-scroll">
                           
                           {/* NEARBY AIRPORT & TERMINALS (DETECTED FROM USER LOCATION) */}
-                          <div className="mb-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-red-50/70 via-white to-slate-50/80 border border-red-100 shadow-2xs">
-                            {/* Header with live location badge & Airport Switchers */}
-                            <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-red-100/70">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="p-1 rounded-md bg-red-600 text-white shrink-0">
-                                  <Plane className="w-3 h-3" />
+                          <div className="mb-3.5 p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50/70 via-white to-slate-50/90 border border-red-100 shadow-2xs">
+                            
+                            {/* Row 1: Badges & Airport Switcher Tabs */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-red-100/80">
+                              <div className="flex items-center gap-2">
+                                <span className="p-1.5 rounded-lg bg-red-600 text-white shadow-xs shrink-0">
+                                  <Plane className="w-3.5 h-3.5" />
                                 </span>
-                                <div className="min-w-0">
-                                  <div className="text-[10px] font-black uppercase tracking-wider text-red-950 flex items-center gap-1.5">
-                                    <span>NEARBY AIRPORT & TERMINALS</span>
-                                    <span className="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.2 rounded-full uppercase">
-                                      GPS Verified
-                                    </span>
-                                  </div>
-                                  <div className="text-xs font-black text-neutral-900 truncate">
-                                    {currentDisplayAirport.name}{' '}
-                                    <span className="text-red-600 font-black">[{currentDisplayAirport.code}]</span>
-                                    {airportDistanceKm && (
-                                      <span className="text-[10px] font-normal text-neutral-500 ml-1.5">
-                                        · ~{airportDistanceKm} km from pickup
-                                      </span>
-                                    )}
-                                  </div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-900">
+                                    NEARBY AIRPORT & TERMINALS
+                                  </span>
+                                  <span className="text-[9px] font-extrabold text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase">
+                                    GPS Verified
+                                  </span>
                                 </div>
                               </div>
 
-                              {/* Quick Airport Switcher Tabs */}
-                              <div className="flex items-center gap-1 shrink-0 overflow-x-auto max-w-[130px] sm:max-w-none">
+                              {/* Airport Switcher Tabs */}
+                              <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200/90 shadow-2xs shrink-0">
                                 {MAJOR_AIRPORTS.slice(0, 5).map((a) => (
                                   <button
                                     key={a.code}
                                     type="button"
                                     onClick={() => setActiveAirportCode(a.code)}
-                                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all cursor-pointer ${
+                                    className={`px-2 py-1 rounded-md text-[10px] font-black tracking-wide transition-all cursor-pointer ${
                                       currentDisplayAirport.code === a.code
-                                        ? 'bg-red-600 text-white shadow-2xs'
-                                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                        ? 'bg-red-600 text-white shadow-xs'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                                     }`}
                                   >
                                     {a.code}
@@ -872,28 +864,41 @@ export const HomePage: React.FC = () => {
                               </div>
                             </div>
 
+                            {/* Row 2: Selected Airport Name & Distance */}
+                            <div className="pt-2 pb-1.5 flex items-center justify-between gap-2 flex-wrap">
+                              <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                                <span>{currentDisplayAirport.name}</span>
+                                <span className="text-red-600 font-black">[{currentDisplayAirport.code}]</span>
+                              </div>
+                              {airportDistanceKm && (
+                                <span className="text-[10px] font-bold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md">
+                                  📍 ~{airportDistanceKm} km from pickup
+                                </span>
+                              )}
+                            </div>
+
                             {/* Clickable Terminal Chips Grid */}
-                            <div className="space-y-1.5">
-                              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-0.5">
-                                Select Terminal / Gates:
+                            <div className="space-y-1.5 mt-1.5">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-0.5">
+                                Select Departure / Arrival Terminal:
                               </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {currentDisplayAirport.terminals.map((term) => (
                                   <button
                                     key={term.id}
                                     type="button"
                                     onClick={() => handleSelectAirportTerminal(currentDisplayAirport, term)}
-                                    className="text-left p-2 rounded-lg bg-white hover:bg-red-50/80 border border-slate-200/90 hover:border-red-300 transition-all flex flex-col justify-between group/term cursor-pointer shadow-2xs"
+                                    className="text-left p-2.5 rounded-xl bg-white hover:bg-red-50/70 border border-slate-200/90 hover:border-red-300 transition-all flex flex-col justify-between group/term cursor-pointer shadow-xs hover:shadow-sm"
                                   >
-                                    <div className="flex items-center justify-between gap-1 w-full">
-                                      <span className="text-[11px] font-bold text-slate-900 group-hover/term:text-red-700 truncate">
+                                    <div className="flex items-center justify-between gap-1.5 w-full">
+                                      <span className="text-xs font-bold text-slate-900 group-hover/term:text-red-700 truncate">
                                         {term.name}
                                       </span>
-                                      <span className="text-[8px] font-semibold px-1 py-0.2 rounded bg-slate-100 text-slate-600 group-hover/term:bg-red-100 group-hover/term:text-red-700 shrink-0">
+                                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 group-hover/term:bg-red-100 group-hover/term:text-red-700 shrink-0 whitespace-nowrap">
                                         {term.airlines || 'Flights'}
                                       </span>
                                     </div>
-                                    <div className="text-[10px] text-slate-500 group-hover/term:text-slate-700 line-clamp-1 mt-0.5">
+                                    <div className="text-[11px] text-slate-500 group-hover/term:text-slate-700 mt-1 line-clamp-2">
                                       {term.details}
                                     </div>
                                   </button>
