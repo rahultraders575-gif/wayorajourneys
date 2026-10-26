@@ -266,11 +266,10 @@ export const BookingPage: React.FC = () => {
             <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PICK-UP DATE</span>
               <input
-                type="text"
-                value={pickupDate}
+                type="date"
+                value={pickupDate.includes('-') ? pickupDate : new Date().toISOString().split('T')[0]}
                 onChange={(e) => setPickupDate(e.target.value)}
-                placeholder="Fri, 16 Oct 2026"
-                className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none truncate mt-0.5"
+                className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer mt-0.5"
               />
             </div>
 
@@ -278,11 +277,10 @@ export const BookingPage: React.FC = () => {
             <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PICK-UP TIME</span>
               <input
-                type="text"
-                value={pickupTime}
+                type="time"
+                value={pickupTime.includes(':') && pickupTime.length <= 5 ? pickupTime : '06:00'}
                 onChange={(e) => setPickupTime(e.target.value)}
-                placeholder="03:00 AM"
-                className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none truncate mt-0.5"
+                className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none cursor-pointer mt-0.5"
               />
             </div>
 

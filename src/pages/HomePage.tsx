@@ -678,60 +678,117 @@ export const HomePage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
 
                     {/* Tile 4: PICKUP DATE & TIME */}
-                    <div className="lg:col-span-3 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors">
+                    <div className="lg:col-span-3 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative group">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-neutral-400" />
-                          PICKUP DATE
+                          <Calendar className="w-3 h-3 text-red-500" />
+                          PICKUP DATE & TIME
                         </span>
-                        <Clock className="w-3.5 h-3.5 text-neutral-400" />
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const today = new Date();
+                              setDepartureDate(today.toISOString().split('T')[0]);
+                              setDepartureTime('06:00');
+                            }}
+                            className="text-[9px] font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                          >
+                            Today
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const tmrw = new Date();
+                              tmrw.setDate(tmrw.getDate() + 1);
+                              setDepartureDate(tmrw.toISOString().split('T')[0]);
+                              setDepartureTime('06:00');
+                            }}
+                            className="text-[9px] font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                          >
+                            Tomorrow
+                          </button>
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        value={departureDate}
-                        onChange={(e) => setDepartureDate(e.target.value)}
-                        placeholder="Tomorrow, 24 Oct"
-                        className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none"
-                      />
-                      <input
-                        type="text"
-                        value={departureTime}
-                        onChange={(e) => setDepartureTime(e.target.value)}
-                        placeholder="06:00 AM · Early Pickup"
-                        className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none mt-0.5"
-                      />
+
+                      {/* Interactive HTML5 Date Input */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          required
+                          value={departureDate.includes('-') ? departureDate : new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                          onChange={(e) => setDepartureDate(e.target.value)}
+                          className="w-full bg-white sm:bg-transparent border sm:border-0 border-neutral-200 rounded-lg px-2 sm:px-0 py-1 sm:py-0 text-sm sm:text-base font-bold text-neutral-900 focus:outline-none cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Interactive HTML5 Time Input */}
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        <input
+                          type="time"
+                          value={departureTime.includes(':') && departureTime.length <= 5 ? departureTime : '06:00'}
+                          onChange={(e) => setDepartureTime(e.target.value)}
+                          className="bg-transparent text-xs font-semibold text-neutral-600 focus:outline-none cursor-pointer"
+                        />
+                        <span className="text-[10px] text-neutral-400">· Early Morning Chauffeur</span>
+                      </div>
                     </div>
 
                     {/* Tile 5: RETURN DATE & TIME */}
-                    <div className={`lg:col-span-3 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors ${tripMode === 'One-Way Drop' ? 'bg-neutral-100/60 opacity-60' : 'bg-[#F8FAFC] hover:bg-neutral-100/70'
-                      }`}>
+                    <div className={`lg:col-span-3 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative ${
+                      tripMode === 'One-Way Drop' ? 'bg-neutral-100/60 opacity-60' : 'bg-[#F8FAFC] hover:bg-neutral-100/70'
+                    }`}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-neutral-400" />
-                          RETURN DATE
+                          RETURN DATE & TIME
                         </span>
-                        {tripMode === 'One-Way Drop' && (
+                        {tripMode === 'One-Way Drop' ? (
                           <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                             One-Way
                           </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const ret = new Date();
+                              ret.setDate(ret.getDate() + 3);
+                              setReturnDate(ret.toISOString().split('T')[0]);
+                              setReturnTime('21:00');
+                            }}
+                            className="text-[9px] font-bold text-slate-600 bg-slate-200/70 hover:bg-slate-200 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                          >
+                            +3 Days
+                          </button>
                         )}
                       </div>
-                      <input
-                        type="text"
-                        disabled={tripMode === 'One-Way Drop'}
-                        value={tripMode === 'One-Way Drop' ? 'One-Way Drop' : returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        placeholder="27 Oct'26"
-                        className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none disabled:cursor-not-allowed"
-                      />
-                      <input
-                        type="text"
-                        disabled={tripMode === 'One-Way Drop'}
-                        value={tripMode === 'One-Way Drop' ? 'No Return Required' : returnTime}
-                        onChange={(e) => setReturnTime(e.target.value)}
-                        placeholder="09:00 PM · Evening Return"
-                        className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none disabled:cursor-not-allowed mt-0.5"
-                      />
+
+                      {/* Interactive HTML5 Return Date Input */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type={tripMode === 'One-Way Drop' ? 'text' : 'date'}
+                          disabled={tripMode === 'One-Way Drop'}
+                          value={tripMode === 'One-Way Drop' ? 'One-Way Drop' : (returnDate.includes('-') ? returnDate : new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0])}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="w-full bg-white sm:bg-transparent border sm:border-0 border-neutral-200 rounded-lg px-2 sm:px-0 py-1 sm:py-0 text-sm sm:text-base font-bold text-neutral-900 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Interactive HTML5 Return Time Input */}
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        <input
+                          type={tripMode === 'One-Way Drop' ? 'text' : 'time'}
+                          disabled={tripMode === 'One-Way Drop'}
+                          value={tripMode === 'One-Way Drop' ? 'No Return Required' : (returnTime.includes(':') && returnTime.length <= 5 ? returnTime : '21:00')}
+                          onChange={(e) => setReturnTime(e.target.value)}
+                          className="bg-transparent text-xs font-semibold text-neutral-600 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                        />
+                        {tripMode !== 'One-Way Drop' && (
+                          <span className="text-[10px] text-neutral-400">· Evening Drop</span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Tile 6: FARE INCLUSIONS */}
