@@ -26,7 +26,6 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built assets and server from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/server.ts ./server.ts
 
 EXPOSE 3000
