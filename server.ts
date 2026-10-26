@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { apiRouter } from './src/server/apiRouter';
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // ================= API ROUTES =================
+app.use('/api', apiRouter);
 
 /**
  * Health check endpoint for container orchestrators (Cloud Run, Kubernetes, Render, AWS ECS)

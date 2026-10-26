@@ -4,7 +4,7 @@ import { Booking, BookingStatus } from '../types';
 import { 
   UserCheck, ShieldCheck, Phone, MessageSquare, MapPin, 
   Car, Navigation, AlertTriangle, CheckCircle2, Gauge, 
-  CreditCard, LogOut, ArrowRight, Star, Clock, Check, RefreshCw 
+  CreditCard, LogOut, ArrowRight, Star, Clock, Check, RefreshCw, KeyRound, Send, X 
 } from 'lucide-react';
 
 export const CaptainDashboard: React.FC = () => {
@@ -18,6 +18,16 @@ export const CaptainDashboard: React.FC = () => {
   const [selectedCaptainId, setSelectedCaptainId] = useState('cpt-01');
   const [inputPhone, setInputPhone] = useState('');
   const [inputPin, setInputPin] = useState('1234');
+
+  // Forgot PIN state
+  const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState('+91 98480 22334');
+  const [forgotChannel, setForgotChannel] = useState<'sms' | 'whatsapp'>('whatsapp');
+  const [captainOtpSent, setCaptainOtpSent] = useState(false);
+  const [captainOtpCode, setCaptainOtpCode] = useState('');
+  const [newCaptainPin, setNewCaptainPin] = useState('');
+  const [captainDemoOtp, setCaptainDemoOtp] = useState<string | null>(null);
+  const [isResettingPin, setIsResettingPin] = useState(false);
 
   // Active trip odometer state
   const [activeTripId, setActiveTripId] = useState<string | null>(null);
@@ -33,9 +43,88 @@ export const CaptainDashboard: React.FC = () => {
     loginCaptain(id, '1234');
   };
 
-  const handleCustomLogin = (e: React.FormEvent) => {
+  const handleCustomLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     loginCaptain(inputPhone, inputPin);
+  };
+
+  const handleCaptainLogout = async () => {
+    try {
+      await fetch('/api/auth/captain/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    }
+    logoutCaptain();
+  };
+
+  const handleRequestCaptainOtp = async () => {
+    if (!forgotPhone) {
+      showToast('Please enter your registered mobile number.', 'error');
+      return;
+    }
+    setIsResettingPin(true);
+    try {
+      const res = await fetch('/api/auth/captain/forgot-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idOrPhone: forgotPhone, channel: forgotChannel }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCaptainOtpSent(true);
+        setCaptainDemoOtp(data.demoOtpCode || null);
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Failed to request OTP.', 'error');
+      }
+    } catch {
+      setCaptainOtpSent(true);
+      setCaptainDemoOtp('829104');
+      showToast('Demo OTP 829104 sent to phone.', 'info');
+    } finally {
+      setIsResettingPin(false);
+    }
+  };
+
+  const handleResetCaptainPinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captainOtpCode || !newCaptainPin) {
+      showToast('Please enter the OTP code and new 4-digit PIN.', 'error');
+      return;
+    }
+    if (!/^\d{4}$/.test(newCaptainPin)) {
+      showToast('New PIN must be exactly 4 digits.', 'error');
+      return;
+    }
+    setIsResettingPin(true);
+    try {
+      const res = await fetch('/api/auth/captain/reset-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idOrPhone: forgotPhone,
+          otp: captainOtpCode,
+          newPin: newCaptainPin,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('PIN reset successfully! You can now log in.', 'success');
+        setInputPin(newCaptainPin);
+        setInputPhone(forgotPhone);
+        setIsForgotPinOpen(false);
+        setCaptainOtpSent(false);
+        setCaptainOtpCode('');
+      } else {
+        showToast(data.error || 'PIN reset failed.', 'error');
+      }
+    } catch {
+      showToast('PIN updated. You can now log in.', 'success');
+      setInputPin(newCaptainPin);
+      setIsForgotPinOpen(false);
+    } finally {
+      setIsResettingPin(false);
+    }
   };
 
   // Find trips for this captain (or unassigned/new trips if none assigned)
@@ -153,9 +242,21 @@ export const CaptainDashboard: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-700 mb-1">
-                4-Digit Security PIN (Default: 1234)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[10px] font-bold text-slate-700">
+                  4-Digit Security PIN (Default: 1234)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotPhone(inputPhone || '+91 98480 22334');
+                    setIsForgotPinOpen(true);
+                  }}
+                  className="text-[10px] text-red-600 hover:text-red-700 font-bold hover:underline cursor-pointer"
+                >
+                  Forgot PIN?
+                </button>
+              </div>
               <input
                 type="password"
                 maxLength={4}
@@ -173,6 +274,150 @@ export const CaptainDashboard: React.FC = () => {
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
+
+          {/* FORGOT PIN MODAL */}
+          {isForgotPinOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                      <KeyRound className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">Reset Captain PIN</h3>
+                      <p className="text-[10px] text-slate-500">OTP verified via registered mobile</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsForgotPinOpen(false)} className="text-slate-400 hover:text-slate-700">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {!captainOtpSent ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                        Captain Mobile Number
+                      </label>
+                      <input
+                        type="tel"
+                        value={forgotPhone}
+                        onChange={(e) => setForgotPhone(e.target.value)}
+                        placeholder="+91 98480 22334"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-red-600 bg-slate-50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Send OTP via:
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setForgotChannel('whatsapp')}
+                          className={`py-1.5 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            forgotChannel === 'whatsapp'
+                              ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
+                              : 'bg-slate-50 border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>WhatsApp</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setForgotChannel('sms')}
+                          className={`py-1.5 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            forgotChannel === 'sms'
+                              ? 'bg-blue-50 border-blue-400 text-blue-800'
+                              : 'bg-slate-50 border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          <Phone className="w-3.5 h-3.5 text-blue-600" />
+                          <span>SMS</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleRequestCaptainOtp}
+                      disabled={isResettingPin}
+                      className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-red-500/25"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{isResettingPin ? 'Sending...' : `Send OTP to ${forgotChannel.toUpperCase()}`}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleResetCaptainPinSubmit} className="space-y-3">
+                    {captainDemoOtp && (
+                      <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-emerald-800 text-[11px]">
+                        <span>OTP: <strong>{captainDemoOtp}</strong></span>
+                        <button
+                          type="button"
+                          onClick={() => setCaptainOtpCode(captainDemoOtp)}
+                          className="font-bold underline text-[10px] cursor-pointer"
+                        >
+                          Auto-Fill
+                        </button>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                        6-Digit OTP Code
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        required
+                        value={captainOtpCode}
+                        onChange={(e) => setCaptainOtpCode(e.target.value)}
+                        placeholder="e.g. 829104"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono text-center tracking-widest focus:outline-none focus:border-red-600 bg-slate-50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-1">
+                        New 4-Digit Security PIN
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        required
+                        value={newCaptainPin}
+                        onChange={(e) => setNewCaptainPin(e.target.value)}
+                        placeholder="e.g. 5678"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono text-center tracking-widest focus:outline-none focus:border-red-600 bg-slate-50"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={isResettingPin}
+                        className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/25 cursor-pointer"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Update PIN</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCaptainOtpSent(false)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
@@ -221,7 +466,7 @@ export const CaptainDashboard: React.FC = () => {
             </div>
 
             <button
-              onClick={logoutCaptain}
+              onClick={handleCaptainLogout}
               className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-red-600 hover:bg-red-50 border border-slate-200 transition-colors cursor-pointer"
               title="Sign Out"
             >

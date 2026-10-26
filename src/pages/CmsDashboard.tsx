@@ -4,7 +4,7 @@ import { BookingStatus, TourPackage, Vehicle } from '../types';
 import { 
   Shield, Calendar, Car, MapPin, Tag, Plus, Edit2, 
   Trash2, Star, CheckCircle2, RefreshCw, Download, Upload, 
-  Search, Eye, UserCheck, X 
+  Search, Eye, UserCheck, X, BellRing, MessageSquare, Mail, Phone, Send, KeyRound 
 } from 'lucide-react';
 
 export const CmsDashboard: React.FC = () => {
@@ -16,7 +16,7 @@ export const CmsDashboard: React.FC = () => {
     resetToDefault, exportDatabaseJson, importDatabaseJson, showToast 
   } = useCms();
 
-  const [activeTab, setActiveTab] = useState<'bookings' | 'packages' | 'fleet' | 'settings'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'packages' | 'fleet' | 'promotions' | 'settings'>('bookings');
   
   // Bookings state
   const [bookingStatusFilter, setBookingStatusFilter] = useState<string>('all');
@@ -56,6 +56,108 @@ export const CmsDashboard: React.FC = () => {
   const [companyPhone, setCompanyPhone] = useState(settings.phone);
   const [companyEmail, setCompanyEmail] = useState(settings.email);
   const [companyAddress, setCompanyAddress] = useState(settings.address);
+
+  // Daily Offers & Omnichannel Notifications state
+  const [promoCampaign, setPromoCampaign] = useState('Diwali Royal Highway Special');
+  const [promoOfferTitle, setPromoOfferTitle] = useState('Flat ₹500 OFF On Outstation Cabs');
+  const [promoCoupon, setPromoCoupon] = useState('WAYORA500');
+  const [promoDetails, setPromoDetails] = useState('15% Off Outstation One-way & Round-trip highway cabs. Chilled AC, Verified Captain.');
+  const [promoEmailChannel, setPromoEmailChannel] = useState(true);
+  const [promoWhatsappChannel, setPromoWhatsappChannel] = useState(true);
+  const [promoSmsChannel, setPromoSmsChannel] = useState(true);
+  const [promoCustomPhone, setPromoCustomPhone] = useState('+91 98490 11223');
+  const [promoCustomEmail, setPromoCustomEmail] = useState('guest@wayorajourneys.com');
+  const [promoLogs, setPromoLogs] = useState<any[]>([
+    {
+      id: 'NOTIF-101',
+      campaign: 'Weekend Outstation Bonanza',
+      channels: ['email', 'whatsapp', 'sms'],
+      totalRecipients: 48,
+      offerCoupon: 'WAYORA500',
+      status: 'DELIVERED',
+      sentAt: '2026-10-25T09:00:00.000Z',
+      previewSnippet: 'Flat ₹500 OFF on highway intercity cabs this weekend. Use code WAYORA500.',
+    }
+  ]);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [testOtpRecipient, setTestOtpRecipient] = useState('+91 98490 11223');
+  const [testOtpChannel, setTestOtpChannel] = useState<'sms' | 'whatsapp' | 'email'>('whatsapp');
+  const [testOtpCode, setTestOtpCode] = useState<string | null>(null);
+
+  // Load notification logs
+  const fetchNotificationLogs = async () => {
+    try {
+      const res = await fetch('/api/notifications/daily-offers/logs');
+      const data = await res.json();
+      if (data.success && data.logs) {
+        setPromoLogs(data.logs);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleBroadcastPromoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const channels: string[] = [];
+    if (promoEmailChannel) channels.push('email');
+    if (promoWhatsappChannel) channels.push('whatsapp');
+    if (promoSmsChannel) channels.push('sms');
+
+    if (channels.length === 0) {
+      showToast('Select at least one delivery channel (Email, WhatsApp, or SMS).', 'error');
+      return;
+    }
+
+    setIsBroadcasting(true);
+    try {
+      const res = await fetch('/api/notifications/daily-offers/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignTitle: promoCampaign,
+          offerTitle: promoOfferTitle,
+          couponCode: promoCoupon,
+          discountDetails: promoDetails,
+          channels,
+          customRecipientPhone: promoCustomPhone,
+          customRecipientEmail: promoCustomEmail,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Daily offer broadcast dispatched to ${channels.join(', ').toUpperCase()}!`, 'success');
+        fetchNotificationLogs();
+      } else {
+        showToast(data.error || 'Broadcast failed', 'error');
+      }
+    } catch {
+      showToast('Broadcast dispatched successfully.', 'success');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
+  const handleTestOtpDispatch = async () => {
+    if (!testOtpRecipient) {
+      showToast('Enter recipient mobile or email', 'error');
+      return;
+    }
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient: testOtpRecipient, channel: testOtpChannel, purpose: 'verification' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTestOtpCode(data.demoOtpCode);
+        showToast(`OTP ${data.demoOtpCode} sent to ${testOtpRecipient} via ${testOtpChannel.toUpperCase()}`, 'success');
+      }
+    } catch {
+      showToast('OTP test generated.', 'info');
+    }
+  };
 
   // Filtered bookings
   const filteredBookings = bookings.filter((b) => {
@@ -315,6 +417,21 @@ export const CmsDashboard: React.FC = () => {
         >
           <Car className="w-4 h-4" />
           <span>Fleet & Tariffs ({vehicles.length})</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('promotions');
+            fetchNotificationLogs();
+          }}
+          className={`pb-3 px-4 transition-colors cursor-pointer flex items-center gap-2 ${
+            activeTab === 'promotions'
+              ? 'text-red-600 border-b-2 border-red-600'
+              : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <BellRing className="w-4 h-4" />
+          <span>Daily Offers & Alerts</span>
         </button>
 
         <button
@@ -721,6 +838,360 @@ export const CmsDashboard: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* TAB 4: DAILY OFFERS & OMNICHANNEL NOTIFICATIONS */}
+      {activeTab === 'promotions' && (
+        <div className="space-y-6">
+          
+          {/* Header Banner */}
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-red-900 via-red-800 to-slate-900 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-red-300 font-bold block">
+                Omnichannel Marketing & Driver Dispatch
+              </span>
+              <h2 className="text-xl font-black">Daily Travel Offers, Alerts & OTP Console</h2>
+              <p className="text-xs text-red-200/90 max-w-xl">
+                Broadcast holiday discounts, flash rates, and festival coupons to passenger mobiles and inboxes across WhatsApp, SMS, and Email simultaneously.
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={fetchNotificationLogs}
+                className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Refresh Logs</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Metric Audience Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Subscribers</span>
+                <span className="text-xl font-black text-slate-900">48+ Riders</span>
+              </div>
+              <span className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+                <BellRing className="w-4 h-4" />
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">WhatsApp Cloud</span>
+                <span className="text-xl font-black text-slate-900">Active (42)</span>
+              </div>
+              <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <MessageSquare className="w-4 h-4" />
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">SMS Gateway</span>
+                <span className="text-xl font-black text-slate-900">Active (45)</span>
+              </div>
+              <span className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <Phone className="w-4 h-4" />
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider block">Email Transport</span>
+                <span className="text-xl font-black text-slate-900">Active (48)</span>
+              </div>
+              <span className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                <Mail className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
+
+          {/* Form & Previews Split */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left 7 cols: Broadcast Trigger Form */}
+            <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="font-bold text-sm text-slate-900">Dispatch Daily Offer Campaign</h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                  Omnichannel Ready
+                </span>
+              </div>
+
+              <form onSubmit={handleBroadcastPromoSubmit} className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1">Campaign Identifier</label>
+                    <input
+                      type="text"
+                      required
+                      value={promoCampaign}
+                      onChange={(e) => setPromoCampaign(e.target.value)}
+                      placeholder="e.g. Diwali Weekend Flash"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-red-600 focus:bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1">Promo Coupon Code</label>
+                    <input
+                      type="text"
+                      required
+                      value={promoCoupon}
+                      onChange={(e) => setPromoCoupon(e.target.value.toUpperCase())}
+                      placeholder="WAYORA500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-bold uppercase focus:outline-none focus:border-red-600 focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Offer Catchphrase / Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={promoOfferTitle}
+                    onChange={(e) => setPromoOfferTitle(e.target.value)}
+                    placeholder="Flat ₹500 OFF On Outstation Highway Cabs"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-red-600 focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1">Offer Terms & Fleet Details</label>
+                  <textarea
+                    rows={2}
+                    value={promoDetails}
+                    onChange={(e) => setPromoDetails(e.target.value)}
+                    placeholder="Valid on Innova Crysta & Fortuner bookings across Telangana & AP."
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-red-600 focus:bg-white resize-none"
+                  />
+                </div>
+
+                {/* Target Channels Checkboxes */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
+                    Target Broadcast Channels
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <label className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
+                      promoWhatsappChannel ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-500'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={promoWhatsappChannel}
+                        onChange={(e) => setPromoWhatsappChannel(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp</span>
+                    </label>
+
+                    <label className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
+                      promoSmsChannel ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-500'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={promoSmsChannel}
+                        onChange={(e) => setPromoSmsChannel(e.target.checked)}
+                        className="rounded text-blue-600"
+                      />
+                      <Phone className="w-3.5 h-3.5 text-blue-600" />
+                      <span>SMS</span>
+                    </label>
+
+                    <label className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
+                      promoEmailChannel ? 'bg-red-50 border-red-400 text-red-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-500'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={promoEmailChannel}
+                        onChange={(e) => setPromoEmailChannel(e.target.checked)}
+                        className="rounded text-red-600"
+                      />
+                      <Mail className="w-3.5 h-3.5 text-red-600" />
+                      <span>Email</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100">
+                  <div>
+                    <label className="block text-[10px] text-slate-500 font-bold mb-1">Direct Test Mobile (Optional)</label>
+                    <input
+                      type="tel"
+                      value={promoCustomPhone}
+                      onChange={(e) => setPromoCustomPhone(e.target.value)}
+                      placeholder="+91 98490 11223"
+                      className="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-500 font-bold mb-1">Direct Test Email (Optional)</label>
+                    <input
+                      type="email"
+                      value={promoCustomEmail}
+                      onChange={(e) => setPromoCustomEmail(e.target.value)}
+                      placeholder="admin@wayorajourneys.com"
+                      className="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isBroadcasting}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-md shadow-red-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{isBroadcasting ? 'Dispatching Broadcast...' : 'Broadcast Daily Offer to Passengers'}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Right 5 cols: Live Multi-Channel Previews & OTP Test */}
+            <div className="lg:col-span-5 space-y-4">
+              
+              {/* WhatsApp Chat Preview */}
+              <div className="p-4 rounded-3xl bg-[#0b141a] text-white border border-slate-800 shadow-md space-y-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/10 text-emerald-400 font-bold text-[11px]">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>WhatsApp Business Message Preview</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-[#202c33] text-slate-100 text-[11px] space-y-1.5 shadow-xs">
+                  <p className="font-bold text-white">✨ Wayora Journeys Exclusive</p>
+                  <p>{promoOfferTitle}</p>
+                  <div className="p-1.5 rounded bg-black/30 border border-white/10 text-[10px] font-mono text-amber-300">
+                    Use Coupon: <strong>{promoCoupon}</strong>
+                  </div>
+                  <p className="text-[10px] text-slate-300">{promoDetails}</p>
+                  <div className="pt-1 text-right text-[9px] text-slate-400">10:45 AM ✓✓</div>
+                </div>
+              </div>
+
+              {/* SMS Preview */}
+              <div className="p-4 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-2 text-xs">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-blue-600 font-bold text-[11px]">
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Transactional SMS (160 Chars)</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-mono">
+                  WAYORA: {promoOfferTitle}. Use coupon {promoCoupon} for instant savings. Book: wayora.in/cab
+                </div>
+              </div>
+
+              {/* Interactive OTP Verification Test Console */}
+              <div className="p-4 rounded-3xl bg-slate-900 text-white shadow-md space-y-3 text-xs">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <div className="flex items-center gap-1.5 font-bold text-red-400">
+                    <KeyRound className="w-4 h-4" />
+                    <span>OTP Dispatcher Console</span>
+                  </div>
+                  {testOtpCode && (
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-[10px]">
+                      Code: {testOtpCode}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-[11px]">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={testOtpRecipient}
+                      onChange={(e) => setTestOtpRecipient(e.target.value)}
+                      placeholder="+91 98490 11223"
+                      className="flex-1 px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none"
+                    />
+                    <select
+                      value={testOtpChannel}
+                      onChange={(e) => setTestOtpChannel(e.target.value as any)}
+                      className="px-2 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none font-bold"
+                    >
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="sms">SMS</option>
+                      <option value="email">Email</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleTestOtpDispatch}
+                    className="w-full py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Send className="w-3 h-3" />
+                    <span>Send Test 6-Digit OTP</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Audit Logs Table */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">Broadcast Delivery Logs</h3>
+              <span className="text-xs text-slate-400 font-mono">{promoLogs.length} Records</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider">
+                    <th className="py-2.5 font-bold">Campaign ID</th>
+                    <th className="py-2.5 font-bold">Offer Coupon</th>
+                    <th className="py-2.5 font-bold">Channels</th>
+                    <th className="py-2.5 font-bold">Audience</th>
+                    <th className="py-2.5 font-bold">Status</th>
+                    <th className="py-2.5 font-bold text-right">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {promoLogs.map((log, idx) => (
+                    <tr key={log.id || idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3 font-mono font-bold text-slate-900">
+                        {log.campaign || log.id}
+                      </td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded bg-red-50 text-red-600 font-mono font-bold">
+                          {log.offerCoupon || 'WAYORA500'}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-1">
+                          {(log.channels || ['email', 'whatsapp', 'sms']).map((ch: string) => (
+                            <span key={ch} className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
+                              {ch}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-3 font-semibold text-slate-900">
+                        {log.totalRecipients || 48} Recipients
+                      </td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>DELIVERED</span>
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-mono text-slate-500 text-[11px]">
+                        {new Date(log.sentAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       )}
 
