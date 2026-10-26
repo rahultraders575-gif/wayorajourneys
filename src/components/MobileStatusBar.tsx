@@ -7,7 +7,7 @@ export const MobileStatusBar: React.FC = () => {
 
   return (
     <div className="bg-slate-950 text-slate-300 border-b border-slate-800/60 select-none">
-      <div className="max-w-7xl xl:max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between text-[11px] sm:text-xs">
+      <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-6 py-1.5 flex items-center justify-between text-[11px] sm:text-xs">
         
         {/* Left: Minimal trust note */}
         <div className="flex items-center gap-2 truncate">

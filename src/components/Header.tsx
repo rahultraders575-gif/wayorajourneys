@@ -9,15 +9,15 @@ export const Header: React.FC = () => {
   } = useCms();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems: { id: PageId; label: string }[] = [
-    { id: 'home', label: 'Home' },
-    { id: 'booking', label: 'Car Booking' },
-    { id: 'fleet', label: 'Fleet & Rates' },
-    { id: 'packages', label: 'Tour Packages' },
-    { id: 'planner', label: 'Route Planner' },
-    { id: 'corporate', label: 'Corporate' },
-    { id: 'blog', label: 'Travel Guides' },
-    { id: 'about', label: 'About & Support' },
+  const navItems: { id: PageId; label: string; shortLabel: string }[] = [
+    { id: 'home', label: 'Home', shortLabel: 'Home' },
+    { id: 'booking', label: 'Car Booking', shortLabel: 'Booking' },
+    { id: 'fleet', label: 'Fleet & Rates', shortLabel: 'Fleet' },
+    { id: 'packages', label: 'Tour Packages', shortLabel: 'Packages' },
+    { id: 'planner', label: 'Route Planner', shortLabel: 'Planner' },
+    { id: 'corporate', label: 'Corporate', shortLabel: 'Corporate' },
+    { id: 'blog', label: 'Travel Guides', shortLabel: 'Guides' },
+    { id: 'about', label: 'About & Support', shortLabel: 'Support' },
   ];
 
   const handleNavClick = (id: PageId) => {
@@ -30,43 +30,44 @@ export const Header: React.FC = () => {
     <>
       {/* Top Universal Minimal & Premium Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 shadow-xs transition-colors">
-        <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-3 sm:gap-4 h-18 sm:h-20">
+        <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-6">
+          <div className="flex items-center justify-between gap-2.5 sm:gap-4 h-18 sm:h-20">
             
             {/* Zone 1: Official Wayora Journeys Brand Logo */}
             <button
               onClick={() => handleNavClick('home')}
-              className="flex items-center gap-2.5 sm:gap-3 group text-left cursor-pointer shrink-0"
+              className="flex items-center gap-2 sm:gap-2.5 group text-left cursor-pointer shrink-0"
               title="Wayora Journeys - Home"
             >
               <img
                 src="/images/wayora-logo-light.jpg"
                 alt="Wayora Journeys Brand Logo"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-xs border border-slate-200/80 bg-white p-0.5 group-hover:scale-105 transition-transform"
+                className="w-10 h-10 rounded-xl object-contain shadow-xs border border-slate-200/80 bg-white p-0.5 group-hover:scale-105 transition-transform"
               />
               <div className="flex flex-col">
-                <span className="text-slate-900 font-black text-lg sm:text-xl leading-tight tracking-tight">
+                <span className="text-slate-900 font-black text-base sm:text-lg 2xl:text-xl leading-tight tracking-tight">
                   Wayora<span className="text-red-600">Journeys</span>
                 </span>
-                <span className="text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-0.5">
+                <span className="hidden 2xl:block text-[9px] uppercase font-bold tracking-widest text-slate-500 mt-0.5">
                   Reliable Travel · Professional Service
                 </span>
               </div>
             </button>
 
-            {/* Zone 2: Minimal Universal Navigation Links */}
-            <nav className="hidden xl:flex items-center gap-2.5 xl:gap-3.5 2xl:gap-5 text-xs 2xl:text-sm font-semibold">
+            {/* Zone 2: Minimal Universal Navigation Links (Smart Adaptive Lengths) */}
+            <nav className="hidden xl:flex items-center gap-1.5 2xl:gap-3.5 text-xs 2xl:text-sm font-semibold">
               {navItems.map((item) => {
                 const isActive = activePage === item.id;
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer relative py-2 tracking-wide ${
+                    className={`whitespace-nowrap shrink-0 transition-colors cursor-pointer relative py-2 px-1.5 tracking-wide ${
                       isActive ? 'text-red-600 font-bold' : 'text-slate-600 hover:text-red-600'
                     }`}
                   >
-                    {item.label}
+                    <span className="hidden 2xl:inline">{item.label}</span>
+                    <span className="inline 2xl:hidden">{item.shortLabel}</span>
                     {isActive && (
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full animate-in fade-in" />
                     )}
@@ -91,7 +92,7 @@ export const Header: React.FC = () => {
               {/* Captain Cockpit Trigger */}
               <button
                 onClick={() => handleNavClick('captain')}
-                className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer ${
+                className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer shrink-0 ${
                   activePage === 'captain'
                     ? 'bg-red-50 text-red-700 border-red-300 shadow-xs'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600'
@@ -111,10 +112,10 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={openAuthModal}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs shrink-0"
                 title={currentRider ? `Signed in as ${currentRider.name}` : 'Rider Sign In'}
               >
-                <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black">
+                <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black shrink-0">
                   {currentRider ? currentRider.name.slice(0, 1) : <User className="w-3 h-3" />}
                 </div>
                 <span className="hidden sm:inline truncate max-w-[85px]">
@@ -122,7 +123,7 @@ export const Header: React.FC = () => {
                 </span>
               </button>
 
-              {/* Primary Book Ride Button */}
+              {/* Primary Book Ride Button (Shrink-proof, no edge cutoff) */}
               <button
                 onClick={() => {
                   if (activePage !== 'booking') {
@@ -133,9 +134,11 @@ export const Header: React.FC = () => {
                 }}
                 className="px-3.5 sm:px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 active:scale-95 rounded-full transition-all shadow-md shadow-red-600/25 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer"
               >
-                <Car className="w-3.5 h-3.5" />
-                <span>Book Chauffeur</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Car className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">
+                  {activePage === 'booking' ? 'Book Cab' : 'Book Chauffeur'}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
               </button>
 
               {/* Mobile Menu Toggle Button */}

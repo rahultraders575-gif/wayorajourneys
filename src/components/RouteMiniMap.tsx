@@ -1,10 +1,17 @@
-import React, { useState, useId, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { 
   MapPin, Navigation, Clock, ShieldCheck, Compass, 
   Layers, ZoomIn, ZoomOut, Car, Sparkles, Check,
-  AlertCircle, Fuel, Zap, Route
+  AlertCircle, Fuel, Zap, Route, RefreshCw
 } from 'lucide-react';
-import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+import { 
+  calculateTripRouteAndPrice, 
+  lookupCityCoords, 
+  CITY_COORDINATES, 
+  LatLng 
+} from '../utils/geoDistancePrice';
 
 export interface RouteOption {
   id: string;
@@ -23,6 +30,8 @@ export interface RouteOption {
 export interface RouteMiniMapProps {
   origin: string;
   destination: string;
+  originCoords?: LatLng | null;
+  destinationCoords?: LatLng | null;
   distanceKm?: number | string;
   duration?: string;
   bookingRef?: string;
@@ -36,7 +45,9 @@ export interface RouteMiniMapProps {
 
 export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
   origin = 'Mumbai',
-  destination = 'Goa',
+  destination = 'Srisailam',
+  originCoords,
+  destinationCoords,
   distanceKm,
   duration,
   bookingRef,
@@ -47,33 +58,34 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
   showControls = true,
   onSelectRoute,
 }) => {
-  const [zoomLevel, setZoomLevel] = useState<1 | 1.25 | 1.5>(1);
-  const [activeLayer, setActiveLayer] = useState<'traffic' | 'satellite' | 'standard'>('traffic');
-  const [showWaypoints, setShowWaypoints] = useState(true);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const routePolylineRef = useRef<L.Polyline | null>(null);
+  const routeGlowRef = useRef<L.Polyline | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+
+  const [mapLayer, setMapLayer] = useState<'streets' | 'voyager' | 'dark'>('voyager');
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-primary');
 
-  // Generate unique IDs for SVG gradients to prevent collisions if multiple instances are rendered
-  const idPrefix = useId().replace(/:/g, '');
-  const routeGradientId = `${idPrefix}-route-grad`;
-  const altRouteGradientId = `${idPrefix}-alt-route-grad`;
-  const thirdRouteGradientId = `${idPrefix}-third-route-grad`;
-  const waterGradientId = `${idPrefix}-water-grad`;
-  const glowFilterId = `${idPrefix}-glow-filter`;
-  const landGradientId = `${idPrefix}-land-grad`;
+  // Format clean short city names (never generic "Origin Hub")
+  const cleanOrigin = origin.split(',')[0].trim() || 'Pickup Location';
+  const cleanDestination = destination.split(',')[0].trim() || 'Destination Drop';
 
-  // Compute live geometric route calculation
+  // Resolve true geographical coordinates
+  const resolvedOriginCoords: LatLng = originCoords || lookupCityCoords(origin) || CITY_COORDINATES.mumbai || { lat: 19.0760, lng: 72.8777 };
+  const resolvedDestCoords: LatLng = destinationCoords || lookupCityCoords(destination) || CITY_COORDINATES.srisailam || { lat: 16.0737, lng: 78.8686 };
+
+  // Compute live route distance and duration calculation
   const computed = calculateTripRouteAndPrice({
     originName: origin,
     destinationName: destination,
+    originCoords: resolvedOriginCoords,
+    destinationCoords: resolvedDestCoords,
     tripType: 'One-Way Drop',
   });
 
-  const baseKm = typeof distanceKm === 'number' ? distanceKm : (computed.distanceKm || 580);
-  const baseMinutes = computed.durationMinutes || 420;
-
-  // Format clean short city names
-  const cleanOrigin = origin.split(',')[0].trim() || 'Origin Hub';
-  const cleanDestination = destination.split(',')[0].trim() || 'Destination';
+  const baseKm = typeof distanceKm === 'number' ? distanceKm : (computed.distanceKm || 272);
+  const baseMinutes = computed.durationMinutes || 211;
 
   // Available Corridor Routes
   const availableRoutes: RouteOption[] = [
@@ -82,7 +94,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       name: 'Via National Express Corridor (Fastest)',
       highway: 'NH 44 / NH 48 Expressway',
       distanceKm: baseKm,
-      durationFormatted: duration || computed.durationFormatted || '8h 15m',
+      durationFormatted: duration || computed.durationFormatted || '3h 31m',
       trafficStatus: 'smooth',
       trafficDelayMinutes: 0,
       tollCount: 6,
@@ -92,10 +104,10 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     },
     {
       id: 'route-scenic',
-      name: 'Via Scenic Ghat Corridor (Alternative)',
+      name: 'Via Scenic Highway Corridor (Alternative)',
       highway: 'State Highway · Green Belt',
       distanceKm: Math.round(baseKm * 1.08),
-      durationFormatted: `${Math.floor((baseMinutes + 45) / 60)}h ${(baseMinutes + 45) % 60}m`,
+      durationFormatted: `${Math.floor((baseMinutes + 46) / 60)}h ${(baseMinutes + 46) % 60}m`,
       trafficStatus: 'moderate',
       trafficDelayMinutes: 18,
       tollCount: 4,
@@ -105,10 +117,10 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     },
     {
       id: 'route-bypass',
-      name: 'Via Ring Road Bypass Corridor',
+      name: 'Via Outer Ring Expressway (ORR)',
       highway: 'Outer Ring Expressway (ORR)',
       distanceKm: Math.round(baseKm * 1.14),
-      durationFormatted: `${Math.floor((baseMinutes + 65) / 60)}h ${(baseMinutes + 65) % 60}m`,
+      durationFormatted: `${Math.floor((baseMinutes + 66) / 60)}h ${(baseMinutes + 66) % 60}m`,
       trafficStatus: 'smooth',
       trafficDelayMinutes: 5,
       tollCount: 7,
@@ -126,25 +138,194 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     }
   }, [selectedRouteId]);
 
-  // SVG coordinate layout configuration
-  // Origin at [80, 220], Midpoint Toll at [280, 165], Destination at [510, 85]
-  const pStart = { x: 90, y: 220 };
-  const pMid = { x: 290, y: 160 };
-  const pEnd = { x: 510, y: 90 };
-  
-  // Primary Bezier route
-  const primaryRoutePath = `M ${pStart.x} ${pStart.y} C 160 210, 210 175, ${pMid.x} ${pMid.y} S 430 115, ${pEnd.x} ${pEnd.y}`;
-  // Alternative Scenic route (arches higher)
-  const scenicRoutePath = `M ${pStart.x} ${pStart.y} C 180 140, 250 110, 320 120 S 440 70, ${pEnd.x} ${pEnd.y}`;
-  // Alternative Bypass route (dips lower)
-  const bypassRoutePath = `M ${pStart.x} ${pStart.y} C 150 260, 260 230, 350 200 S 460 135, ${pEnd.x} ${pEnd.y}`;
+  // Generate realistic curved highway coordinates between origin and destination
+  const generateRouteCoordinates = (start: LatLng, end: LatLng, variant: string): [number, number][] => {
+    const points: [number, number][] = [];
+    const steps = 30;
+    
+    // Offset perpendicular factor based on corridor variant
+    const curveOffset = variant === 'route-scenic' ? 0.08 : variant === 'route-bypass' ? -0.06 : 0.02;
 
-  // Calculated intermediate point for current live car position (around 40% along active path)
-  const carPos = selectedRouteId === 'route-scenic'
-    ? { x: 230, y: 130 }
-    : selectedRouteId === 'route-bypass'
-    ? { x: 245, y: 235 }
-    : { x: 215, y: 178 };
+    const midLat = (start.lat + end.lat) / 2;
+    const midLng = (start.lng + end.lng) / 2;
+    const dLat = end.lat - start.lat;
+    const dLng = end.lng - start.lng;
+
+    // Perpendicular vector for natural road curve
+    const perpLat = -dLng * curveOffset;
+    const perpLng = dLat * curveOffset;
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      // Quadratic bezier interpolation with slight highway wobble
+      const wobble = Math.sin(t * Math.PI * 4) * 0.015;
+      const lat = (1 - t) * (1 - t) * start.lat + 2 * (1 - t) * t * (midLat + perpLat) + t * t * end.lat + wobble;
+      const lng = (1 - t) * (1 - t) * start.lng + 2 * (1 - t) * t * (midLng + perpLng) + t * t * end.lng + wobble;
+      points.push([lat, lng]);
+    }
+    return points;
+  };
+
+  // Initialize and update Real Leaflet Map
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    if (!mapInstanceRef.current) {
+      const map = L.map(mapContainerRef.current, {
+        zoomControl: false,
+        attributionControl: false,
+        scrollWheelZoom: true,
+      });
+
+      mapInstanceRef.current = map;
+      markersLayerRef.current = L.layerGroup().addTo(map);
+    }
+
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Remove existing tile layers
+    map.eachLayer((layer) => {
+      if (layer instanceof L.TileLayer) {
+        map.removeLayer(layer);
+      }
+    });
+
+    // Add selected Tile Layer (Real OpenStreetMap / CartoDB)
+    let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    if (mapLayer === 'streets') {
+      tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    } else if (mapLayer === 'dark') {
+      tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    }
+
+    L.tileLayer(tileUrl, {
+      maxZoom: 19,
+      subdomains: 'abcd',
+    }).addTo(map);
+
+    // Clear previous markers & polylines
+    if (markersLayerRef.current) {
+      markersLayerRef.current.clearLayers();
+    }
+    if (routePolylineRef.current) {
+      map.removeLayer(routePolylineRef.current);
+    }
+    if (routeGlowRef.current) {
+      map.removeLayer(routeGlowRef.current);
+    }
+
+    const startLat = resolvedOriginCoords.lat;
+    const startLng = resolvedOriginCoords.lng;
+    const endLat = resolvedDestCoords.lat;
+    const endLng = resolvedDestCoords.lng;
+
+    // Create Route Coordinates
+    const latLngs = generateRouteCoordinates(resolvedOriginCoords, resolvedDestCoords, selectedRouteId);
+
+    // Outer Glow / Road Border
+    routeGlowRef.current = L.polyline(latLngs, {
+      color: '#B91C1C',
+      weight: 7,
+      opacity: 0.5,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    // Core Road Route Line
+    routePolylineRef.current = L.polyline(latLngs, {
+      color: '#EF4444',
+      weight: 4,
+      opacity: 0.95,
+      lineCap: 'round',
+      lineJoin: 'round',
+      dashArray: selectedRouteId === 'route-scenic' ? '8, 8' : undefined,
+    }).addTo(map);
+
+    // Custom Origin Marker Icon (Green Pill with Real City Name)
+    const originIcon = L.divIcon({
+      className: 'custom-real-map-marker',
+      html: `
+        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-emerald-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-lg border-2 border-white whitespace-nowrap cursor-pointer">
+          <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+          <span>${cleanOrigin}</span>
+        </div>
+      `,
+      iconSize: [0, 0],
+    });
+
+    // Custom Destination Marker Icon (Red Pill with Real City Name)
+    const destIcon = L.divIcon({
+      className: 'custom-real-map-marker',
+      html: `
+        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-red-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-lg border-2 border-white whitespace-nowrap cursor-pointer">
+          <span>🏁</span>
+          <span>${cleanDestination}</span>
+        </div>
+      `,
+      iconSize: [0, 0],
+    });
+
+    // Midpoint Toll Plaza Marker Icon
+    const midIndex = Math.floor(latLngs.length * 0.52);
+    const midPoint = latLngs[midIndex] || [(startLat + endLat) / 2, (startLng + endLng) / 2];
+    const tollIcon = L.divIcon({
+      className: 'custom-real-map-marker',
+      html: `
+        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-amber-500 text-slate-900 font-bold text-[9px] px-2 py-0.5 rounded-full shadow-md border border-white whitespace-nowrap">
+          <span>⚡ Fastag Plaza</span>
+        </div>
+      `,
+      iconSize: [0, 0],
+    });
+
+    // Live Vehicle Dispatch Marker Icon (35% along the route)
+    const carIndex = Math.floor(latLngs.length * 0.35);
+    const carPoint = latLngs[carIndex] || [(startLat * 0.65 + endLat * 0.35), (startLng * 0.65 + endLng * 0.35)];
+    const carIcon = L.divIcon({
+      className: 'custom-real-map-marker',
+      html: `
+        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-slate-900 text-white font-bold text-[9px] px-2 py-0.5 rounded-full shadow-md border border-emerald-400 whitespace-nowrap">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Live Dispatch</span>
+        </div>
+      `,
+      iconSize: [0, 0],
+    });
+
+    if (markersLayerRef.current) {
+      L.marker([startLat, startLng], { icon: originIcon }).addTo(markersLayerRef.current);
+      L.marker([endLat, endLng], { icon: destIcon }).addTo(markersLayerRef.current);
+      L.marker(midPoint, { icon: tollIcon }).addTo(markersLayerRef.current);
+      L.marker(carPoint, { icon: carIcon }).addTo(markersLayerRef.current);
+    }
+
+    // Fit bounds gracefully to show entire route with comfortable padding
+    const bounds = L.latLngBounds([
+      [startLat, startLng],
+      [endLat, endLng],
+    ]);
+    map.fitBounds(bounds, { padding: [45, 45], maxZoom: 13 });
+
+  }, [origin, destination, resolvedOriginCoords.lat, resolvedOriginCoords.lng, resolvedDestCoords.lat, resolvedDestCoords.lng, selectedRouteId, mapLayer]);
+
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) mapInstanceRef.current.zoomOut();
+  };
+
+  const handleResetBounds = () => {
+    if (mapInstanceRef.current) {
+      const bounds = L.latLngBounds([
+        [resolvedOriginCoords.lat, resolvedOriginCoords.lng],
+        [resolvedDestCoords.lat, resolvedDestCoords.lng],
+      ]);
+      mapInstanceRef.current.fitBounds(bounds, { padding: [45, 45], maxZoom: 13 });
+    }
+  };
 
   return (
     <div 
@@ -201,327 +382,155 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
         </div>
       </div>
 
-      {/* Main Vector Highway Map Viewport */}
-      <div 
-        className="relative w-full h-64 sm:h-72 overflow-hidden select-none bg-slate-900"
-        style={{ perspective: '1000px' }}
-      >
+      {/* Real Interactive Leaflet Highway Map Viewport */}
+      <div className="relative w-full h-72 sm:h-80 select-none bg-slate-100">
         <div 
-          className="w-full h-full transition-transform duration-300 ease-out origin-center"
-          style={{ transform: `scale(${zoomLevel})` }}
-        >
-          <svg 
-            className="w-full h-full block" 
-            viewBox="0 0 600 320" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              {/* Land Base Gradient */}
-              <linearGradient id={landGradientId} x1="0" y1="0" x2="600" y2="320" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#081226" />
-                <stop offset="50%" stopColor="#0D1B36" />
-                <stop offset="100%" stopColor="#050D1D" />
-              </linearGradient>
+          ref={mapContainerRef} 
+          className="w-full h-full z-0" 
+          style={{ minHeight: '100%' }}
+        />
 
-              {/* Highway Route Glow Gradient */}
-              <linearGradient id={routeGradientId} x1="90" y1="220" x2="510" y2="90" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#10B981" />
-                <stop offset="40%" stopColor="#3B82F6" />
-                <stop offset="85%" stopColor="#E11D48" />
-              </linearGradient>
-
-              {/* Alternate Scenic Glow Gradient */}
-              <linearGradient id={altRouteGradientId} x1="90" y1="220" x2="510" y2="90" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#059669" />
-                <stop offset="50%" stopColor="#10B981" />
-                <stop offset="100%" stopColor="#047857" />
-              </linearGradient>
-
-              {/* Alternate Bypass Glow Gradient */}
-              <linearGradient id={thirdRouteGradientId} x1="90" y1="220" x2="510" y2="90" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#6366F1" />
-                <stop offset="50%" stopColor="#8B5CF6" />
-                <stop offset="100%" stopColor="#EC4899" />
-              </linearGradient>
-
-              {/* Luminous Glow Filter */}
-              <filter id={glowFilterId} x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3.5" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
-            {/* Map Canvas Background */}
-            <rect width="600" height="320" fill={`url(#${landGradientId})`} />
-
-            {/* Cartographic Coordinate Grid */}
-            <g opacity="0.12" stroke="#38BDF8" strokeWidth="0.5">
-              <line x1="0" y1="80" x2="600" y2="80" strokeDasharray="3 3" />
-              <line x1="0" y1="160" x2="600" y2="160" strokeDasharray="3 3" />
-              <line x1="0" y1="240" x2="600" y2="240" strokeDasharray="3 3" />
-              <line x1="150" y1="0" x2="150" y2="320" strokeDasharray="3 3" />
-              <line x1="300" y1="0" x2="300" y2="320" strokeDasharray="3 3" />
-              <line x1="450" y1="0" x2="450" y2="320" strokeDasharray="3 3" />
-            </g>
-
-            {/* Stylized Highway Rivers and Coastline */}
-            <path 
-              d="M 230 320 C 240 260, 270 210, 260 170 C 250 130, 280 80, 310 0" 
-              stroke="#0284C7" 
-              strokeWidth="5" 
-              strokeOpacity="0.35" 
-              strokeLinecap="round" 
-              fill="none" 
-            />
-
-            {/* Secondary Arterial Local Roads */}
-            <g opacity="0.3" stroke="#475569" strokeWidth="1">
-              <line x1="40" y1="80" x2="560" y2="80" strokeDasharray="3 4" />
-              <line x1="30" y1="180" x2="570" y2="180" strokeDasharray="4 6" />
-              <line x1="120" y1="270" x2="540" y2="270" strokeDasharray="2 3" />
-              <path d="M 60 290 Q 200 240 320 280 T 560 220" fill="none" strokeWidth="1.2" />
-              <path d="M 120 40 Q 240 90 400 40 T 570 120" fill="none" strokeWidth="1.2" />
-            </g>
-
-            {/* ROUTE 2: Scenic Corridor (Alternative) */}
-            <path 
-              d={scenicRoutePath} 
-              stroke={selectedRouteId === 'route-scenic' ? `url(#${altRouteGradientId})` : '#334155'} 
-              strokeWidth={selectedRouteId === 'route-scenic' ? '5' : '2.5'} 
-              strokeLinecap="round" 
-              strokeDasharray={selectedRouteId === 'route-scenic' ? 'none' : '5 4'}
-              opacity={selectedRouteId === 'route-scenic' ? '1' : '0.45'} 
-              fill="none" 
-              className="cursor-pointer"
-              onClick={() => setSelectedRouteId('route-scenic')}
-            />
-
-            {/* ROUTE 3: Ring Road Bypass (Alternative) */}
-            <path 
-              d={bypassRoutePath} 
-              stroke={selectedRouteId === 'route-bypass' ? `url(#${thirdRouteGradientId})` : '#334155'} 
-              strokeWidth={selectedRouteId === 'route-bypass' ? '5' : '2.5'} 
-              strokeLinecap="round" 
-              strokeDasharray={selectedRouteId === 'route-bypass' ? 'none' : '5 4'}
-              opacity={selectedRouteId === 'route-bypass' ? '1' : '0.45'} 
-              fill="none" 
-              className="cursor-pointer"
-              onClick={() => setSelectedRouteId('route-bypass')}
-            />
-
-            {/* ROUTE 1: PRIMARY MAIN EXPRESSWAY */}
-            <path 
-              d={primaryRoutePath} 
-              stroke={`url(#${routeGradientId})`} 
-              strokeWidth={selectedRouteId === 'route-primary' ? '5.5' : '2.5'} 
-              strokeLinecap="round" 
-              opacity={selectedRouteId === 'route-primary' ? '1' : '0.45'} 
-              filter={selectedRouteId === 'route-primary' ? `url(#${glowFilterId})` : 'none'}
-              fill="none" 
-              className="cursor-pointer"
-              onClick={() => setSelectedRouteId('route-primary')}
-            />
-
-            {/* Animated Light Flow on Active Route */}
-            <path 
-              d={selectedRouteId === 'route-scenic' ? scenicRoutePath : selectedRouteId === 'route-bypass' ? bypassRoutePath : primaryRoutePath} 
-              stroke="#FFFFFF" 
-              strokeWidth="2" 
-              strokeDasharray="6 10" 
-              strokeLinecap="round" 
-              fill="none" 
-              opacity="0.85"
-            />
-
-            {/* WAYPOINTS & TOLL PLAZAS */}
-            {showWaypoints && (
-              <>
-                <g transform={`translate(${pMid.x}, ${pMid.y})`}>
-                  <circle cx="0" cy="0" r="10" fill="#1E293B" stroke="#F59E0B" strokeWidth="2" />
-                  <circle cx="0" cy="0" r="4" fill="#F59E0B" />
-                  <g transform="translate(14, -12)">
-                    <rect x="0" y="0" width="115" height="24" rx="12" fill="#0F172A" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                    <text x="10" y="15" fontSize="9" fontWeight="bold" fill="#F8FAFC">
-                      Fastag Toll Plaza ✓
-                    </text>
-                  </g>
-                </g>
-              </>
-            )}
-
-            {/* LIVE DISPATCHED CAB BEACON */}
-            <g transform={`translate(${carPos.x}, ${carPos.y})`}>
-              <circle cx="0" cy="0" r="14" fill="#EF4444" opacity="0.3">
-                <animate attributeName="r" values="8;20;8" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.4;0.05;0.4" dur="2s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="0" cy="0" r="9" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2" />
-              <polygon points="-2,-4 5,0 -2,4 -1,0" fill="#FFFFFF" transform="rotate(-20)" />
-
-              <g transform="translate(-40, -28)">
-                <rect x="0" y="0" width="80" height="18" rx="9" fill="#DC2626" />
-                <text x="40" y="12" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#FFFFFF">
-                  Live Dispatch
-                </text>
-              </g>
-            </g>
-
-            {/* ORIGIN (Point A - Pickup) */}
-            <g transform={`translate(${pStart.x}, ${pStart.y})`}>
-              <circle cx="0" cy="0" r="12" fill="#10B981" opacity="0.25" />
-              <circle cx="0" cy="0" r="8" fill="#10B981" stroke="#FFFFFF" strokeWidth="2" />
-              <g transform="translate(-75, 12)">
-                <rect x="0" y="0" width="150" height="32" rx="10" fill="#0F172A" stroke="#10B981" strokeWidth="1.5" />
-                <circle cx="14" cy="16" r="7" fill="#10B981" />
-                <text x="14" y="19" textAnchor="middle" fontSize="9" fontWeight="900" fill="#FFFFFF">A</text>
-                <text x="26" y="14" fontSize="8" fontWeight="bold" fill="#94A3B8">PICKUP HUB</text>
-                <text x="26" y="24" fontSize="9.5" fontWeight="black" fill="#FFFFFF">
-                  {cleanOrigin.slice(0, 15)}
-                </text>
-              </g>
-            </g>
-
-            {/* DESTINATION (Point B - Drop) */}
-            <g transform={`translate(${pEnd.x}, ${pEnd.y})`}>
-              <circle cx="0" cy="0" r="14" fill="#E11D48" opacity="0.25" />
-              <circle cx="0" cy="0" r="8" fill="#E11D48" stroke="#FFFFFF" strokeWidth="2" />
-              <g transform="translate(-85, -46)">
-                <rect x="0" y="0" width="170" height="36" rx="10" fill="#0F172A" stroke="#E11D48" strokeWidth="1.5" />
-                <circle cx="15" cy="18" r="7.5" fill="#E11D48" />
-                <text x="15" y="21" textAnchor="middle" fontSize="9" fontWeight="900" fill="#FFFFFF">B</text>
-                <text x="28" y="13" fontSize="7.5" fontWeight="bold" fill="#94A3B8">DESTINATION DROP</text>
-                <text x="28" y="23" fontSize="9.5" fontWeight="black" fill="#FFFFFF">
-                  {cleanDestination.slice(0, 15)}
-                </text>
-                <text x="28" y="32" fontSize="7.5" fontWeight="bold" fill="#34D399">
-                  🏁 Reach: {computed.reachTimeFormatted}
-                </text>
-              </g>
-            </g>
-
-            {/* Compass Widget */}
-            <g transform="translate(565, 35)">
-              <circle cx="0" cy="0" r="14" fill="#0F172A" stroke="#334155" strokeWidth="1" />
-              <polygon points="0,-10 3,-2 0,0 -3,-2" fill="#E11D48" />
-              <polygon points="0,10 3,2 0,0 -3,2" fill="#94A3B8" />
-              <text x="0" y="-12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#E11D48">N</text>
-            </g>
-          </svg>
+        {/* Real-time Highway Radar Indicator Badge */}
+        <div className="absolute bottom-3 left-3 z-10">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md text-white font-bold text-[10px] shadow-lg border border-slate-700/80">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>Real-time GPS Highway Radar Active</span>
+          </span>
         </div>
 
-        {/* Floating Zoom & Waypoint Controls */}
+        {/* Floating Interactive Controls (Zoom, Layers, Reset) */}
         {showControls && (
-          <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-20">
+          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+            <div className="flex flex-col rounded-xl bg-white/95 backdrop-blur-md shadow-md border border-slate-200 overflow-hidden">
+              <button
+                type="button"
+                onClick={handleZoomIn}
+                className="p-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+              <div className="h-px bg-slate-200" />
+              <button
+                type="button"
+                onClick={handleZoomOut}
+                className="p-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={() => setZoomLevel(prev => prev === 1 ? 1.25 : prev === 1.25 ? 1.5 : 1)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-xs shadow-md backdrop-blur-md transition-all cursor-pointer bg-white/95 text-slate-800 border border-slate-300 hover:bg-white"
-              title="Toggle Zoom"
+              onClick={handleResetBounds}
+              className="p-2 rounded-xl bg-white/95 backdrop-blur-md text-slate-700 hover:text-red-600 shadow-md border border-slate-200 transition-colors cursor-pointer"
+              title="Reset Route View"
             >
-              {zoomLevel === 1 ? <ZoomIn className="w-4 h-4" /> : <ZoomOut className="w-4 h-4" />}
+              <RefreshCw className="w-4 h-4" />
             </button>
+
             <button
               type="button"
-              onClick={() => setShowWaypoints(!showWaypoints)}
-              className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs shadow-md backdrop-blur-md transition-all cursor-pointer ${
-                showWaypoints ? 'bg-red-600 text-white' : 'bg-white/95 text-slate-700'
-              }`}
-              title="Toggle Toll Waypoints"
+              onClick={() => {
+                setMapLayer((prev) => prev === 'voyager' ? 'streets' : prev === 'streets' ? 'dark' : 'voyager');
+              }}
+              className="p-2 rounded-xl bg-white/95 backdrop-blur-md text-slate-700 hover:text-red-600 shadow-md border border-slate-200 transition-colors cursor-pointer"
+              title={`Switch Map Layer (Current: ${mapLayer})`}
             >
               <Layers className="w-4 h-4" />
             </button>
           </div>
         )}
-
-        {/* Live Tracking Radar Tag */}
-        <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur-md flex items-center gap-2 shadow-sm border bg-black/60 border-white/15 text-emerald-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>Real-time GPS Highway Radar Active</span>
-        </div>
       </div>
 
-      {/* Available Corridor Routes Selector Tabs */}
-      <div className="p-4 bg-white border-t border-slate-200 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-            <Route className="w-4 h-4 text-red-600" />
-            <span>Select Available Route Corridor (3 Highway Options)</span>
-          </div>
-          <span className="text-[10px] text-slate-400 font-semibold">Click to preview distance & time</span>
+      {/* Select Available Highway Corridor (3 Highway Options) */}
+      <div className="p-4 sm:p-5 bg-white border-t border-slate-200/90">
+        <div className="flex items-center justify-between mb-3 text-xs">
+          <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+            <Route className="w-3.5 h-3.5 text-red-600" />
+            Select Available Route Corridor (3 Highway Options)
+          </span>
+          <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+            Click to preview distance & time
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {availableRoutes.map((route) => {
             const isSelected = selectedRouteId === route.id;
             return (
-              <div
+              <button
                 key={route.id}
+                type="button"
                 onClick={() => setSelectedRouteId(route.id)}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
                   isSelected
-                    ? 'bg-red-50/70 border-red-500 shadow-xs ring-1 ring-red-500'
-                    : 'bg-slate-50/70 hover:bg-slate-100/70 border-slate-200'
+                    ? 'bg-white border-red-500 shadow-md ring-2 ring-red-500/20'
+                    : 'bg-slate-50 hover:bg-slate-100/70 border-slate-200'
                 }`}
               >
                 {route.recommended && (
-                  <span className="absolute -top-2 right-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-red-600 text-white shadow-2xs">
-                    FASTEST ROUTE
+                  <span className="absolute -top-2 right-3 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-red-600 text-white shadow-xs">
+                    Fastest Route
                   </span>
                 )}
 
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-slate-900 truncate">
+                  <span className="font-bold text-slate-900 text-xs block truncate pr-2">
                     {route.highway}
                   </span>
                   {isSelected && <Check className="w-3.5 h-3.5 text-red-600 shrink-0" />}
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs font-bold text-slate-800">
-                  <span className="text-red-600 font-black">~{route.distanceKm} km</span>
-                  <span>·</span>
-                  <span className="text-slate-600">{route.durationFormatted}</span>
+                <div className="flex items-center gap-2 text-xs font-black text-slate-900 mb-2">
+                  <span className="text-red-600">~{route.distanceKm} km</span>
+                  <span className="text-slate-300">·</span>
+                  <span>{route.durationFormatted}</span>
                 </div>
 
-                <div className="mt-1.5 flex flex-wrap gap-1 text-[10px] text-slate-500 font-medium">
-                  {route.scenicHighlights.slice(0, 2).map((h, i) => (
-                    <span key={i} className="bg-white/80 px-2 py-0.5 rounded-md border border-slate-200">
-                      {h}
+                <div className="flex flex-wrap gap-1">
+                  {route.scenicHighlights.slice(0, 2).map((highlight, idx) => (
+                    <span 
+                      key={idx}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium truncate max-w-full"
+                    >
+                      {highlight}
                     </span>
                   ))}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
-      </div>
 
-      {/* Bottom Dispatch Route Summary Strip */}
-      <div className="px-5 py-3.5 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
-            <Car className="w-4 h-4 text-emerald-600" />
-          </span>
-          <div>
-            <div className="font-bold flex items-center gap-1.5 text-slate-900">
-              <span>{vehicleName}</span>
-              {bookingRef && (
-                <span className="font-mono text-[10px] text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.2 rounded">
-                  #{bookingRef}
+        {/* Assigned Fleet Dispatch Badge */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
+              <Car className="w-4 h-4" />
+            </span>
+            <div>
+              <span className="font-bold text-slate-900 block">
+                {vehicleName}
+                <span className="ml-1.5 text-[10px] font-semibold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                  #WY-9374
                 </span>
-              )}
+              </span>
+              <span className="text-[11px] text-slate-500 block">
+                Selected Corridor: <strong className="text-slate-700">{activeRoute.name}</strong> · Fastag Plazas Included
+              </span>
             </div>
-            <div className="text-[10px] text-slate-500">
-              Selected Corridor: <strong className="text-slate-800">{activeRoute.name}</strong> · Fastag Plazas Included
-            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+            <Check className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Live Highway Dispatch Available</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-          <Check className="w-3.5 h-3.5" />
-          <span>Live Highway Dispatch Available</span>
-        </div>
       </div>
+
     </div>
   );
 };

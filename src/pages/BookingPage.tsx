@@ -988,6 +988,8 @@ export const BookingPage: React.FC = () => {
                   <RouteMiniMap
                     origin={fromLocation}
                     destination={toLocation}
+                    originCoords={userCoords}
+                    destinationCoords={destinationCoords}
                     distanceKm={routeCalc.distanceKm}
                     duration={routeCalc.durationFormatted}
                     vehicleName={selectedCar.name}
@@ -1320,6 +1322,8 @@ export const BookingPage: React.FC = () => {
                     <RouteMiniMap
                       origin={fromLocation}
                       destination={toLocation}
+                      originCoords={userCoords}
+                      destinationCoords={destinationCoords}
                       distanceKm={routeCalc.distanceKm}
                       duration={routeCalc.durationFormatted}
                       bookingRef={bookingSuccessId}
