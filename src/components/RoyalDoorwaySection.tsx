@@ -58,7 +58,7 @@ export const RoyalDoorwaySection: React.FC = () => {
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const rafIdRef = useRef<number | null>(null);
 
-  const ZOOM_THRESHOLD = 0.85;
+  const ZOOM_THRESHOLD = 0.72;
 
   /* -------------------------------------------------------------
      1. GEOMETRY ENGINE: MIDDLE-ALIGNED, WELL-PROPORTIONED ARCHWAY
@@ -217,12 +217,18 @@ export const RoyalDoorwaySection: React.FC = () => {
       }
 
       // 1. ZOOM ENTIRE UNIFIED DOOR RIG FORWARD (CASING + DOOR LEAF TOGETHER - CANNOT DETACH!)
+      // As the user scrolls, gently pull the aperture toward center so the camera glides cleanly through the door
       if (doorRigWrapperRef.current) {
-        const portalScale = 1 + Math.pow(z, 2.4) * 28.0;
-        doorRigWrapperRef.current.style.transform = `scale(${portalScale.toFixed(3)}) translateZ(0)`;
+        const targetCenterX = window.innerWidth / 2;
+        const targetCenterY = window.innerHeight / 2;
+        const centerShiftX = (targetCenterX - geomRef.current.centerX) * Math.min(1, Math.pow(z, 1.4) * 1.15);
+        const centerShiftY = (targetCenterY - geomRef.current.centerY) * Math.min(1, Math.pow(z, 1.4) * 1.15);
 
-        if (z > 0.48) {
-          const fade = Math.max(0, 1 - ((z - 0.48) / 0.30));
+        const portalScale = 1 + Math.pow(z, 2.3) * 32.0;
+        doorRigWrapperRef.current.style.transform = `translate3d(${centerShiftX.toFixed(2)}px, ${centerShiftY.toFixed(2)}px, 0) scale(${portalScale.toFixed(3)}) translateZ(0)`;
+
+        if (z > 0.42) {
+          const fade = Math.max(0, 1 - ((z - 0.42) / 0.28));
           doorRigWrapperRef.current.style.opacity = fade.toFixed(3);
         } else {
           doorRigWrapperRef.current.style.opacity = '1';
@@ -232,14 +238,14 @@ export const RoyalDoorwaySection: React.FC = () => {
       // 2. 3D DOOR LEAF: ROTATES SMOOTHLY ON HINGE INSIDE THE RIG
       if (doorLeaf3DRef.current) {
         const initialAngle = -52;
-        const targetAngle = -115;
-        const currentAngle = initialAngle + (targetAngle - initialAngle) * Math.min(1, z * 1.6);
+        const targetAngle = -118;
+        const currentAngle = initialAngle + (targetAngle - initialAngle) * Math.min(1, z * 1.7);
         doorLeaf3DRef.current.style.transform = `rotateY(${currentAngle.toFixed(2)}deg)`;
       }
 
       // 3. Move interior world forward (smooth 3D dolly with subtle parallax)
       if (interiorWorldRef.current) {
-        const worldScale = 1.0 + z * 0.30;
+        const worldScale = 1.0 + z * 0.26;
         const parallaxX = mx * (1 - z * 0.75) * 16;
         const parallaxY = my * (1 - z * 0.75) * 10;
         interiorWorldRef.current.style.transform = `translate3d(${parallaxX.toFixed(2)}px, ${parallaxY.toFixed(2)}px, 0) scale(${worldScale.toFixed(3)})`;
@@ -247,30 +253,30 @@ export const RoyalDoorwaySection: React.FC = () => {
 
       // 4. Greeting centered inside the aperture fades out as approached
       if (worldGreetingRef.current) {
-        const greetingFade = Math.max(0, 1 - (z / 0.45));
+        const greetingFade = Math.max(0, 1 - (z / 0.40));
         worldGreetingRef.current.style.opacity = greetingFade.toFixed(3);
         worldGreetingRef.current.style.transform = `translate3d(-50%, 0, 0) scale(${(1 + z * 0.15).toFixed(3)})`;
       }
 
       // In-world destination overlay: fades in as door opens, fully visible in world view (left-side top space)
       if (destinationOverlayRef.current) {
-        const destOpacity = Math.max(0, Math.min(1, (z - 0.22) / 0.35));
+        const destOpacity = Math.max(0, Math.min(1, (z - 0.32) / 0.28));
         destinationOverlayRef.current.style.opacity = destOpacity.toFixed(3);
         destinationOverlayRef.current.style.transform = `translate3d(0, ${(1 - destOpacity) * -16}px, 0)`;
-        destinationOverlayRef.current.style.pointerEvents = destOpacity > 0.4 ? 'auto' : 'none';
+        destinationOverlayRef.current.style.pointerEvents = destOpacity > 0.6 ? 'auto' : 'none';
       }
 
-      // In-world bottom status footer: gracefully reveals at bottom, eliminating black empty void downside
+      // In-world bottom status footer: gracefully reveals at bottom, eliminating empty void downside
       if (inWorldFooterRef.current) {
-        const footerOpacity = Math.max(0, Math.min(1, (z - 0.30) / 0.30));
+        const footerOpacity = Math.max(0, Math.min(1, (z - 0.38) / 0.28));
         inWorldFooterRef.current.style.opacity = footerOpacity.toFixed(3);
-        inWorldFooterRef.current.style.transform = `translate3d(0, ${(1 - footerOpacity) * 12}px, 0)`;
-        inWorldFooterRef.current.style.pointerEvents = footerOpacity > 0.4 ? 'auto' : 'none';
+        inWorldFooterRef.current.style.transform = `translate3d(0, ${(1 - footerOpacity) * 16}px, 0)`;
+        inWorldFooterRef.current.style.pointerEvents = footerOpacity > 0.6 ? 'auto' : 'none';
       }
 
-      // Bottom exit blend: smoothly transitions the bottom into light slate near the end of track so it never flashes black
+      // Bottom exit blend: only activates at the very end of the scroll track (raw > 0.94) to cleanly enter next section
       if (bottomExitBlendRef.current) {
-        const exitOpacity = Math.max(0, Math.min(1, (raw - 0.78) / 0.22));
+        const exitOpacity = Math.max(0, Math.min(1, (raw - 0.94) / 0.06));
         bottomExitBlendRef.current.style.opacity = exitOpacity.toFixed(3);
       }
 
@@ -315,10 +321,10 @@ export const RoyalDoorwaySection: React.FC = () => {
     const rect = trackRef.current.getBoundingClientRect();
     const currentScroll = window.scrollY || window.pageYOffset;
     const spacerHeight = trackRef.current.offsetHeight - window.innerHeight;
-    const targetScroll = currentScroll + rect.top + spacerHeight * ZOOM_THRESHOLD;
+    const targetScroll = currentScroll + rect.top + spacerHeight * 0.72;
 
     if (lenis) {
-      lenis.scrollTo(targetScroll, { duration: 2.2 });
+      lenis.scrollTo(targetScroll, { duration: 1.8 });
     } else {
       window.scrollTo({
         top: targetScroll,
@@ -331,8 +337,8 @@ export const RoyalDoorwaySection: React.FC = () => {
     <div 
       ref={trackRef} 
       id="royal-doorway-track" 
-      className="relative w-full bg-slate-50"
-      style={{ height: '175vh' }}
+      className="relative w-full bg-[#120204]"
+      style={{ height: '290vh' }}
     >
       {/* =========================================================================
            1. FIXED FULL-SCREEN 3D VIEWPORT (KEYHOLE-ARCHITECTURE ENGINE)
@@ -765,10 +771,10 @@ export const RoyalDoorwaySection: React.FC = () => {
           />
         </div>
 
-        {/* Soft bottom blend to seamlessly exit into next section without black or blank jumps */}
+        {/* Soft bottom blend to seamlessly exit into next section near the end of track */}
         <div 
           ref={bottomExitBlendRef}
-          className="absolute bottom-0 inset-x-0 h-32 sm:h-44 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent pointer-events-none z-35"
+          className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none z-35"
           style={{ opacity: 0 }}
         />
 

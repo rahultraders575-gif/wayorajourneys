@@ -9,14 +9,14 @@
   }
 
   html {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     font-family: var(--font-sans);
     background-color: #f8fafc;
     color: #0f172a;
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
   }
 
