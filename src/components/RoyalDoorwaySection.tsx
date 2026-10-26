@@ -339,8 +339,8 @@ export const RoyalDoorwaySection: React.FC = () => {
               className="w-screen min-w-full h-full object-cover object-center filter saturate-[1.08] brightness-[1.02] contrast-[1.04] transition-transform duration-700 ease-out scale-[1.05]"
             />
             
-            {/* Realistic Flying Birds in Sky */}
-            <FlyingBirds birdCount={24} skyCoverage={0.54} primaryDirection="mixed" colorTone="natural" />
+            {/* Realistic Flying Birds in Sky (Minimal & Distant) */}
+            <FlyingBirds birdCount={6} skyCoverage={0.34} primaryDirection="mixed" colorTone="natural" />
 
             {/* Royal Ambient Lighting Overlays */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a0307]/70 via-transparent to-[#D4AF37]/15 mix-blend-multiply pointer-events-none" />

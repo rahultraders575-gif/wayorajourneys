@@ -124,46 +124,48 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
       const isSoloSoarer = flockId === 2;
       const isDistantFlock = flockId === 0;
 
-      // Depth perception: z from 0.15 (very far) to 0.95 (mid-foreground)
+      // Depth perception: z from 0.15 (very far) to 0.85 (mid-distance, strictly minimalist)
       const z = isDistantFlock
-        ? 0.18 + Math.random() * 0.22
+        ? 0.15 + Math.random() * 0.20
         : isSoloSoarer
-        ? 0.65 + Math.random() * 0.3
-        : 0.35 + Math.random() * 0.45;
+        ? 0.50 + Math.random() * 0.25
+        : 0.30 + Math.random() * 0.35;
 
-      const baseSpeed = (1.1 + z * 1.6) * initialDirection;
-      const scale = 0.55 + z * 0.75;
-      const wingSpan = (isSoloSoarer ? 26 : 18) * scale;
-      const bodyLength = (isSoloSoarer ? 16 : 11) * scale;
-      const bodyWidth = (isSoloSoarer ? 3.4 : 2.5) * scale;
-      const tailLength = (isSoloSoarer ? 7 : 4.5) * scale;
+      // Calm, elegant, leisurely gliding speed
+      const baseSpeed = (0.70 + z * 0.75) * initialDirection;
+      // Refined minimalist scale (7px to 13px wingspan max)
+      const scale = 0.30 + z * 0.30;
+      const wingSpan = (isSoloSoarer ? 22 : 16) * scale;
+      const bodyLength = (isSoloSoarer ? 13 : 9) * scale;
+      const bodyWidth = (isSoloSoarer ? 2.6 : 1.9) * scale;
+      const tailLength = (isSoloSoarer ? 5.5 : 3.8) * scale;
 
       const maxSkyY = height * skyCoverage;
-      const y = Math.max(30, Math.min(maxSkyY - 30, (height * 0.08) + Math.random() * (maxSkyY - 60) + offsetY));
-      const x = (Math.random() * (width + 300) - 150) + offsetX;
+      const y = Math.max(25, Math.min(maxSkyY - 20, (height * 0.06) + Math.random() * (maxSkyY - 45) + offsetY));
+      const x = (Math.random() * (width + 250) - 100) + offsetX;
 
       return {
         x,
         y,
         z,
         vx: baseSpeed,
-        vy: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.2,
         targetVx: baseSpeed,
         targetVy: 0,
         heading: initialDirection > 0 ? 0 : Math.PI,
         banking: 0,
-        mode: isSoloSoarer ? 'soaring' : Math.random() > 0.4 ? 'flapping' : 'gliding',
-        modeTimer: Math.floor(Math.random() * 120),
+        mode: isSoloSoarer ? 'soaring' : Math.random() > 0.3 ? 'gliding' : 'flapping',
+        modeTimer: Math.floor(Math.random() * 140),
         flapPhase: Math.random() * Math.PI * 2,
-        flapSpeed: (0.16 + (1 - z) * 0.08 + Math.random() * 0.04) * (isSoloSoarer ? 0.75 : 1),
+        flapSpeed: (0.13 + (1 - z) * 0.05 + Math.random() * 0.03) * (isSoloSoarer ? 0.7 : 1),
         wingAngle: 0,
         prevWingAngle: 0,
-        glideWingTilt: (Math.random() - 0.5) * 0.08,
+        glideWingTilt: (Math.random() - 0.5) * 0.06,
         wingSpan,
         bodyLength,
         bodyWidth,
         tailLength,
-        soaringRadius: isSoloSoarer ? 120 + Math.random() * 100 : undefined,
+        soaringRadius: isSoloSoarer ? 110 + Math.random() * 80 : undefined,
         soaringAngle: isSoloSoarer ? Math.random() * Math.PI * 2 : undefined,
         soaringCenterX: isSoloSoarer ? x : undefined,
         soaringCenterY: isSoloSoarer ? y : undefined,
@@ -173,36 +175,26 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
       };
     };
 
-    // Build the flocks
-    // 1. Distant Migratory V-Flock (heading mostly rightward into the palace view)
-    const vCount = Math.min(7, Math.max(4, Math.floor(birdCount * 0.35)));
+    // Minimalistic elegant flocks (small, serene cluster + single soaring falcon)
+    // 1. Distant Migratory V-Flock (3-4 birds max)
+    const vCount = Math.max(2, Math.min(4, Math.floor(birdCount * 0.5)));
     for (let i = 0; i < vCount; i++) {
       const isLeader = i === 0;
       const side = i % 2 === 0 ? 1 : -1;
       const rank = Math.ceil(i / 2);
-      const offsetX = -rank * 32 + (Math.random() - 0.5) * 8;
-      const offsetY = rank * 16 * side + (Math.random() - 0.5) * 6;
+      const offsetX = -rank * 26 + (Math.random() - 0.5) * 6;
+      const offsetY = rank * 13 * side + (Math.random() - 0.5) * 5;
       birds.push(initBird(0, isLeader, offsetX, offsetY, 1));
     }
 
-    // 2. Mid-Distance Dynamic Flock (crossing naturally)
-    const midCount = Math.min(6, Math.max(3, Math.floor(birdCount * 0.3)));
-    const midDir = primaryDirection === 'left' ? -1 : primaryDirection === 'right' ? 1 : Math.random() > 0.4 ? 1 : -1;
-    for (let i = 0; i < midCount; i++) {
-      birds.push(initBird(1, i === 0, (Math.random() - 0.5) * 120, (Math.random() - 0.5) * 40, midDir));
-    }
+    // 2. Solo thermal glider (1 soaring hawk riding high thermals)
+    birds.push(initBird(2, false, 0, 0, 1));
 
-    // 3. Majestic Soarers (Hawks/Eagles circling gracefully on thermal drafts)
-    const soarerCount = Math.min(3, Math.max(1, Math.floor(birdCount * 0.15)));
-    for (let i = 0; i < soarerCount; i++) {
-      birds.push(initBird(2, false, 0, 0, 1));
-    }
-
-    // 4. Remaining independent ambient gliders
-    const remaining = birdCount - birds.length;
+    // 3. Gentle cruising pair or single ambient bird
+    const remaining = Math.max(0, birdCount - birds.length);
     for (let i = 0; i < remaining; i++) {
-      const dir = primaryDirection === 'left' ? -1 : primaryDirection === 'right' ? 1 : Math.random() > 0.35 ? 1 : -1;
-      birds.push(initBird(3, false, 0, 0, dir));
+      const dir = primaryDirection === 'left' ? -1 : primaryDirection === 'right' ? 1 : Math.random() > 0.4 ? 1 : -1;
+      birds.push(initBird(1, false, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 30, dir));
     }
 
     // Animation Loop
@@ -329,7 +321,7 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
         const margin = 80;
         if (bird.vx > 0 && bird.x > width + margin) {
           bird.x = -margin;
-          bird.y = Math.max(30, Math.min(maxSkyY - 30, height * 0.08 + Math.random() * (maxSkyY - 50)));
+          bird.y = Math.max(20, Math.min(maxSkyY - 15, height * 0.05 + Math.random() * (maxSkyY - 35)));
           bird.baseAltitude = bird.y;
           if (bird.flockId === 2) {
             bird.soaringCenterX = bird.x + 200;
@@ -337,7 +329,7 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
           }
         } else if (bird.vx < 0 && bird.x < -margin) {
           bird.x = width + margin;
-          bird.y = Math.max(30, Math.min(maxSkyY - 30, height * 0.08 + Math.random() * (maxSkyY - 50)));
+          bird.y = Math.max(20, Math.min(maxSkyY - 15, height * 0.05 + Math.random() * (maxSkyY - 35)));
           bird.baseAltitude = bird.y;
           if (bird.flockId === 2) {
             bird.soaringCenterX = bird.x - 200;
@@ -345,9 +337,9 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
           }
         }
 
-        // Vertical safety clamps
-        if (bird.y < 20) {
-          bird.y = 20;
+        // Vertical safety clamps (strictly upper sky)
+        if (bird.y < 15) {
+          bird.y = 15;
           bird.vy = Math.abs(bird.vy) * 0.8;
         } else if (bird.y > maxSkyY) {
           bird.y = maxSkyY;
@@ -362,22 +354,20 @@ export const FlyingBirds: React.FC<FlyingBirdsProps> = ({
         // Banking tilt (perspective roll)
         ctx.transform(1, 0, Math.sin(bird.banking) * 0.35, Math.cos(bird.banking), 0, 0);
 
-        // Depth-based realistic shading and opacity
+        // Depth-based realistic shading and opacity (soft, distant, natural)
         let alpha: number;
         let fillStyle: string;
 
         if (colorTone === 'natural') {
-          // Atmospheric haze for distant birds, crisp silhouette for closer ones
-          alpha = 0.38 + bird.z * 0.58;
-          // Subtle sky-ambient tint matching Charminar / palace sky
-          const darkTone = Math.round(18 + (1 - bird.z) * 25);
-          const slateBlue = Math.round(24 + (1 - bird.z) * 35);
-          fillStyle = `rgba(${darkTone}, ${darkTone + 4}, ${slateBlue}, ${alpha.toFixed(2)})`;
+          alpha = 0.28 + bird.z * 0.42;
+          const darkTone = Math.round(22 + (1 - bird.z) * 20);
+          const slateBlue = Math.round(28 + (1 - bird.z) * 28);
+          fillStyle = `rgba(${darkTone}, ${darkTone + 3}, ${slateBlue}, ${alpha.toFixed(2)})`;
         } else if (colorTone === 'warm-silhouette') {
-          alpha = 0.42 + bird.z * 0.55;
+          alpha = 0.30 + bird.z * 0.42;
           fillStyle = `rgba(38, 20, 24, ${alpha.toFixed(2)})`;
         } else {
-          alpha = 0.4 + bird.z * 0.55;
+          alpha = 0.30 + bird.z * 0.40;
           fillStyle = `rgba(20, 24, 33, ${alpha.toFixed(2)})`;
         }
 
