@@ -13,6 +13,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { BookingModal } from './components/BookingModal';
 import { UserAuthModal } from './components/UserAuthModal';
 import { NotificationToast } from './components/NotificationToast';
+import { BackendConnectionIndicator } from './components/BackendConnectionIndicator';
 
 import { HomePage } from './pages/HomePage';
 import { PackagesPage } from './pages/PackagesPage';
@@ -122,6 +123,9 @@ const AppContent: React.FC = () => {
 
       {/* Global Notifications */}
       <NotificationToast />
+
+      {/* Real-Time Live Backend API Connection Indicator */}
+      <BackendConnectionIndicator />
 
     </div>
   );
