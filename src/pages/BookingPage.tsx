@@ -15,8 +15,10 @@ import {
   MapLocationItem,
   CITY_COORDINATES
 } from '../utils/geoDistancePrice';
+import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
 
 export const BookingPage: React.FC = () => {
+
   const { 
     setActivePage, openAuthModal, currentRider,
     addBooking, showToast, bookingSearchDetails, setBookingSearchDetails,
@@ -51,6 +53,7 @@ export const BookingPage: React.FC = () => {
   const [showDestSuggestions, setShowDestSuggestions] = useState(false);
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const [isFetchingMapRoute, setIsFetchingMapRoute] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [liveMapData, setLiveMapData] = useState<{ distanceKm?: number; durationMinutes?: number; summary?: string } | null>(null);
 
   // Debounced auto-fetch place suggestions from Maps
@@ -353,17 +356,27 @@ export const BookingPage: React.FC = () => {
             <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2 relative">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">TO</span>
-                {isFetchingMapRoute ? (
-                  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-                    <span>Maps...</span>
-                  </span>
-                ) : (
-                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded flex items-center gap-0.5">
-                    <Check className="w-2.5 h-2.5 text-emerald-600" />
-                    <span>Map</span>
-                  </span>
-                )}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowMapPicker(true)}
+                    className="text-[9px] font-bold text-red-600 bg-red-50 hover:bg-red-100 px-1.5 py-0.2 rounded border border-red-200 transition-colors cursor-pointer"
+                    title="Choose destination on live map"
+                  >
+                    📍 Map
+                  </button>
+                  {isFetchingMapRoute ? (
+                    <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                      <span>Maps...</span>
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                      <Check className="w-2.5 h-2.5 text-emerald-600" />
+                      <span>Live</span>
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="relative">
                 <input
@@ -1378,6 +1391,20 @@ export const BookingPage: React.FC = () => {
         )}
 
       </main>
+
+      {/* Interactive Choose-On-Map Destination Modal */}
+      <MapLocationPickerModal
+        isOpen={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        initialLat={destinationCoords?.lat || 13.6288}
+        initialLng={destinationCoords?.lng || 79.4192}
+        initialName={toLocation}
+        originCoords={userCoords || CITY_COORDINATES.hyderabad}
+        onConfirmLocation={(loc) => {
+          setToLocation(loc.name);
+          setDestinationCoords({ lat: loc.lat, lng: loc.lng });
+        }}
+      />
 
     </div>
   );

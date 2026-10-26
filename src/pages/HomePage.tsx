@@ -20,6 +20,8 @@ import {
   MapLocationItem,
   CITY_COORDINATES
 } from '../utils/geoDistancePrice';
+import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
+
 
 export const HomePage: React.FC = () => {
   const {
@@ -72,6 +74,7 @@ export const HomePage: React.FC = () => {
   const [showDestSuggestions, setShowDestSuggestions] = useState(false);
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const [isFetchingMapRoute, setIsFetchingMapRoute] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [liveMapData, setLiveMapData] = useState<{ distanceKm?: number; durationMinutes?: number; summary?: string } | null>(null);
 
   const [departureDate, setDepartureDate] = useState(() => {
@@ -688,17 +691,28 @@ export const HomePage: React.FC = () => {
                           <MapPin className="w-3 h-3 text-red-500" />
                           DESTINATION DROP
                         </span>
-                        {isFetchingMapRoute ? (
-                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-200 animate-pulse">
-                            <RefreshCw className="w-2.5 h-2.5 animate-spin" />
-                            <span>Auto-fetching route...</span>
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
-                            <Check className="w-2.5 h-2.5 text-emerald-600" />
-                            <span>Map Connected</span>
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setShowMapPicker(true)}
+                            className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-200 transition-colors cursor-pointer shadow-2xs"
+                            title="Open map and drop pin on exact doorstep, custom location, or hotel"
+                          >
+                            <Compass className="w-2.5 h-2.5 text-red-600" />
+                            <span>Choose on Map</span>
+                          </button>
+                          {isFetchingMapRoute ? (
+                            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-200 animate-pulse">
+                              <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                              <span>Route...</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
+                              <Check className="w-2.5 h-2.5 text-emerald-600" />
+                              <span>Map</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="relative">
@@ -711,7 +725,7 @@ export const HomePage: React.FC = () => {
                             setToCity(e.target.value);
                             setShowDestSuggestions(true);
                           }}
-                          placeholder="e.g. Tirupati, Goa, Bengaluru, Shirdi"
+                          placeholder="City, hotel, resort, or paste Google Maps link"
                           className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none placeholder-neutral-400 pr-6"
                         />
                         {toCity && (
@@ -729,13 +743,31 @@ export const HomePage: React.FC = () => {
                         )}
                       </div>
 
-                      <input
-                        type="text"
-                        value={toDropDetails}
-                        onChange={(e) => setToDropDetails(e.target.value)}
-                        placeholder="Hotel, Temple, or Sightseeing Drop"
-                        className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none truncate mt-0.5"
-                      />
+                      <div className="flex items-center justify-between mt-1">
+                        <input
+                          type="text"
+                          value={toDropDetails}
+                          onChange={(e) => setToDropDetails(e.target.value)}
+                          placeholder="Hotel, Landmark, or Doorstep Drop"
+                          className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none truncate"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const clip = await navigator.clipboard?.readText();
+                              if (clip) {
+                                setToCity(clip);
+                                setShowDestSuggestions(true);
+                              }
+                            } catch {}
+                          }}
+                          className="text-[9px] font-bold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 px-2 py-0.5 rounded shrink-0 transition-colors cursor-pointer ml-1"
+                          title="Paste Google Maps URL or coordinates from clipboard"
+                        >
+                          Paste Link
+                        </button>
+                      </div>
 
                       {/* Reach Time & Distance Summary Chip directly inside the Destination tile */}
                       <div className="mt-2.5 pt-2 border-t border-neutral-200/60 flex items-center justify-between text-[11px]">
@@ -1707,6 +1739,21 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Interactive Choose-On-Map Destination Modal */}
+      <MapLocationPickerModal
+        isOpen={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        initialLat={destinationCoords?.lat || 13.6288}
+        initialLng={destinationCoords?.lng || 79.4192}
+        initialName={toCity}
+        originCoords={userCoords || CITY_COORDINATES.hyderabad}
+        onConfirmLocation={(loc) => {
+          setToCity(loc.name);
+          setToDropDetails(loc.displayName);
+          setDestinationCoords({ lat: loc.lat, lng: loc.lng });
+        }}
+      />
 
     </div>
   );

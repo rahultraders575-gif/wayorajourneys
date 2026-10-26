@@ -288,16 +288,168 @@ export async function fetchLiveMapRoute(
 }
 
 /**
- * Live search and autocomplete for Indian destinations from Maps (Nominatim + Highway Directory)
+ * Parse coordinates and place names from Google Maps URLs or direct Lat,Lng coordinates
+ * Supports:
+ * - Direct lat,lng: "17.4435, 78.3772"
+ * - https://www.google.com/maps/place/Place+Name/@17.4435,78.3772,17z/...
+ * - https://maps.google.com/?q=17.4435,78.3772
+ * - https://www.google.com/maps/search/?api=1&query=17.4435,78.3772
+ * - https://www.google.com/maps/dir/.../17.4435,78.3772
+ * - data=...!3d17.443521!4d78.377218
+ */
+export function parseGoogleMapsInput(input: string): { lat: number; lng: number; placeName?: string } | null {
+  if (!input) return null;
+  const str = input.trim();
+
+  // 1. Direct Lat, Lng format: "17.4435, 78.3772" or "17.4435,78.3772"
+  const directCoordMatch = str.match(/^(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)$/);
+  if (directCoordMatch) {
+    const lat = parseFloat(directCoordMatch[1]);
+    const lng = parseFloat(directCoordMatch[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat, lng, placeName: `Custom Pin (${lat.toFixed(4)}, ${lng.toFixed(4)})` };
+    }
+  }
+
+  // 2. Google Maps URL patterns
+  // Pattern A: @lat,lng,zoom
+  const atMatch = str.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  // Pattern B: q=lat,lng or query=lat,lng or ll=lat,lng
+  const queryMatch = str.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  // Pattern C: !3dlat!4dlng (Google Maps Protobuf)
+  const protoMatch = str.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  // Pattern D: /dir/.../lat,lng
+  const dirMatch = str.match(/\/dir\/.*?\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+  let lat: number | null = null;
+  let lng: number | null = null;
+
+  if (atMatch) {
+    lat = parseFloat(atMatch[1]);
+    lng = parseFloat(atMatch[2]);
+  } else if (queryMatch) {
+    lat = parseFloat(queryMatch[1]);
+    lng = parseFloat(queryMatch[2]);
+  } else if (protoMatch) {
+    lat = parseFloat(protoMatch[1]);
+    lng = parseFloat(protoMatch[2]);
+  } else if (dirMatch) {
+    lat = parseFloat(dirMatch[1]);
+    lng = parseFloat(dirMatch[2]);
+  }
+
+  // Try extracting human place title from URL path: /place/Place+Name/
+  let placeName: string | undefined = undefined;
+  const placePathMatch = str.match(/\/place\/([^/@?]+)/);
+  if (placePathMatch && placePathMatch[1]) {
+    placeName = decodeURIComponent(placePathMatch[1].replace(/\+/g, ' ')).trim();
+  }
+
+  if (lat !== null && lng !== null && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+    return {
+      lat,
+      lng,
+      placeName: placeName || `Google Maps Pin (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Reverse Geocode coordinates to address and location name using OpenStreetMap
+ */
+export async function reverseGeocodeLocation(lat: number, lng: number): Promise<{
+  name: string;
+  displayName: string;
+  road?: string;
+  city?: string;
+  state?: string;
+}> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2600);
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'Accept-Language': 'en' },
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const addr = data.address || {};
+      const primary =
+        data.name ||
+        addr.amenity ||
+        addr.building ||
+        addr.hotel ||
+        addr.tourism ||
+        addr.neighbourhood ||
+        addr.suburb ||
+        addr.road ||
+        addr.village ||
+        addr.town ||
+        addr.city ||
+        'Custom Destination Pin';
+
+      const secondary = [
+        addr.suburb || addr.neighbourhood,
+        addr.city || addr.town || addr.district,
+        addr.state,
+        addr.postcode,
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        name: primary,
+        displayName: data.display_name || `${primary}, ${secondary}`,
+        road: addr.road,
+        city: addr.city || addr.town || addr.district,
+        state: addr.state,
+      };
+    }
+  } catch {
+    // Fallback
+  }
+
+  return {
+    name: `Custom Pin (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+    displayName: `Pinned at Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`,
+  };
+}
+
+/**
+ * Live search and autocomplete for custom destinations, Google Maps links, and landmarks
  */
 export async function searchMapLocations(query: string): Promise<MapLocationItem[]> {
   if (!query || query.trim().length < 2) return [];
-  const qClean = query.trim().toLowerCase();
+  const qClean = query.trim();
+
+  // 0. Detect pasted Google Maps link or direct Lat,Lng coordinates
+  const parsedGMap = parseGoogleMapsInput(qClean);
+  if (parsedGMap) {
+    const rev = await reverseGeocodeLocation(parsedGMap.lat, parsedGMap.lng);
+    return [
+      {
+        name: parsedGMap.placeName && !parsedGMap.placeName.startsWith('Custom Pin')
+          ? parsedGMap.placeName
+          : rev.name,
+        displayName: `📍 Google Maps Verified: ${rev.displayName}`,
+        lat: parsedGMap.lat,
+        lng: parsedGMap.lng,
+        category: 'googlemaps',
+      },
+    ];
+  }
+
+  const qLower = qClean.toLowerCase();
 
   // 1. Instant local index lookup
   const localMatches: MapLocationItem[] = [];
   for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
-    if (key.includes(qClean) || qClean.includes(key)) {
+    if (key.includes(qLower) || qLower.includes(key)) {
       const formatted = key.charAt(0).toUpperCase() + key.slice(1);
       localMatches.push({
         name: formatted,
@@ -309,13 +461,13 @@ export async function searchMapLocations(query: string): Promise<MapLocationItem
     }
   }
 
-  // 2. Query OpenStreetMap Nominatim for exact landmarks, hotels, airports, or addresses
+  // 2. Query OpenStreetMap Nominatim for any custom address, hotel, resort, colony, pin code, or landmark
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2200);
+    const timeout = setTimeout(() => controller.abort(), 2600);
     const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-      query
-    )}&countrycodes=in&addressdetails=1&limit=6`;
+      qClean
+    )}&countrycodes=in&addressdetails=1&limit=8`;
     const res = await fetch(nominatimUrl, {
       signal: controller.signal,
       headers: {
@@ -331,7 +483,14 @@ export async function searchMapLocations(query: string): Promise<MapLocationItem
         displayName: item.display_name,
         lat: parseFloat(item.lat),
         lng: parseFloat(item.lon),
-        category: item.type === 'aerodrome' ? 'airport' : item.type === 'place_of_worship' ? 'temple' : 'city',
+        category:
+          item.type === 'aerodrome'
+            ? 'airport'
+            : item.type === 'place_of_worship'
+            ? 'temple'
+            : item.class === 'tourism' || item.type === 'hotel' || item.type === 'resort'
+            ? 'hotel'
+            : 'custom',
       }));
 
       const combined = [...localMatches, ...osmMatches];
@@ -341,13 +500,13 @@ export async function searchMapLocations(query: string): Promise<MapLocationItem
         if (seen.has(id)) return false;
         seen.add(id);
         return true;
-      }).slice(0, 7);
+      }).slice(0, 8);
     }
   } catch {
     // Fall back to local
   }
 
-  return localMatches.slice(0, 7);
+  return localMatches.slice(0, 8);
 }
 
 /**

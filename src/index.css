@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
+@import "leaflet/dist/leaflet.css";
 
 @layer base {
   :root {
