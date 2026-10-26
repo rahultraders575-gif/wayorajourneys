@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCms, PageId } from '../context/CmsContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
 import { RoyalDoorwaySection } from '../components/RoyalDoorwaySection';
+import { FlyingBirds } from '../components/FlyingBirds';
 import { TrendingRoutesStickySection } from '../components/TrendingRoutesStickySection';
 import { TripType } from '../types';
 import {
@@ -158,6 +159,8 @@ export const HomePage: React.FC = () => {
               alt="Metropolitan city skyline and scenic highway overlook"
               className="w-full h-full object-cover object-center lg:object-[center_60%] filter contrast-[1.02] saturate-[1.05]"
             />
+            {/* Realistic Flying Birds in Sky */}
+            <FlyingBirds birdCount={16} skyCoverage={0.42} primaryDirection="right" colorTone="natural" />
             {/* Contrast overlay: On mobile, full vertical protective gradient ensuring 100% crisp typography; On desktop, elegant left-side gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/30 sm:bg-gradient-to-r sm:from-white sm:via-white/95 sm:to-transparent lg:w-[54%]" />
           </div>

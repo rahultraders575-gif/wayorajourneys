@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useCms } from '../context/CmsContext';
 import { useLenis } from '../context/LenisContext';
 import { ArrowRight, Compass, Key, Globe, Shield, Sparkles, ChevronDown } from 'lucide-react';
+import { FlyingBirds } from './FlyingBirds';
 
 export const RoyalDoorwaySection: React.FC = () => {
   const { openBookingModal } = useCms();
@@ -338,8 +339,11 @@ export const RoyalDoorwaySection: React.FC = () => {
               className="w-screen min-w-full h-full object-cover object-center filter saturate-[1.08] brightness-[1.02] contrast-[1.04] transition-transform duration-700 ease-out scale-[1.05]"
             />
             
+            {/* Realistic Flying Birds in Sky */}
+            <FlyingBirds birdCount={24} skyCoverage={0.54} primaryDirection="mixed" colorTone="natural" />
+
             {/* Royal Ambient Lighting Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0307]/70 via-transparent to-[#D4AF37]/15 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0307]/70 via-transparent to-[#D4AF37]/15 mix-blend-multiply pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#2d050b]/25 via-transparent to-black/35 pointer-events-none" />
           </div>
 
