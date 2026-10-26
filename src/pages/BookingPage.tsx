@@ -7,10 +7,13 @@ import {
   Wifi, Wind, ArrowRight, User, Sparkles, ChevronRight
 } from 'lucide-react';
 
+import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+
 export const BookingPage: React.FC = () => {
   const { 
     setActivePage, openAuthModal, currentRider,
-    addBooking, showToast, bookingSearchDetails, setBookingSearchDetails
+    addBooking, showToast, bookingSearchDetails, setBookingSearchDetails,
+    userLocation, userCoords
   } = useCms();
 
   // Sub-navigation view inside Booking Page:
@@ -24,10 +27,18 @@ export const BookingPage: React.FC = () => {
 
   // Top Search ribbon states
   const [tripType, setTripType] = useState(bookingSearchDetails.tripType || 'Outstation One-way');
-  const [fromLocation, setFromLocation] = useState(bookingSearchDetails.fromCity || 'Mumbai');
-  const [toLocation, setToLocation] = useState(bookingSearchDetails.toCity || 'Goa');
+  const [fromLocation, setFromLocation] = useState(bookingSearchDetails.fromCity || userLocation || 'Kengeri, Bengaluru');
+  const [toLocation, setToLocation] = useState(bookingSearchDetails.toCity || 'Tirupati, Andhra Pradesh');
   const [pickupDate, setPickupDate] = useState(bookingSearchDetails.pickupDate || 'Fri, 16 Oct 2026');
   const [pickupTime, setPickupTime] = useState(bookingSearchDetails.pickupTime || '03:00 AM');
+
+  // Dynamic route distance & time calculation from live coordinates
+  const routeCalc = calculateTripRouteAndPrice({
+    originName: fromLocation,
+    originCoords: userCoords,
+    destinationName: toLocation,
+    tripType: tripType as any,
+  });
 
   // Passenger "Your Details" form states
   const [title, setTitle] = useState('Mr');
@@ -379,14 +390,19 @@ export const BookingPage: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setCarDetailsTab('location')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    onClick={() => {
+                      setCarDetailsTab('location');
+                      const mapEl = document.getElementById('route-map-section');
+                      if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                       carDetailsTab === 'location'
-                        ? 'bg-white text-slate-900 shadow-xs'
+                        ? 'bg-red-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Chauffeur Hub
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Live Map & Routes ({routeCalc.distanceKm} km)</span>
                   </button>
                 </div>
               </div>
@@ -505,10 +521,24 @@ export const BookingPage: React.FC = () => {
             </div>
 
             {/* BOTTOM CARD: Chauffeur Hub Location & Map View */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/90">
-              <h3 className="text-xl font-black text-slate-900 mb-6">
-                Chauffeur Dispatch Hub & Route Overview
-              </h3>
+            <div id="route-map-section" className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/90 scroll-mt-28">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <span className="text-xs font-bold text-red-600 uppercase tracking-widest block">Live Navigation</span>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+                    Live Highway Map & Available Routes
+                  </h3>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                    🛣️ {routeCalc.distanceKm} km Total
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                    ⏱️ Est. {routeCalc.durationFormatted}
+                  </span>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 
@@ -571,8 +601,8 @@ export const BookingPage: React.FC = () => {
                   <RouteMiniMap
                     origin={fromLocation}
                     destination={toLocation}
-                    distanceKm={tripType === 'Outstation One-way' ? 580 : 1160}
-                    duration={tripType === 'Outstation One-way' ? '8h 45m' : '17h 30m'}
+                    distanceKm={routeCalc.distanceKm}
+                    duration={routeCalc.durationFormatted}
                     vehicleName={selectedCar.name}
                     tollIncluded={true}
                     isDark={false}
