@@ -10,7 +10,8 @@ import {
   calculateTripRouteAndPrice, 
   lookupCityCoords, 
   CITY_COORDINATES, 
-  LatLng 
+  LatLng,
+  fetchLiveRouteGeometry
 } from '../utils/geoDistancePrice';
 
 export interface RouteOption {
@@ -64,12 +65,18 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
   const routeGlowRef = useRef<L.Polyline | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [mapLayer, setMapLayer] = useState<'streets' | 'voyager' | 'dark'>('voyager');
+  const [mapLayer, setMapLayer] = useState<'streets' | 'voyager' | 'dark'>('streets');
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-primary');
+  const [liveRoadCoordinates, setLiveRoadCoordinates] = useState<[number, number][] | null>(null);
+  const [isLoadingGeometry, setIsLoadingGeometry] = useState(false);
 
-  // Format clean short city names (never generic "Origin Hub")
-  const cleanOrigin = origin.split(',')[0].trim() || 'Pickup Location';
-  const cleanDestination = destination.split(',')[0].trim() || 'Destination Drop';
+  // Format clean real city names (never generic "Origin Hub")
+  const cleanOrigin = origin && origin.toLowerCase() !== 'origin hub' && origin.trim().length > 0
+    ? origin.split(',')[0].trim()
+    : 'Mumbai';
+  const cleanDestination = destination && destination.trim().length > 0
+    ? destination.split(',')[0].trim()
+    : 'Srisailam';
 
   // Resolve true geographical coordinates
   const resolvedOriginCoords: LatLng = originCoords || lookupCityCoords(origin) || CITY_COORDINATES.mumbai || { lat: 19.0760, lng: 72.8777 };
@@ -77,8 +84,8 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
 
   // Compute live route distance and duration calculation
   const computed = calculateTripRouteAndPrice({
-    originName: origin,
-    destinationName: destination,
+    originName: cleanOrigin,
+    destinationName: cleanDestination,
     originCoords: resolvedOriginCoords,
     destinationCoords: resolvedDestCoords,
     tripType: 'One-Way Drop',
@@ -138,26 +145,46 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     }
   }, [selectedRouteId]);
 
-  // Generate realistic curved highway coordinates between origin and destination
-  const generateRouteCoordinates = (start: LatLng, end: LatLng, variant: string): [number, number][] => {
+  // Fetch real highway polyline from OpenStreetMap OSRM
+  useEffect(() => {
+    let active = true;
+    const fetchGeometry = async () => {
+      setIsLoadingGeometry(true);
+      try {
+        const coords = await fetchLiveRouteGeometry(resolvedOriginCoords, resolvedDestCoords);
+        if (active && coords && coords.length > 5) {
+          setLiveRoadCoordinates(coords);
+        }
+      } catch {
+        // silent fallback
+      } finally {
+        if (active) setIsLoadingGeometry(false);
+      }
+    };
+
+    fetchGeometry();
+    return () => {
+      active = false;
+    };
+  }, [resolvedOriginCoords.lat, resolvedOriginCoords.lng, resolvedDestCoords.lat, resolvedDestCoords.lng]);
+
+  // Generate fallback curved highway coordinates if offline
+  const generateFallbackCoordinates = (start: LatLng, end: LatLng, variant: string): [number, number][] => {
     const points: [number, number][] = [];
-    const steps = 30;
+    const steps = 40;
     
-    // Offset perpendicular factor based on corridor variant
-    const curveOffset = variant === 'route-scenic' ? 0.08 : variant === 'route-bypass' ? -0.06 : 0.02;
+    const curveOffset = variant === 'route-scenic' ? 0.12 : variant === 'route-bypass' ? -0.09 : 0.03;
 
     const midLat = (start.lat + end.lat) / 2;
     const midLng = (start.lng + end.lng) / 2;
     const dLat = end.lat - start.lat;
     const dLng = end.lng - start.lng;
 
-    // Perpendicular vector for natural road curve
     const perpLat = -dLng * curveOffset;
     const perpLng = dLat * curveOffset;
 
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
-      // Quadratic bezier interpolation with slight highway wobble
       const wobble = Math.sin(t * Math.PI * 4) * 0.015;
       const lat = (1 - t) * (1 - t) * start.lat + 2 * (1 - t) * t * (midLat + perpLat) + t * t * end.lat + wobble;
       const lng = (1 - t) * (1 - t) * start.lng + 2 * (1 - t) * t * (midLng + perpLng) + t * t * end.lng + wobble;
@@ -168,33 +195,33 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
 
   // Initialize and update Real Leaflet Map
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    const container = mapContainerRef.current;
+    if (!container) return;
 
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        zoomControl: false,
-        attributionControl: false,
-        scrollWheelZoom: true,
-      });
-
-      mapInstanceRef.current = map;
-      markersLayerRef.current = L.layerGroup().addTo(map);
+    // Safely re-initialize Leaflet without container errors
+    if ((container as any)._leaflet_id) {
+      (container as any)._leaflet_id = null;
     }
+    container.innerHTML = '';
 
-    const map = mapInstanceRef.current;
-    if (!map) return;
+    const startLat = resolvedOriginCoords.lat;
+    const startLng = resolvedOriginCoords.lng;
+    const endLat = resolvedDestCoords.lat;
+    const endLng = resolvedDestCoords.lng;
 
-    // Remove existing tile layers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.TileLayer) {
-        map.removeLayer(layer);
-      }
+    const map = L.map(container, {
+      center: [(startLat + endLat) / 2, (startLng + endLng) / 2],
+      zoom: 8,
+      zoomControl: false,
+      attributionControl: false,
+      scrollWheelZoom: true,
     });
+    mapInstanceRef.current = map;
 
-    // Add selected Tile Layer (Real OpenStreetMap / CartoDB)
-    let tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-    if (mapLayer === 'streets') {
-      tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    // Direct High-Resolution Real Map Tiles
+    let tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    if (mapLayer === 'voyager') {
+      tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
     } else if (mapLayer === 'dark') {
       tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
     }
@@ -204,27 +231,16 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       subdomains: 'abcd',
     }).addTo(map);
 
-    // Clear previous markers & polylines
-    if (markersLayerRef.current) {
-      markersLayerRef.current.clearLayers();
-    }
-    if (routePolylineRef.current) {
-      map.removeLayer(routePolylineRef.current);
-    }
-    if (routeGlowRef.current) {
-      map.removeLayer(routeGlowRef.current);
-    }
+    const markersGroup = L.layerGroup().addTo(map);
+    markersLayerRef.current = markersGroup;
 
-    const startLat = resolvedOriginCoords.lat;
-    const startLng = resolvedOriginCoords.lng;
-    const endLat = resolvedDestCoords.lat;
-    const endLng = resolvedDestCoords.lng;
-
-    // Create Route Coordinates
-    const latLngs = generateRouteCoordinates(resolvedOriginCoords, resolvedDestCoords, selectedRouteId);
+    // Use live OSRM road coordinates if available; else fallback to curved highway
+    const routePoints: [number, number][] = liveRoadCoordinates && liveRoadCoordinates.length > 5
+      ? liveRoadCoordinates
+      : generateFallbackCoordinates(resolvedOriginCoords, resolvedDestCoords, selectedRouteId);
 
     // Outer Glow / Road Border
-    routeGlowRef.current = L.polyline(latLngs, {
+    routeGlowRef.current = L.polyline(routePoints, {
       color: '#B91C1C',
       weight: 7,
       opacity: 0.5,
@@ -232,8 +248,8 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       lineJoin: 'round',
     }).addTo(map);
 
-    // Core Road Route Line
-    routePolylineRef.current = L.polyline(latLngs, {
+    // Core High-Speed Highway Polyline
+    routePolylineRef.current = L.polyline(routePoints, {
       color: '#EF4444',
       weight: 4,
       opacity: 0.95,
@@ -246,7 +262,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     const originIcon = L.divIcon({
       className: 'custom-real-map-marker',
       html: `
-        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-emerald-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-lg border-2 border-white whitespace-nowrap cursor-pointer">
+        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-emerald-600 text-white font-black text-xs px-3 py-1.5 rounded-full shadow-2xl border-2 border-white whitespace-nowrap cursor-pointer">
           <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
           <span>${cleanOrigin}</span>
         </div>
@@ -258,7 +274,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     const destIcon = L.divIcon({
       className: 'custom-real-map-marker',
       html: `
-        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-red-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-lg border-2 border-white whitespace-nowrap cursor-pointer">
+        <div style="transform: translate(-50%, -100%);" class="flex items-center gap-1.5 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-full shadow-2xl border-2 border-white whitespace-nowrap cursor-pointer">
           <span>🏁</span>
           <span>${cleanDestination}</span>
         </div>
@@ -267,47 +283,59 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
     });
 
     // Midpoint Toll Plaza Marker Icon
-    const midIndex = Math.floor(latLngs.length * 0.52);
-    const midPoint = latLngs[midIndex] || [(startLat + endLat) / 2, (startLng + endLng) / 2];
+    const midIndex = Math.floor(routePoints.length * 0.5);
+    const midPoint = routePoints[midIndex] || [(startLat + endLat) / 2, (startLng + endLng) / 2];
     const tollIcon = L.divIcon({
       className: 'custom-real-map-marker',
       html: `
-        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-amber-500 text-slate-900 font-bold text-[9px] px-2 py-0.5 rounded-full shadow-md border border-white whitespace-nowrap">
-          <span>⚡ Fastag Plaza</span>
+        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-amber-500 text-slate-900 font-bold text-[10px] px-2.5 py-0.5 rounded-full shadow-md border border-white whitespace-nowrap">
+          <span>⚡ Fastag Toll Plaza</span>
         </div>
       `,
       iconSize: [0, 0],
     });
 
     // Live Vehicle Dispatch Marker Icon (35% along the route)
-    const carIndex = Math.floor(latLngs.length * 0.35);
-    const carPoint = latLngs[carIndex] || [(startLat * 0.65 + endLat * 0.35), (startLng * 0.65 + endLng * 0.35)];
+    const carIndex = Math.floor(routePoints.length * 0.35);
+    const carPoint = routePoints[carIndex] || [(startLat * 0.65 + endLat * 0.35), (startLng * 0.65 + endLng * 0.35)];
     const carIcon = L.divIcon({
       className: 'custom-real-map-marker',
       html: `
-        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1 bg-slate-900 text-white font-bold text-[9px] px-2 py-0.5 rounded-full shadow-md border border-emerald-400 whitespace-nowrap">
+        <div style="transform: translate(-50%, -50%);" class="flex items-center gap-1.5 bg-slate-900 text-white font-bold text-[10px] px-2.5 py-1 rounded-full shadow-lg border border-emerald-400 whitespace-nowrap">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Live Dispatch</span>
+          <span>Live Dispatch #WY-9374</span>
         </div>
       `,
       iconSize: [0, 0],
     });
 
-    if (markersLayerRef.current) {
-      L.marker([startLat, startLng], { icon: originIcon }).addTo(markersLayerRef.current);
-      L.marker([endLat, endLng], { icon: destIcon }).addTo(markersLayerRef.current);
-      L.marker(midPoint, { icon: tollIcon }).addTo(markersLayerRef.current);
-      L.marker(carPoint, { icon: carIcon }).addTo(markersLayerRef.current);
-    }
+    L.marker([startLat, startLng], { icon: originIcon }).addTo(markersGroup);
+    L.marker([endLat, endLng], { icon: destIcon }).addTo(markersGroup);
+    L.marker(midPoint, { icon: tollIcon }).addTo(markersGroup);
+    L.marker(carPoint, { icon: carIcon }).addTo(markersGroup);
 
-    // Fit bounds gracefully to show entire route with comfortable padding
+    // Fit bounds gracefully with padding
     const bounds = L.latLngBounds([
       [startLat, startLng],
       [endLat, endLng],
     ]);
-    map.fitBounds(bounds, { padding: [45, 45], maxZoom: 13 });
+    map.fitBounds(bounds, { padding: [55, 55], maxZoom: 13 });
 
-  }, [origin, destination, resolvedOriginCoords.lat, resolvedOriginCoords.lng, resolvedDestCoords.lat, resolvedDestCoords.lng, selectedRouteId, mapLayer]);
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, [
+    cleanOrigin, 
+    cleanDestination, 
+    resolvedOriginCoords.lat, 
+    resolvedOriginCoords.lng, 
+    resolvedDestCoords.lat, 
+    resolvedDestCoords.lng, 
+    selectedRouteId, 
+    mapLayer, 
+    liveRoadCoordinates
+  ]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
@@ -323,7 +351,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
         [resolvedOriginCoords.lat, resolvedOriginCoords.lng],
         [resolvedDestCoords.lat, resolvedDestCoords.lng],
       ]);
-      mapInstanceRef.current.fitBounds(bounds, { padding: [45, 45], maxZoom: 13 });
+      mapInstanceRef.current.fitBounds(bounds, { padding: [55, 55], maxZoom: 13 });
     }
   };
 
@@ -383,11 +411,11 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
       </div>
 
       {/* Real Interactive Leaflet Highway Map Viewport */}
-      <div className="relative w-full h-72 sm:h-80 select-none bg-slate-100">
+      <div className="relative w-full h-72 sm:h-84 select-none bg-slate-100">
         <div 
           ref={mapContainerRef} 
           className="w-full h-full z-0" 
-          style={{ minHeight: '100%' }}
+          style={{ minHeight: '100%', minWidth: '100%' }}
         />
 
         {/* Real-time Highway Radar Indicator Badge */}
@@ -433,7 +461,7 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
             <button
               type="button"
               onClick={() => {
-                setMapLayer((prev) => prev === 'voyager' ? 'streets' : prev === 'streets' ? 'dark' : 'voyager');
+                setMapLayer((prev) => prev === 'streets' ? 'voyager' : prev === 'voyager' ? 'dark' : 'streets');
               }}
               className="p-2 rounded-xl bg-white/95 backdrop-blur-md text-slate-700 hover:text-red-600 shadow-md border border-slate-200 transition-colors cursor-pointer"
               title={`Switch Map Layer (Current: ${mapLayer})`}

@@ -496,6 +496,33 @@ export async function fetchLiveMapRoute(
 }
 
 /**
+ * Fetch real highway driving coordinates (lat, lng path) from OpenStreetMap OSRM routing engine
+ */
+export async function fetchLiveRouteGeometry(
+  origin: LatLng,
+  destination: LatLng
+): Promise<[number, number][] | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const coords = data.routes[0].geometry.coordinates; // [lng, lat]
+      return coords.map(([lng, lat]: [number, number]) => [lat, lng]);
+    }
+  } catch {
+    // Fallback to curved geometry
+  }
+  return null;
+}
+
+/**
  * Parse coordinates and place names from Google Maps URLs or direct Lat,Lng coordinates
  * Supports:
  * - Direct lat,lng: "17.4435, 78.3772"
