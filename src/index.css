@@ -8,11 +8,16 @@
     --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     font-family: var(--font-sans);
     background-color: #f8fafc;
     color: #0f172a;
     overflow-x: hidden;
+    width: 100%;
   }
 
   h1, h2, h3, .font-display {
@@ -65,21 +70,20 @@ html.lenis, html.lenis body {
     0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-/* Custom Red-Themed Light Scrollbar */
+/* Sleek Minimal Modern Scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #fdfbf7;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #800020;
+  background: rgba(148, 163, 184, 0.45);
   border-radius: 9999px;
-  border: 1px solid #AA771C;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b1124;
+  background: rgba(225, 29, 72, 0.65);
 }
 
 /* Luxury ambient background grid for light theme */

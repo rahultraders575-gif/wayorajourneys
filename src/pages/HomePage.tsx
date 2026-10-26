@@ -367,14 +367,14 @@ export const HomePage: React.FC = () => {
               </button>
 
               {/* Minimal Clean Navigation Links (Pure typography, minimal and professional) */}
-              <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2 shrink-0">
+              <nav className="hidden xl:flex items-center gap-1 2xl:gap-2">
                 {navItems.map((item) => {
                   const isActive = activePage === item.id;
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`whitespace-nowrap shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${isActive
+                      className={`whitespace-nowrap px-2.5 2xl:px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${isActive
                         ? 'bg-red-50 text-red-600 border border-red-200/80 shadow-xs font-bold'
                         : 'text-slate-700 hover:text-red-600 hover:bg-slate-100/80'
                         }`}
@@ -386,13 +386,13 @@ export const HomePage: React.FC = () => {
               </nav>
 
               {/* Right Zone: Partner CTA & Rider Profile Pill */}
-              <div className="flex items-center gap-2 xl:gap-3 shrink-0">
+              <div className="flex items-center gap-2 xl:gap-2.5 shrink-0">
 
-                {/* Become a Partner Button */}
+                {/* Become a Partner Button (Visible on ultra-wide & large screens) */}
                 <button
                   type="button"
                   onClick={() => handleNavClick('captain')}
-                  className="hidden xl:flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
+                  className="hidden 2xl:flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
                 >
                   <UserCheck className="w-3.5 h-3.5 text-red-600" />
                   <span>Become a Partner</span>
@@ -403,14 +403,14 @@ export const HomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={openAuthModal}
-                  className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
+                  className="flex items-center gap-1.5 sm:gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-2.5 sm:pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
                 >
                   <img
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
                     alt="User Profile"
                     className="w-6 h-6 rounded-full object-cover ring-1 ring-white shrink-0"
                   />
-                  <span className="truncate max-w-[80px] sm:max-w-[110px] whitespace-nowrap">
+                  <span className="truncate max-w-[70px] sm:max-w-[95px] whitespace-nowrap font-bold">
                     {currentRider ? currentRider.name : 'Aarav Sharma'}
                   </span>
                   <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
@@ -420,7 +420,7 @@ export const HomePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="lg:hidden p-2 text-slate-800 hover:text-red-600 rounded-xl bg-slate-100 border border-slate-200"
+                  className="xl:hidden p-2 text-slate-800 hover:text-red-600 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer"
                   aria-label="Toggle navigation"
                 >
                   {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -432,7 +432,7 @@ export const HomePage: React.FC = () => {
 
             {/* Mobile Expanded Menu Drawer */}
             {mobileMenuOpen && (
-              <div className="lg:hidden mt-3 pt-3 border-t border-slate-200 space-y-1.5 animate-in fade-in bg-white/95 rounded-2xl p-3 shadow-lg">
+              <div className="xl:hidden mt-3 pt-3 border-t border-slate-200 space-y-1.5 animate-in fade-in bg-white/95 rounded-2xl p-3 shadow-lg">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
