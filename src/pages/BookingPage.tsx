@@ -355,6 +355,7 @@ export const BookingPage: React.FC = () => {
                 <option value="Outstation Round-trip">Outstation Round-trip</option>
                 <option value="Airport Transfer">Airport Transfer</option>
                 <option value="Hourly Rental">Hourly Rental (8h / 80km)</option>
+                <option value="Office Commute">Office Commute / Corporate</option>
               </select>
             </div>
 

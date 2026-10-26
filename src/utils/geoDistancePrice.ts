@@ -49,13 +49,19 @@ export interface RouteCalculationResult {
 
 // Well-known coordinates across South, Central & North India for instant lookups
 export const CITY_COORDINATES: Record<string, LatLng> = {
-  // Hubs
+  // Hubs & Airports
   hyderabad: { lat: 17.385, lng: 78.4867 },
   'hiteccity': { lat: 17.4435, lng: 78.3772 },
   'gachibowli': { lat: 17.4401, lng: 78.3489 },
   'secunderabad': { lat: 17.4399, lng: 78.4983 },
   'rgiairport': { lat: 17.2403, lng: 78.4294 },
   'shamshabad': { lat: 17.2403, lng: 78.4294 },
+  'kempegowda': { lat: 13.1986, lng: 77.7066 },
+  'bangaloreairport': { lat: 13.1986, lng: 77.7066 },
+  'blrairport': { lat: 13.1986, lng: 77.7066 },
+  'mumbaiairport': { lat: 19.0896, lng: 72.8656 },
+  'delhiairport': { lat: 28.5562, lng: 77.1000 },
+  'chennaiairport': { lat: 12.9941, lng: 80.1709 },
 
   // Spiritual & Outstation Destinations
   tirupati: { lat: 13.6288, lng: 79.4192 },

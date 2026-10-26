@@ -9,7 +9,8 @@ import {
   Sparkles, Award, Star, Compass, Phone, MessageSquare, CheckCircle2,
   Briefcase, Car, ChevronRight, Gauge, RefreshCw, Navigation,
   Wallet, Globe, HelpCircle, ChevronDown, Check, Copy, Tag, Building2,
-  UserCheck, User, Menu, ChevronUp, Shield, X, Luggage, Plane, Hotel, Home, BookOpen
+  UserCheck, User, Menu, ChevronUp, Shield, X, Luggage, Plane, Hotel, Home, BookOpen,
+  RotateCcw
 } from 'lucide-react';
 
 import { 
@@ -22,6 +23,9 @@ import {
 } from '../utils/geoDistancePrice';
 import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
 
+
+// Cab Booking Trip Modes with Icons: Round Trip | One-Way Drop | Airport | Hourly Rental | Office
+export type TripModeType = 'Round Trip' | 'One-Way Drop' | 'Airport' | 'Hourly Rental' | 'Office';
 
 export const HomePage: React.FC = () => {
   const {
@@ -50,8 +54,15 @@ export const HomePage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Cab Booking Trip Modes: Round Trip | One-Way Drop | Hourly Rental
-  const [tripMode, setTripMode] = useState<'Round Trip' | 'One-Way Drop' | 'Hourly Rental'>('Round Trip');
+  const [tripMode, setTripMode] = useState<TripModeType>('Round Trip');
+
+  const tripModes: { id: TripModeType; label: string; icon: React.ReactNode }[] = [
+    { id: 'Round Trip', label: 'Round Trip', icon: <RotateCcw className="w-3.5 h-3.5" /> },
+    { id: 'One-Way Drop', label: 'One-Way Drop', icon: <ArrowRight className="w-3.5 h-3.5" /> },
+    { id: 'Airport', label: 'Airport', icon: <Plane className="w-3.5 h-3.5" /> },
+    { id: 'Hourly Rental', label: 'Hourly Rental', icon: <Clock className="w-3.5 h-3.5" /> },
+    { id: 'Office', label: 'Office', icon: <Building2 className="w-3.5 h-3.5" /> },
+  ];
 
   // Cab Classes & Vehicle Types
   const cabClasses = [
@@ -203,8 +214,14 @@ export const HomePage: React.FC = () => {
 
   const handleHeroSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    let tripTypeParam = 'Outstation Round-trip';
+    if (tripMode === 'One-Way Drop') tripTypeParam = 'Outstation One-way';
+    else if (tripMode === 'Airport') tripTypeParam = 'Airport Transfer';
+    else if (tripMode === 'Hourly Rental') tripTypeParam = 'Hourly Rental';
+    else if (tripMode === 'Office') tripTypeParam = 'Office Commute';
+
     navigateToBooking({
-      tripType: tripMode === 'One-Way Drop' ? 'Outstation One-way' : 'Outstation Round-trip',
+      tripType: tripTypeParam,
       fromCity,
       toCity,
       pickupDate: departureDate,
@@ -622,19 +639,30 @@ export const HomePage: React.FC = () => {
               {/* MAIN BOOKING CARD (White Floating Card from Reference with spacious padding) */}
               <div className="bg-white rounded-[32px] p-6 sm:p-8 lg:p-9 shadow-2xl border border-neutral-100/90 text-neutral-900 relative">
 
-                {/* Trip Mode Switcher: Round Trip | One-Way Drop | Hourly Rental */}
-                <div className="inline-flex items-center bg-[#F4F6F9] p-1.5 rounded-full mb-6 sm:mb-8 shadow-inner">
-                  {(['Round Trip', 'One-Way Drop', 'Hourly Rental'] as const).map((mode) => (
+                {/* Trip Mode Switcher with Icons: Round Trip | One-Way Drop | Airport | Hourly Rental | Office */}
+                <div className="inline-flex items-center flex-wrap gap-1 bg-[#F4F6F9] p-1.5 rounded-full mb-6 sm:mb-8 shadow-inner max-w-full">
+                  {tripModes.map((tab) => (
                     <button
-                      key={mode}
+                      key={tab.id}
                       type="button"
-                      onClick={() => setTripMode(mode)}
-                      className={`px-5 sm:px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${tripMode === mode
-                        ? 'bg-white text-neutral-900 shadow-sm'
+                      onClick={() => {
+                        setTripMode(tab.id);
+                        if (tab.id === 'Airport' && !toCity.toLowerCase().includes('airport')) {
+                          setToCity('Kempegowda Int\'l Airport (BLR)');
+                          setToDropDetails('Terminal 1 & 2 Departure / Arrival');
+                        } else if (tab.id === 'Office' && !toDropDetails.toLowerCase().includes('office')) {
+                          setToDropDetails('Tech Park / Corporate Office Drop');
+                        }
+                      }}
+                      className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${tripMode === tab.id
+                        ? 'bg-white text-neutral-900 shadow-sm border border-neutral-200/50'
                         : 'text-neutral-500 hover:text-neutral-900'
                         }`}
                     >
-                      {mode}
+                      <span className={tripMode === tab.id ? 'text-red-600' : 'text-neutral-400'}>
+                        {tab.icon}
+                      </span>
+                      <span>{tab.label}</span>
                     </button>
                   ))}
                 </div>
@@ -931,16 +959,16 @@ export const HomePage: React.FC = () => {
 
                     {/* Tile 5: RETURN DATE & TIME */}
                     <div className={`lg:col-span-3 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative ${
-                      tripMode === 'One-Way Drop' ? 'bg-neutral-100/60 opacity-60' : 'bg-[#F8FAFC] hover:bg-neutral-100/70'
+                      tripMode !== 'Round Trip' ? 'bg-neutral-100/60 opacity-60' : 'bg-[#F8FAFC] hover:bg-neutral-100/70'
                     }`}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-neutral-400" />
                           RETURN DATE & TIME
                         </span>
-                        {tripMode === 'One-Way Drop' ? (
+                        {tripMode !== 'Round Trip' ? (
                           <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                            One-Way
+                            {tripMode === 'Airport' ? 'Airport Drop' : tripMode === 'Office' ? 'Office Drop' : tripMode === 'Hourly Rental' ? 'Hourly Package' : 'One-Way'}
                           </span>
                         ) : (
                           <button
@@ -961,9 +989,9 @@ export const HomePage: React.FC = () => {
                       {/* Interactive HTML5 Return Date Input */}
                       <div className="flex items-center gap-2">
                         <input
-                          type={tripMode === 'One-Way Drop' ? 'text' : 'date'}
-                          disabled={tripMode === 'One-Way Drop'}
-                          value={tripMode === 'One-Way Drop' ? 'One-Way Drop' : (returnDate.includes('-') ? returnDate : new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0])}
+                          type={tripMode !== 'Round Trip' ? 'text' : 'date'}
+                          disabled={tripMode !== 'Round Trip'}
+                          value={tripMode !== 'Round Trip' ? (tripMode === 'Airport' ? 'Airport Drop (Direct)' : tripMode === 'Office' ? 'Office Commute (Direct)' : tripMode === 'Hourly Rental' ? 'Local Hourly Package' : 'One-Way Drop') : (returnDate.includes('-') ? returnDate : new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0])}
                           onChange={(e) => setReturnDate(e.target.value)}
                           className="w-full bg-white sm:bg-transparent border sm:border-0 border-neutral-200 rounded-lg px-2 sm:px-0 py-1 sm:py-0 text-sm sm:text-base font-bold text-neutral-900 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                         />
@@ -973,13 +1001,13 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-1.5 mt-1.5">
                         <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                         <input
-                          type={tripMode === 'One-Way Drop' ? 'text' : 'time'}
-                          disabled={tripMode === 'One-Way Drop'}
-                          value={tripMode === 'One-Way Drop' ? 'No Return Required' : (returnTime.includes(':') && returnTime.length <= 5 ? returnTime : '21:00')}
+                          type={tripMode !== 'Round Trip' ? 'text' : 'time'}
+                          disabled={tripMode !== 'Round Trip'}
+                          value={tripMode !== 'Round Trip' ? 'No Return Required' : (returnTime.includes(':') && returnTime.length <= 5 ? returnTime : '21:00')}
                           onChange={(e) => setReturnTime(e.target.value)}
                           className="bg-transparent text-xs font-semibold text-neutral-600 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                         />
-                        {tripMode !== 'One-Way Drop' && (
+                        {tripMode === 'Round Trip' && (
                           <span className="text-[10px] text-neutral-400">· Evening Drop</span>
                         )}
                       </div>
@@ -1041,7 +1069,7 @@ export const HomePage: React.FC = () => {
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
                           <Compass className="w-3.5 h-3.5 text-red-500" />
                           <span>{routeCalc.distanceKm} km</span>
-                          <span className="text-neutral-400 font-normal">({tripMode === 'One-Way Drop' ? 'One-Way' : 'Round Trip'})</span>
+                          <span className="text-neutral-400 font-normal">({tripMode})</span>
                         </span>
 
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
