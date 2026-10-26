@@ -25,6 +25,8 @@ export const RoyalDoorwaySection: React.FC = () => {
   const posterFooterRibbonRef = useRef<HTMLDivElement>(null);
   const scrollProgressLineRef = useRef<HTMLDivElement>(null);
   const destinationOverlayRef = useRef<HTMLDivElement>(null);
+  const inWorldFooterRef = useRef<HTMLDivElement>(null);
+  const bottomExitBlendRef = useRef<HTMLDivElement>(null);
 
   // SVG paths
   const maskDoorPathRef = useRef<SVGPathElement>(null);
@@ -52,10 +54,11 @@ export const RoyalDoorwaySection: React.FC = () => {
   // Zoom and mouse physics state
   const currentZoomRef = useRef(0);
   const targetZoomRef = useRef(0);
+  const rawProgressRef = useRef(0);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const rafIdRef = useRef<number | null>(null);
 
-  const ZOOM_THRESHOLD = 0.75;
+  const ZOOM_THRESHOLD = 0.85;
 
   /* -------------------------------------------------------------
      1. GEOMETRY ENGINE: MIDDLE-ALIGNED, WELL-PROPORTIONED ARCHWAY
@@ -149,14 +152,15 @@ export const RoyalDoorwaySection: React.FC = () => {
      2. SCROLL PROGRESS ENGINE (LENIS DRIVEN)
      ------------------------------------------------------------- */
   const calculateScrollProgress = useCallback(() => {
-    if (!trackRef.current) return 0;
+    if (!trackRef.current) return { zoom: 0, raw: 0 };
     const rect = trackRef.current.getBoundingClientRect();
     const scrollDistance = -rect.top;
     const spacerHeight = trackRef.current.offsetHeight - window.innerHeight;
-    if (spacerHeight <= 0) return 0;
+    if (spacerHeight <= 0) return { zoom: 0, raw: 0 };
 
-    const rawProgress = Math.max(0, Math.min(1, scrollDistance / spacerHeight));
-    return Math.min(1, rawProgress / ZOOM_THRESHOLD);
+    const raw = Math.max(0, Math.min(1, scrollDistance / spacerHeight));
+    const zoom = Math.min(1, raw / ZOOM_THRESHOLD);
+    return { zoom, raw };
   }, [ZOOM_THRESHOLD]);
 
   useEffect(() => {
@@ -170,25 +174,27 @@ export const RoyalDoorwaySection: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // Initial progress computation
-    targetZoomRef.current = calculateScrollProgress();
+    const initProgress = calculateScrollProgress();
+    targetZoomRef.current = initProgress.zoom;
+    rawProgressRef.current = initProgress.raw;
 
     // Lenis listener for ultra-fluid physics scroll updates
     let lenisUnsubscribe: (() => void) | undefined;
+    const updateProgress = () => {
+      const p = calculateScrollProgress();
+      targetZoomRef.current = p.zoom;
+      rawProgressRef.current = p.raw;
+    };
+
     if (lenis) {
-      const onLenisScroll = () => {
-        targetZoomRef.current = calculateScrollProgress();
-      };
-      lenis.on('scroll', onLenisScroll);
+      lenis.on('scroll', updateProgress);
       lenisUnsubscribe = () => {
-        lenis.off('scroll', onLenisScroll);
+        lenis.off('scroll', updateProgress);
       };
     } else {
-      const onWindowScroll = () => {
-        targetZoomRef.current = calculateScrollProgress();
-      };
-      window.addEventListener('scroll', onWindowScroll, { passive: true });
+      window.addEventListener('scroll', updateProgress, { passive: true });
       lenisUnsubscribe = () => {
-        window.removeEventListener('scroll', onWindowScroll);
+        window.removeEventListener('scroll', updateProgress);
       };
     }
 
@@ -202,6 +208,7 @@ export const RoyalDoorwaySection: React.FC = () => {
       mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.04;
 
       const z = currentZoomRef.current;
+      const raw = rawProgressRef.current;
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
 
@@ -251,6 +258,20 @@ export const RoyalDoorwaySection: React.FC = () => {
         destinationOverlayRef.current.style.opacity = destOpacity.toFixed(3);
         destinationOverlayRef.current.style.transform = `translate3d(0, ${(1 - destOpacity) * -16}px, 0)`;
         destinationOverlayRef.current.style.pointerEvents = destOpacity > 0.4 ? 'auto' : 'none';
+      }
+
+      // In-world bottom status footer: gracefully reveals at bottom, eliminating black empty void downside
+      if (inWorldFooterRef.current) {
+        const footerOpacity = Math.max(0, Math.min(1, (z - 0.30) / 0.30));
+        inWorldFooterRef.current.style.opacity = footerOpacity.toFixed(3);
+        inWorldFooterRef.current.style.transform = `translate3d(0, ${(1 - footerOpacity) * 12}px, 0)`;
+        inWorldFooterRef.current.style.pointerEvents = footerOpacity > 0.4 ? 'auto' : 'none';
+      }
+
+      // Bottom exit blend: smoothly transitions the bottom into light slate near the end of track so it never flashes black
+      if (bottomExitBlendRef.current) {
+        const exitOpacity = Math.max(0, Math.min(1, (raw - 0.78) / 0.22));
+        bottomExitBlendRef.current.style.opacity = exitOpacity.toFixed(3);
       }
 
       // 5. Dissolve Poster UI elements (preserves vertical middle alignment)
@@ -310,8 +331,8 @@ export const RoyalDoorwaySection: React.FC = () => {
     <div 
       ref={trackRef} 
       id="royal-doorway-track" 
-      className="relative w-full"
-      style={{ height: '280vh' }}
+      className="relative w-full bg-slate-50"
+      style={{ height: '175vh' }}
     >
       {/* =========================================================================
            1. FIXED FULL-SCREEN 3D VIEWPORT (KEYHOLE-ARCHITECTURE ENGINE)
@@ -342,9 +363,9 @@ export const RoyalDoorwaySection: React.FC = () => {
             {/* Realistic Flying Birds in Sky (Minimal & Distant) */}
             <FlyingBirds birdCount={6} skyCoverage={0.34} primaryDirection="mixed" colorTone="natural" />
 
-            {/* Royal Ambient Lighting Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0307]/70 via-transparent to-[#D4AF37]/15 mix-blend-multiply pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#2d050b]/25 via-transparent to-black/35 pointer-events-none" />
+            {/* Royal Ambient Lighting Overlays (Sunlit & Radiant - No Black Void Downside) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-[#D4AF37]/15 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#2d050b]/20 via-transparent to-transparent pointer-events-none" />
           </div>
 
           {/* In-World Royal Welcome Signboard (Centered directly inside doorway aperture) */}
@@ -417,6 +438,40 @@ export const RoyalDoorwaySection: React.FC = () => {
               <div className="w-5 h-5 rounded-full bg-[#D4AF37] text-[#1a0307] flex items-center justify-center">
                 <ArrowRight className="w-3 h-3 stroke-[3]" />
               </div>
+            </button>
+          </div>
+        </div>
+
+        {/* -------------------------------------------------------------
+             LAYER A.3: IN-WORLD LUXURY TRANSIT FOOTER BAR (Down Side)
+             Fills downside with an elegant status bar so there is never empty dark void
+             ------------------------------------------------------------- */}
+        <div 
+          ref={inWorldFooterRef}
+          id="in-world-footer"
+          className="absolute bottom-6 sm:bottom-8 inset-x-4 sm:inset-x-12 lg:inset-x-20 z-25 flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/60 backdrop-blur-md border border-[#D4AF37]/45 px-5 sm:px-7 py-3 rounded-2xl pointer-events-none shadow-2xl transition-all duration-300"
+          style={{ opacity: 0 }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <div className="flex flex-col text-left">
+              <span className="text-white text-xs sm:text-sm font-serif font-bold tracking-wide">
+                Private Highway Chauffeur Ready &bull; Instant Dispatch
+              </span>
+              <span className="text-neutral-300 text-[10px] sm:text-[11px] font-medium">
+                Srisailam &bull; Tirupati &bull; Goa &bull; Shirdi &bull; Round-Trip Highway Fleet
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <button 
+              type="button"
+              onClick={() => openBookingModal('Grand Transit Concierge')}
+              className="bg-gradient-to-r from-[#D4AF37] via-[#f3d97b] to-[#AA771C] text-neutral-950 font-serif font-bold text-[11px] sm:text-xs uppercase tracking-wider px-5 py-2 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Book Chauffeur</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           </div>
         </div>
@@ -709,6 +764,13 @@ export const RoyalDoorwaySection: React.FC = () => {
             className="h-full bg-gradient-to-r from-[#800020] to-[#D4AF37] w-0 transition-all duration-75"
           />
         </div>
+
+        {/* Soft bottom blend to seamlessly exit into next section without black or blank jumps */}
+        <div 
+          ref={bottomExitBlendRef}
+          className="absolute bottom-0 inset-x-0 h-32 sm:h-44 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent pointer-events-none z-35"
+          style={{ opacity: 0 }}
+        />
 
       </div>
     </div>
