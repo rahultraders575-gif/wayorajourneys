@@ -22,6 +22,7 @@ export const HomePage: React.FC = () => {
   } = useCms();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
 
   // Navigation items with related icons for the minimal header
   const navItems: { id: PageId; label: string; icon: React.ReactNode }[] = [
@@ -233,33 +234,119 @@ export const HomePage: React.FC = () => {
               {/* Right Zone: Partner CTA & Rider Profile Pill */}
               <div className="flex items-center gap-2 xl:gap-3 shrink-0">
 
-                {/* Become a Partner Button */}
+                {/* Direct Captain Cockpit Link (Desktop) */}
                 <button
                   type="button"
                   onClick={() => handleNavClick('captain')}
-                  className="hidden xl:flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
+                  className={`hidden xl:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap ${
+                    currentCaptain
+                      ? 'bg-amber-50 text-amber-800 border-amber-300'
+                      : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 border-slate-200'
+                  }`}
                 >
-                  <UserCheck className="w-3.5 h-3.5 text-red-600" />
-                  <span>Become a Partner</span>
-                  <ChevronDown className="w-3 h-3 text-slate-500" />
+                  <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+                  <span>{currentCaptain ? `Cockpit (${currentCaptain.dutyStatus})` : 'Captain Partner'}</span>
                 </button>
 
-                {/* Rider Profile Pill */}
-                <button
-                  type="button"
-                  onClick={openAuthModal}
-                  className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                    alt="User Profile"
-                    className="w-6 h-6 rounded-full object-cover ring-1 ring-white shrink-0"
-                  />
-                  <span className="truncate max-w-[80px] sm:max-w-[110px] whitespace-nowrap">
-                    {currentRider ? currentRider.name : 'Aarav Sharma'}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
-                </button>
+                {/* Interactive Login Dropdown (User & Captain) */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setAuthDropdownOpen(!authDropdownOpen)}
+                    className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:border-red-300 shrink-0 whitespace-nowrap"
+                    title="Login as Passenger or Captain"
+                  >
+                    {currentCaptain ? (
+                      <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black border border-amber-300 relative">
+                        <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+                        {currentCaptain.dutyStatus === 'On Duty' && (
+                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        )}
+                      </div>
+                    ) : currentRider ? (
+                      <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-black ring-1 ring-white">
+                        {currentRider.name.slice(0, 1).toUpperCase()}
+                      </div>
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">
+                        <User className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+
+                    <span className="truncate max-w-[80px] sm:max-w-[110px] whitespace-nowrap font-bold">
+                      {currentCaptain
+                        ? `Capt. ${currentCaptain.name.split(' ')[0]}`
+                        : currentRider
+                        ? currentRider.name.split(' ')[0]
+                        : 'Sign In'}
+                    </span>
+                    <ChevronDown className={`w-3 h-3 text-slate-500 shrink-0 transition-transform ${authDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {authDropdownOpen && (
+                    <div 
+                      className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 text-xs space-y-1"
+                      onClick={() => setAuthDropdownOpen(false)}
+                    >
+                      <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                        Choose Login Portal
+                      </div>
+
+                      {/* Option 1: Passenger / User */}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('user')}
+                        className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                          currentRider ? 'bg-red-50 text-red-700 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900 block truncate">
+                              {currentRider ? currentRider.name : 'Passenger Login'}
+                            </span>
+                            {currentRider && <span className="text-[9px] text-emerald-600 font-black">ACTIVE</span>}
+                          </div>
+                          <span className="text-[10px] text-slate-500 block truncate">
+                            {currentRider ? currentRider.phone : 'Book rides, track cabs & OTP'}
+                          </span>
+                        </div>
+                      </button>
+
+                      {/* Option 2: Captain Partner */}
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('captain')}
+                        className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                          currentCaptain ? 'bg-amber-50 text-amber-800 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                          <UserCheck className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900 block truncate">
+                              {currentCaptain ? `Capt. ${currentCaptain.name}` : 'Captain Login'}
+                            </span>
+                            {currentCaptain && (
+                              <span className="text-[9px] text-emerald-600 font-black">
+                                {currentCaptain.dutyStatus}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-500 block truncate">
+                            {currentCaptain ? `${currentCaptain.vehicleModel}` : 'Chauffeur cockpit & trips'}
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Mobile Menu Toggle Button */}
                 <button
@@ -278,11 +365,37 @@ export const HomePage: React.FC = () => {
             {/* Mobile Expanded Menu Drawer */}
             {mobileMenuOpen && (
               <div className="lg:hidden mt-3 pt-3 border-t border-slate-200 space-y-1.5 animate-in fade-in bg-white/95 rounded-2xl p-3 shadow-lg">
+                {/* Mobile Login Options */}
+                <div className="grid grid-cols-2 gap-2 pb-2 mb-2 border-b border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openAuthModal('user');
+                    }}
+                    className="py-2.5 px-3 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5 text-red-600" />
+                    <span>{currentRider ? 'Passenger' : 'Passenger Login'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openAuthModal('captain');
+                    }}
+                    className="py-2.5 px-3 text-xs font-bold rounded-xl bg-amber-50 text-amber-800 border border-amber-300 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+                    <span>{currentCaptain ? 'Captain' : 'Captain Login'}</span>
+                  </button>
+                </div>
+
                 {navItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-800 transition-colors"
                   >
                     <span className="text-red-600">{item.icon}</span>
                     <span>{item.label}</span>
@@ -294,8 +407,8 @@ export const HomePage: React.FC = () => {
                     onClick={() => handleNavClick('captain')}
                     className="py-2 text-center text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center gap-1.5"
                   >
-                    <UserCheck className="w-3.5 h-3.5 text-red-600" />
-                    <span>Captain</span>
+                    <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Captain Cockpit</span>
                   </button>
                   <button
                     type="button"

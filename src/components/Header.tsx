@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCms, PageId } from '../context/CmsContext';
-import { Menu, X, Shield, ArrowRight, UserCheck, User, Phone, Car } from 'lucide-react';
+import { Menu, X, Shield, ArrowRight, UserCheck, User, Phone, Car, ChevronDown } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { 
@@ -8,6 +8,7 @@ export const Header: React.FC = () => {
     currentCaptain, currentRider, openAuthModal, settings 
   } = useCms();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
 
   const navItems: { id: PageId; label: string }[] = [
     { id: 'home', label: 'Home' },
@@ -88,39 +89,105 @@ export const Header: React.FC = () => {
                 <span className="tracking-tight">{settings.phone}</span>
               </a>
 
-              {/* Captain Cockpit Trigger */}
-              <button
-                onClick={() => handleNavClick('captain')}
-                className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer ${
-                  activePage === 'captain'
-                    ? 'bg-red-50 text-red-700 border-red-300 shadow-xs'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600'
-                }`}
-                title="Captain Chauffeur Partner Cockpit"
-              >
-                <div className="relative">
-                  <UserCheck className="w-3.5 h-3.5 text-red-600" />
-                  {currentCaptain?.dutyStatus === 'On Duty' && (
-                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {/* Zone 3: Interactive Login (User & Captain) Dropdown + Hotline + Book Chauffeur */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAuthDropdownOpen(!authDropdownOpen)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition-all cursor-pointer shadow-xs hover:border-red-300"
+                  title="Sign In as Passenger or Captain"
+                >
+                  {currentCaptain ? (
+                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black relative">
+                      <UserCheck className="w-3 h-3 text-amber-700" />
+                      {currentCaptain.dutyStatus === 'On Duty' && (
+                        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      )}
+                    </div>
+                  ) : currentRider ? (
+                    <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black">
+                      {currentRider.name.slice(0, 1).toUpperCase()}
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-[10px]">
+                      <User className="w-3 h-3" />
+                    </div>
                   )}
-                </div>
-                <span>Captain</span>
-              </button>
 
-              {/* Rider Account Trigger */}
-              <button
-                type="button"
-                onClick={openAuthModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
-                title={currentRider ? `Signed in as ${currentRider.name}` : 'Rider Sign In'}
-              >
-                <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black">
-                  {currentRider ? currentRider.name.slice(0, 1) : <User className="w-3 h-3" />}
-                </div>
-                <span className="hidden sm:inline truncate max-w-[85px]">
-                  {currentRider ? currentRider.name.split(' ')[0] : 'Sign In'}
-                </span>
-              </button>
+                  <span className="hidden sm:inline truncate max-w-[95px]">
+                    {currentCaptain
+                      ? `Capt. ${currentCaptain.name.split(' ')[0]}`
+                      : currentRider
+                      ? currentRider.name.split(' ')[0]
+                      : 'Login'}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${authDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {authDropdownOpen && (
+                  <div 
+                    className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 text-xs space-y-1"
+                    onClick={() => setAuthDropdownOpen(false)}
+                  >
+                    <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                      Select Login Portal
+                    </div>
+
+                    {/* Option 1: Passenger / User */}
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('user')}
+                      className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                        currentRider ? 'bg-red-50 text-red-700 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-900 block truncate">
+                            {currentRider ? currentRider.name : 'Passenger Login'}
+                          </span>
+                          {currentRider && <span className="text-[9px] text-emerald-600 font-black">ACTIVE</span>}
+                        </div>
+                        <span className="text-[10px] text-slate-500 block truncate">
+                          {currentRider ? currentRider.phone : 'Book cabs & track rides'}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Option 2: Captain Partner */}
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('captain')}
+                      className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                        currentCaptain ? 'bg-amber-50 text-amber-800 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                        <UserCheck className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-900 block truncate">
+                            {currentCaptain ? `Capt. ${currentCaptain.name}` : 'Captain Login'}
+                          </span>
+                          {currentCaptain && (
+                            <span className="text-[9px] text-emerald-600 font-black">
+                              {currentCaptain.dutyStatus}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-500 block truncate">
+                          {currentCaptain ? `${currentCaptain.vehicleModel}` : 'Chauffeur cockpit & trips'}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Primary Book Ride Button */}
               <button
@@ -172,9 +239,36 @@ export const Header: React.FC = () => {
           </div>
 
           <div className="pt-2 flex flex-col gap-2.5">
+            {/* Quick Login Options */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('user');
+                }}
+                className="py-2.5 px-3 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 flex items-center justify-center gap-1.5 hover:bg-red-100 transition-colors cursor-pointer"
+              >
+                <User className="w-4 h-4 text-red-600" />
+                <span>{currentRider ? 'Passenger Profile' : 'Passenger Login'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('captain');
+                }}
+                className="py-2.5 px-3 text-xs font-bold rounded-xl bg-amber-50 text-amber-800 border border-amber-300 flex items-center justify-center gap-1.5 hover:bg-amber-100 transition-colors cursor-pointer"
+              >
+                <UserCheck className="w-4 h-4 text-amber-700" />
+                <span>{currentCaptain ? 'Captain Cockpit' : 'Captain Login'}</span>
+              </button>
+            </div>
+
             <a
               href={`tel:${settings.phone}`}
-              className="w-full py-2.5 px-3 text-xs font-semibold rounded-xl bg-slate-50 text-slate-800 border border-slate-200 flex items-center justify-center gap-2 hover:bg-slate-100 text-center"
+              className="w-full py-2 px-3 text-xs font-semibold rounded-xl bg-slate-50 text-slate-800 border border-slate-200 flex items-center justify-center gap-2 hover:bg-slate-100 text-center"
             >
               <Phone className="w-4 h-4 text-red-600" />
               <span>Call 24/7 Helpline: {settings.phone}</span>

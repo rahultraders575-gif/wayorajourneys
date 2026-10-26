@@ -4,14 +4,14 @@ import { Booking, BookingStatus } from '../types';
 import { 
   UserCheck, ShieldCheck, Phone, MessageSquare, MapPin, 
   Car, Navigation, AlertTriangle, CheckCircle2, Gauge, 
-  CreditCard, LogOut, ArrowRight, Star, Clock, Check, RefreshCw, KeyRound, Send, X 
+  CreditCard, LogOut, ArrowRight, Star, Clock, Check, RefreshCw, KeyRound, Send, X, User 
 } from 'lucide-react';
 
 export const CaptainDashboard: React.FC = () => {
   const { 
     currentCaptain, captains, loginCaptain, logoutCaptain, 
     updateCaptainDuty, bookings, updateTripOdometer, updateBookingStatus, 
-    showToast 
+    showToast, openAuthModal 
   } = useCms();
 
   // Login form state
@@ -418,6 +418,19 @@ export const CaptainDashboard: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Passenger Sign In Alternative */}
+          <div className="p-4 rounded-2xl bg-white border border-slate-200 text-center space-y-1.5 shadow-xs">
+            <span className="text-[11px] text-slate-500 block">Looking to book a ride as a passenger?</span>
+            <button
+              type="button"
+              onClick={() => openAuthModal('user')}
+              className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Switch to Passenger / User Login</span>
+            </button>
+          </div>
 
         </div>
       </div>
