@@ -118,6 +118,189 @@ export const POPULAR_DESTINATION_PRESETS = [
   { name: 'Ooty Queen of Hills', location: 'Ooty, Tamil Nadu', icon: '🌲' },
 ];
 
+export interface AirportTerminal {
+  id: string;
+  name: string;
+  details: string;
+  airlines?: string;
+}
+
+export interface AirportInfo {
+  code: string;
+  name: string;
+  fullName: string;
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  terminals: AirportTerminal[];
+}
+
+export const MAJOR_AIRPORTS: AirportInfo[] = [
+  {
+    code: 'BLR',
+    name: 'Kempegowda Int\'l Airport',
+    fullName: 'Kempegowda International Airport (BLR), Bengaluru',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    lat: 13.1986,
+    lng: 77.7066,
+    terminals: [
+      { id: 'T1', name: 'Terminal 1 (Domestic)', details: 'IndiGo, Akasa Air, Star Air, Alliance Air', airlines: 'Domestic' },
+      { id: 'T2', name: 'Terminal 2 (Garden Terminal)', details: 'Air India, Vistara, Singapore Airlines & International Flights', airlines: 'International & Domestic' },
+      { id: 'VIP', name: 'VIP & Commercial Arrivals Hub', details: 'Ground Level Chauffeur & Doorstep Pickup Zone', airlines: 'Arrivals Pick-up' },
+    ],
+  },
+  {
+    code: 'HYD',
+    name: 'Rajiv Gandhi Int\'l Airport',
+    fullName: 'Rajiv Gandhi International Airport (RGIA / HYD), Shamshabad',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    lat: 17.2403,
+    lng: 78.4294,
+    terminals: [
+      { id: 'Domestic', name: 'Domestic Departures', details: 'Departure Gates 1 to 14 (IndiGo, Air India, SpiceJet)', airlines: 'Domestic' },
+      { id: 'International', name: 'International Departures', details: 'Departure Gates 15 to 28 / Changi Plaza', airlines: 'International' },
+      { id: 'Arrivals', name: 'Arrivals Chauffeur Boarding', details: 'Level 1 Car Park E & F Chauffeur Boarding Lane', airlines: 'Arrivals Pick-up' },
+    ],
+  },
+  {
+    code: 'BOM',
+    name: 'Chhatrapati Shivaji Maharaj Airport',
+    fullName: 'CSM International Airport (BOM), Mumbai',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    lat: 19.0896,
+    lng: 72.8656,
+    terminals: [
+      { id: 'T1', name: 'Terminal 1 (Santacruz Domestic)', details: 'Low-cost domestic flights (IndiGo, SpiceJet)', airlines: 'Domestic' },
+      { id: 'T2', name: 'Terminal 2 (Sahar International & Domestic)', details: 'Air India, Vistara & all International Flights', airlines: 'International & Domestic' },
+      { id: 'VIP', name: 'VIP Level P4 / P6 Express Pickup', details: 'Multi-level car park chauffeur waiting lounge', airlines: 'VIP Arrivals' },
+    ],
+  },
+  {
+    code: 'DEL',
+    name: 'Indira Gandhi Int\'l Airport',
+    fullName: 'Indira Gandhi International Airport (DEL), New Delhi',
+    city: 'Delhi',
+    state: 'Delhi NCR',
+    lat: 28.5562,
+    lng: 77.1000,
+    terminals: [
+      { id: 'T1', name: 'Terminal 1 (T1D Domestic)', details: 'Low cost carriers (IndiGo & SpiceJet)', airlines: 'Domestic' },
+      { id: 'T2', name: 'Terminal 2 (Domestic Gateways)', details: 'Domestic flights', airlines: 'Domestic' },
+      { id: 'T3', name: 'Terminal 3 (Integrated International)', details: 'Air India, Vistara & all International Flights', airlines: 'International & Domestic' },
+    ],
+  },
+  {
+    code: 'MAA',
+    name: 'Chennai International Airport',
+    fullName: 'Chennai International Airport (MAA), Meenambakkam',
+    city: 'Chennai',
+    state: 'Tamil Nadu',
+    lat: 12.9941,
+    lng: 80.1709,
+    terminals: [
+      { id: 'T1', name: 'Kamaraj Domestic Terminal (T1)', details: 'All Domestic departures & arrivals', airlines: 'Domestic' },
+      { id: 'T2', name: 'Anna International Terminal (T2 & T4)', details: 'All International airlines', airlines: 'International' },
+    ],
+  },
+  {
+    code: 'GOX',
+    name: 'Manohar Int\'l Airport (Mopa)',
+    fullName: 'Manohar International Airport (Mopa / GOX), North Goa',
+    city: 'Goa',
+    state: 'Goa',
+    lat: 15.7289,
+    lng: 73.8647,
+    terminals: [
+      { id: 'MOPA-T1', name: 'Mopa Integrated Terminal (GOX)', details: 'North Goa beaches, Panaji and resort corridors', airlines: 'Domestic & International' },
+      { id: 'Dabolim', name: 'Dabolim Airport Terminal (GOI)', details: 'South Goa, Vasco and central Goa resorts', airlines: 'Domestic & International' },
+    ],
+  },
+  {
+    code: 'TIR',
+    name: 'Tirupati International Airport',
+    fullName: 'Tirupati International Airport (TIR), Renigunta',
+    city: 'Tirupati',
+    state: 'Andhra Pradesh',
+    lat: 13.6325,
+    lng: 79.5433,
+    terminals: [
+      { id: 'Garuda', name: 'Garuda Terminal', details: 'Direct Tirumala Darshan Express Chauffeurs', airlines: 'Domestic' },
+    ],
+  },
+  {
+    code: 'VGA',
+    name: 'Vijayawada International Airport',
+    fullName: 'Vijayawada International Airport (VGA), Gannavaram',
+    city: 'Vijayawada',
+    state: 'Andhra Pradesh',
+    lat: 16.5304,
+    lng: 80.7968,
+    terminals: [
+      { id: 'T1', name: 'Integrated Terminal', details: 'Domestic flights to BLR, HYD, DEL, MAA', airlines: 'Domestic' },
+    ],
+  },
+  {
+    code: 'PNQ',
+    name: 'Pune International Airport',
+    fullName: 'Pune International Airport (PNQ), Lohegaon',
+    city: 'Pune',
+    state: 'Maharashtra',
+    lat: 18.5822,
+    lng: 73.9197,
+    terminals: [
+      { id: 'NewT1', name: 'New Integrated Terminal', details: 'Domestic & International flights', airlines: 'Domestic & International' },
+    ],
+  },
+  {
+    code: 'COK',
+    name: 'Cochin International Airport',
+    fullName: 'Cochin International Airport (COK), Nedumbassery',
+    city: 'Kochi',
+    state: 'Kerala',
+    lat: 10.1556,
+    lng: 76.3908,
+    terminals: [
+      { id: 'T1', name: 'Domestic Terminal 1', details: 'Domestic flights across India', airlines: 'Domestic' },
+      { id: 'T3', name: 'International Terminal 3', details: 'Middle East & Global flights', airlines: 'International' },
+    ],
+  },
+];
+
+/**
+ * Detect the nearest airport and its terminals based on user's current city/coordinates
+ */
+export function getNearbyAirport(originCoords?: LatLng | null, originCityName?: string): AirportInfo {
+  if (originCoords && originCoords.lat && originCoords.lng) {
+    let closest = MAJOR_AIRPORTS[0];
+    let minDistance = Infinity;
+
+    for (const a of MAJOR_AIRPORTS) {
+      const dist = calculateHaversineDistanceKm(originCoords, { lat: a.lat, lng: a.lng });
+      if (dist < minDistance) {
+        minDistance = dist;
+        closest = a;
+      }
+    }
+    return closest;
+  }
+
+  if (originCityName) {
+    const lower = originCityName.toLowerCase();
+    const found = MAJOR_AIRPORTS.find((a) =>
+      lower.includes(a.city.toLowerCase()) ||
+      lower.includes(a.code.toLowerCase()) ||
+      lower.includes(a.name.toLowerCase())
+    );
+    if (found) return found;
+  }
+
+  return MAJOR_AIRPORTS[0];
+}
+
 /**
  * Standard cab tariff structure (rate per km in INR)
  */
