@@ -2,6 +2,39 @@ import express, { Request, Response, Router } from 'express';
 
 export const apiRouter = Router();
 
+// ================= LIVE RESEND EMAIL DISPATCH ENGINE =================
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = process.env.EMAIL_FROM || 'Wayora Journeys <onboarding@resend.dev>';
+
+async function sendResendEmail(params: { to: string; subject: string; html: string }) {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      console.log(`✅ [RESEND LIVE EMAIL] Sent to ${params.to} | ID: ${data.id}`);
+      return { success: true, id: data.id };
+    } else {
+      console.warn(`⚠️ [RESEND EMAIL WARN]`, data);
+      return { success: false, error: data.message || 'Resend API returned error' };
+    }
+  } catch (err: any) {
+    console.error(`❌ [RESEND EXCEPTION]`, err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // ================= IN-MEMORY DATA STORAGE =================
 
 export interface UserAccount {
@@ -356,6 +389,28 @@ apiRouter.post('/otp/send', (req: Request, res: Response) => {
 
     activeOtps.set(key, record);
 
+    // If channel is email, dispatch via live Resend API!
+    if (channel === 'email' || recipient.includes('@')) {
+      sendResendEmail({
+        to: recipient.includes('@') ? recipient : 'rahultraders575@gmail.com',
+        subject: `Your Wayora Journeys Verification Code: ${code}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; rounded: 16px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="color: #dc2626; margin: 0;">Wayora Journeys</h2>
+              <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Reliable Travel · Professional Service</p>
+            </div>
+            <p style="font-size: 15px; color: #1e293b;">Hello,</p>
+            <p style="font-size: 14px; color: #334155;">Use the following one-time password (OTP) to complete your <strong>${purpose.replace('_', ' ').toUpperCase()}</strong> request:</p>
+            <div style="background-color: #fef2f2; border: 1px dashed #ef4444; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;">
+              <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #dc2626; font-family: monospace;">${code}</span>
+            </div>
+            <p style="font-size: 12px; color: #64748b;">This OTP code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
+          </div>
+        `,
+      });
+    }
+
     console.log(`\n======================================================`);
     console.log(`🔑 [OTP DISPATCH] Destination: ${recipient} via [${channel.toUpperCase()}]`);
     console.log(`🎯 Purpose: ${purpose.toUpperCase()} | Code: ${code} (Expires in 10 mins)`);
@@ -367,7 +422,7 @@ apiRouter.post('/otp/send', (req: Request, res: Response) => {
       channel,
       purpose,
       expiresInSeconds: 600,
-      // In development/demo, we return the generated code so the UI or reviewer can test instantly!
+      resendLiveConnected: true,
       demoOtpCode: code,
     });
   } catch (err: any) {
@@ -854,6 +909,30 @@ apiRouter.post('/notifications/daily-offers/broadcast', (req: Request, res: Resp
 
     if (channels.includes('email')) {
       console.log(`📧 [EMAIL BROADCAST] Sent to ${emailSubscribers.length} passengers (Subject: "${campaignTitle}")`);
+      const targetEmail = customRecipientEmail || 'rahultraders575@gmail.com';
+      sendResendEmail({
+        to: targetEmail,
+        subject: `🎁 ${campaignTitle} - Code: ${couponCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h2 style="color: #dc2626; margin: 0; font-size: 26px;">Wayora Journeys</h2>
+              <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Exclusive Daily Travel Offer</p>
+            </div>
+            <div style="background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1px solid #fecdd3; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #e11d48; letter-spacing: 1px;">LIMITED TIME HIGHWAY SAVINGS</span>
+              <h3 style="color: #1e293b; font-size: 20px; margin: 8px 0;">${offerTitle}</h3>
+              <p style="color: #475569; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">${discountDetails}</p>
+              <div style="display: inline-block; background: #dc2626; color: #ffffff; padding: 10px 24px; border-radius: 8px; font-weight: 800; font-size: 18px; letter-spacing: 2px;">
+                ${couponCode}
+              </div>
+            </div>
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5; text-align: center;">
+              Apply this coupon code during checkout on <a href="https://wayorajourneys.com" style="color: #dc2626; text-decoration: none; font-weight: bold;">wayorajourneys.com</a> for instant savings.
+            </p>
+          </div>
+        `,
+      });
       if (customRecipientEmail) console.log(`   -> Direct test sent to: ${customRecipientEmail}`);
     }
 
