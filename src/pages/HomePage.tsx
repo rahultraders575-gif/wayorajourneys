@@ -18,6 +18,8 @@ import {
   fetchLiveMapRoute, 
   searchMapLocations, 
   POPULAR_DESTINATION_PRESETS,
+  POPULAR_OFFICE_PRESETS,
+  POPULAR_HOURLY_PRESETS,
   MapLocationItem,
   CITY_COORDINATES,
   MAJOR_AIRPORTS,
@@ -695,8 +697,20 @@ export const HomePage: React.FC = () => {
                           setDestinationCoords({ lat: nearbyAirport.lat, lng: nearbyAirport.lng });
                           const primaryTerm = nearbyAirport.terminals[0];
                           setToDropDetails(primaryTerm ? `${primaryTerm.name} · ${primaryTerm.details}` : 'Terminal 1 & 2 Departure / Arrival');
-                        } else if (tab.id === 'Office' && !toDropDetails.toLowerCase().includes('office')) {
-                          setToDropDetails('Tech Park / Corporate Office Drop');
+                        } else if (tab.id === 'Office') {
+                          const office = POPULAR_OFFICE_PRESETS[0];
+                          setToCity(office.location);
+                          setToDropDetails(office.details);
+                        } else if (tab.id === 'Hourly Rental') {
+                          const hourly = POPULAR_HOURLY_PRESETS[1];
+                          setToCity(hourly.location);
+                          setToDropDetails(hourly.details);
+                        } else if (tab.id === 'Round Trip' || tab.id === 'One-Way Drop') {
+                          if (toCity.includes('Airport') || toCity.includes('Tech Park') || toCity.includes('Hours')) {
+                            setToCity('Tirupati, Andhra Pradesh');
+                            setToDropDetails('Temple Darshan / Hotel Drop');
+                            setDestinationCoords(CITY_COORDINATES.tirupati);
+                          }
                         }
                       }}
                       className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${tripMode === tab.id
@@ -766,6 +780,16 @@ export const HomePage: React.FC = () => {
                               <Plane className="w-3 h-3 text-red-500" />
                               <span>AIRPORT & TERMINAL DROP</span>
                             </>
+                          ) : tripMode === 'Office' ? (
+                            <>
+                              <Building2 className="w-3 h-3 text-red-500" />
+                              <span>OFFICE / TECH PARK DROP</span>
+                            </>
+                          ) : tripMode === 'Hourly Rental' ? (
+                            <>
+                              <Clock className="w-3 h-3 text-red-500" />
+                              <span>HOURLY PACKAGE / CITY ZONE</span>
+                            </>
                           ) : (
                             <>
                               <MapPin className="w-3 h-3 text-red-500" />
@@ -794,7 +818,15 @@ export const HomePage: React.FC = () => {
                             setToCity(e.target.value);
                             setShowDestSuggestions(true);
                           }}
-                          placeholder={tripMode === 'Airport' ? `${nearbyAirport.name} (${nearbyAirport.code})` : `e.g. ${nearbyAirport.name} (Airport) or Tirupati`}
+                          placeholder={
+                            tripMode === 'Airport'
+                              ? `${nearbyAirport.name} (${nearbyAirport.code})`
+                              : tripMode === 'Office'
+                              ? "e.g. Manyata Tech Park or RMZ Ecospace"
+                              : tripMode === 'Hourly Rental'
+                              ? "e.g. 8 Hours / 80 KM (Full Day)"
+                              : "e.g. Tirupati Balaji, AP or Goa"
+                          }
                           className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none placeholder-neutral-400 pr-6"
                         />
                         {toCity && (
@@ -817,155 +849,292 @@ export const HomePage: React.FC = () => {
                           type="text"
                           value={toDropDetails}
                           onChange={(e) => setToDropDetails(e.target.value)}
-                          placeholder={tripMode === 'Airport' ? "Terminal 1, Terminal 2, or Arrivals Pickup" : "Hotel, Temple, or Doorstep Drop"}
+                          placeholder={
+                            tripMode === 'Airport'
+                              ? "Terminal 1, Terminal 2, or Arrivals Pickup"
+                              : tripMode === 'Office'
+                              ? "Building, Tower, or Reception Gate"
+                              : tripMode === 'Hourly Rental'
+                              ? "Multiple City Stops / Business Meetings"
+                              : "Hotel, Temple, or Doorstep Drop"
+                          }
                           className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none truncate"
                         />
                       </div>
 
-                      {/* Map Autocomplete Suggestions Dropdown with Nearby Airport & Terminals */}
+                      {/* Map Suggestions Dropdown STRICTLY Filtered by Selected Trip Tab */}
                       {showDestSuggestions && (
                         <div className="absolute left-0 sm:-left-4 md:-left-8 w-[calc(100vw-2.5rem)] sm:w-[500px] md:w-[560px] max-w-[94vw] top-full mt-2 bg-white rounded-3xl shadow-2xl border border-slate-200/90 p-3.5 sm:p-4 z-50 animate-in fade-in zoom-in-95 max-h-[480px] overflow-y-auto custom-scroll">
                           
-                          {/* NEARBY AIRPORT & TERMINALS (DETECTED FROM USER LOCATION) */}
-                          <div className="mb-3.5 p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50/70 via-white to-slate-50/90 border border-red-100 shadow-2xs">
-                            
-                            {/* Row 1: Badges & Airport Switcher Tabs */}
-                            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-red-100/80">
-                              <div className="flex items-center gap-2">
-                                <span className="p-1.5 rounded-lg bg-red-600 text-white shadow-xs shrink-0">
-                                  <Plane className="w-3.5 h-3.5" />
-                                </span>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-900">
-                                    NEARBY AIRPORT & TERMINALS
+                          {/* 1. AIRPORT MODE ONLY: STRICTLY AIRPORT & TERMINALS */}
+                          {tripMode === 'Airport' && (
+                            <div>
+                              {/* Header Bar */}
+                              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                                <div className="flex items-center gap-2">
+                                  <span className="p-1.5 rounded-lg bg-red-600 text-white shadow-xs shrink-0">
+                                    <Plane className="w-3.5 h-3.5" />
                                   </span>
-                                  <span className="text-[9px] font-extrabold text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase">
-                                    GPS Verified
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Airport Switcher Tabs */}
-                              <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200/90 shadow-2xs shrink-0">
-                                {MAJOR_AIRPORTS.slice(0, 5).map((a) => (
-                                  <button
-                                    key={a.code}
-                                    type="button"
-                                    onClick={() => setActiveAirportCode(a.code)}
-                                    className={`px-2 py-1 rounded-md text-[10px] font-black tracking-wide transition-all cursor-pointer ${
-                                      currentDisplayAirport.code === a.code
-                                        ? 'bg-red-600 text-white shadow-xs'
-                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                                    }`}
-                                  >
-                                    {a.code}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Row 2: Selected Airport Name & Distance */}
-                            <div className="pt-2 pb-1.5 flex items-center justify-between gap-2 flex-wrap">
-                              <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
-                                <span>{currentDisplayAirport.name}</span>
-                                <span className="text-red-600 font-black">[{currentDisplayAirport.code}]</span>
-                              </div>
-                              {airportDistanceKm && (
-                                <span className="text-[10px] font-bold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md">
-                                  📍 ~{airportDistanceKm} km from pickup
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Clickable Terminal Chips Grid */}
-                            <div className="space-y-1.5 mt-1.5">
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-0.5">
-                                Select Departure / Arrival Terminal:
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {currentDisplayAirport.terminals.map((term) => (
-                                  <button
-                                    key={term.id}
-                                    type="button"
-                                    onClick={() => handleSelectAirportTerminal(currentDisplayAirport, term)}
-                                    className="text-left p-2.5 rounded-xl bg-white hover:bg-red-50/70 border border-slate-200/90 hover:border-red-300 transition-all flex flex-col justify-between group/term cursor-pointer shadow-xs hover:shadow-sm"
-                                  >
-                                    <div className="flex items-center justify-between gap-1.5 w-full">
-                                      <span className="text-xs font-bold text-slate-900 group-hover/term:text-red-700 truncate">
-                                        {term.name}
-                                      </span>
-                                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 group-hover/term:bg-red-100 group-hover/term:text-red-700 shrink-0 whitespace-nowrap">
-                                        {term.airlines || 'Flights'}
-                                      </span>
-                                    </div>
-                                    <div className="text-[11px] text-slate-500 group-hover/term:text-slate-700 mt-1 line-clamp-2">
-                                      {term.details}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* INDIAN DESTINATIONS & GOOGLE MAPS AUTOCOMPLETE */}
-                          <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                            <span>Indian Destinations & Google Maps</span>
-                            <div className="flex items-center gap-1.5">
-                              {isSearchingPlaces && <RefreshCw className="w-2.5 h-2.5 animate-spin text-red-500" />}
-                              <button
-                                type="button"
-                                onClick={() => setShowDestSuggestions(false)}
-                                className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-
-                          {destinationSuggestions.length > 0 ? (
-                            destinationSuggestions.map((item, idx) => (
-                              <button
-                                key={`${item.name}-${idx}`}
-                                type="button"
-                                onClick={() => handleSelectDestination(item)}
-                                className="w-full text-left px-2.5 py-2 hover:bg-red-50 rounded-xl transition-colors flex items-start gap-2.5 group/item cursor-pointer"
-                              >
-                                <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform" />
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-xs font-bold text-slate-800 group-hover/item:text-red-700 truncate">
-                                    {item.name}
-                                  </div>
-                                  <div className="text-[10px] text-slate-400 truncate">
-                                    {item.displayName}
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-900">
+                                      AIRPORT & TERMINAL TRANSFERS
+                                    </span>
+                                    <span className="text-[9px] font-extrabold text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase">
+                                      GPS Verified
+                                    </span>
                                   </div>
                                 </div>
-                              </button>
-                            ))
-                          ) : (
-                            <div className="p-2 text-center text-xs text-slate-400">
-                              {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city, hotel, or paste Google Maps link'}
+                                <button
+                                  type="button"
+                                  onClick={() => setShowDestSuggestions(false)}
+                                  className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              {/* Airport Card */}
+                              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-red-50/70 via-white to-slate-50/90 border border-red-100 shadow-2xs">
+                                
+                                {/* Row 1: Airport Hub Switchers */}
+                                <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-red-100/80">
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                    Select Airport Hub:
+                                  </span>
+
+                                  {/* Airport Switcher Tabs */}
+                                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200/90 shadow-2xs shrink-0">
+                                    {MAJOR_AIRPORTS.slice(0, 6).map((a) => (
+                                      <button
+                                        key={a.code}
+                                        type="button"
+                                        onClick={() => setActiveAirportCode(a.code)}
+                                        className={`px-2 py-1 rounded-md text-[10px] font-black tracking-wide transition-all cursor-pointer ${
+                                          currentDisplayAirport.code === a.code
+                                            ? 'bg-red-600 text-white shadow-xs'
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                        }`}
+                                      >
+                                        {a.code}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Row 2: Selected Airport Name & Distance */}
+                                <div className="pt-2 pb-1.5 flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+                                    <span>{currentDisplayAirport.name}</span>
+                                    <span className="text-red-600 font-black">[{currentDisplayAirport.code}]</span>
+                                  </div>
+                                  {airportDistanceKm && (
+                                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md">
+                                      📍 ~{airportDistanceKm} km from pickup
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Clickable Terminal Chips Grid */}
+                                <div className="space-y-1.5 mt-2">
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-0.5">
+                                    Choose Departure or Arrival Gate:
+                                  </span>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {currentDisplayAirport.terminals.map((term) => (
+                                      <button
+                                        key={term.id}
+                                        type="button"
+                                        onClick={() => handleSelectAirportTerminal(currentDisplayAirport, term)}
+                                        className="text-left p-2.5 rounded-xl bg-white hover:bg-red-50/70 border border-slate-200/90 hover:border-red-300 transition-all flex flex-col justify-between group/term cursor-pointer shadow-xs hover:shadow-sm"
+                                      >
+                                        <div className="flex items-center justify-between gap-1.5 w-full">
+                                          <span className="text-xs font-bold text-slate-900 group-hover/term:text-red-700 truncate">
+                                            {term.name}
+                                          </span>
+                                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 group-hover/term:bg-red-100 group-hover/term:text-red-700 shrink-0 whitespace-nowrap">
+                                            {term.airlines || 'Flights'}
+                                          </span>
+                                        </div>
+                                        <div className="text-[11px] text-slate-500 group-hover/term:text-slate-700 mt-1 line-clamp-2">
+                                          {term.details}
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           )}
 
-                          {/* Quick Popular Presets */}
-                          <div className="mt-2 pt-2 border-t border-slate-100">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block px-2 mb-1.5">
-                              Popular Outstation Presets
-                            </span>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              {POPULAR_DESTINATION_PRESETS.slice(0, 6).map((preset) => (
+                          {/* 2. OFFICE MODE ONLY: STRICTLY TECH PARKS & CORPORATE HUBS */}
+                          {tripMode === 'Office' && (
+                            <div>
+                              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                                <div className="flex items-center gap-2">
+                                  <span className="p-1.5 rounded-lg bg-blue-600 text-white shadow-xs shrink-0">
+                                    <Building2 className="w-3.5 h-3.5" />
+                                  </span>
+                                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-900">
+                                    POPULAR TECH PARKS & CORPORATE HUBS
+                                  </span>
+                                </div>
                                 <button
-                                  key={preset.name}
                                   type="button"
-                                  onClick={() => handleSelectDestination({ name: preset.location })}
-                                  className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-red-50 text-[10px] font-semibold text-slate-700 hover:text-red-700 transition-colors flex items-center gap-1.5 truncate cursor-pointer"
+                                  onClick={() => setShowDestSuggestions(false)}
+                                  className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
                                 >
-                                  <span>{preset.icon}</span>
-                                  <span className="truncate">{preset.name}</span>
+                                  ✕
                                 </button>
-                              ))}
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {POPULAR_OFFICE_PRESETS.map((office) => (
+                                  <button
+                                    key={office.name}
+                                    type="button"
+                                    onClick={() => {
+                                      setToCity(office.location);
+                                      setToDropDetails(office.details);
+                                      setShowDestSuggestions(false);
+                                    }}
+                                    className="text-left p-2.5 rounded-xl bg-slate-50/70 hover:bg-blue-50/70 border border-slate-200/90 hover:border-blue-300 transition-all flex flex-col justify-between group/office cursor-pointer shadow-2xs"
+                                  >
+                                    <div className="flex items-center justify-between gap-1.5 w-full">
+                                      <span className="text-xs font-bold text-slate-900 group-hover/office:text-blue-700 truncate">
+                                        {office.name}
+                                      </span>
+                                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-white text-slate-600 border border-slate-200 shrink-0">
+                                        {office.city}
+                                      </span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-500 group-hover/office:text-slate-700 mt-1 truncate">
+                                      {office.details}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          )}
+
+                          {/* 3. HOURLY RENTAL MODE ONLY: STRICTLY HOURLY PACKAGES & LOCAL HUBS */}
+                          {tripMode === 'Hourly Rental' && (
+                            <div>
+                              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                                <div className="flex items-center gap-2">
+                                  <span className="p-1.5 rounded-lg bg-amber-600 text-white shadow-xs shrink-0">
+                                    <Clock className="w-3.5 h-3.5" />
+                                  </span>
+                                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-900">
+                                    HOURLY RENTAL PACKAGES & LOCAL TOURS
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowDestSuggestions(false)}
+                                  className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              <div className="space-y-2">
+                                {POPULAR_HOURLY_PRESETS.map((pkg) => (
+                                  <button
+                                    key={pkg.name}
+                                    type="button"
+                                    onClick={() => {
+                                      setToCity(pkg.location);
+                                      setToDropDetails(pkg.details);
+                                      setShowDestSuggestions(false);
+                                    }}
+                                    className="w-full text-left p-2.5 rounded-xl bg-slate-50/70 hover:bg-amber-50/70 border border-slate-200/90 hover:border-amber-300 transition-all flex items-center justify-between gap-3 group/pkg cursor-pointer shadow-2xs"
+                                  >
+                                    <div className="min-w-0 flex-1">
+                                      <div className="text-xs font-bold text-slate-900 group-hover/pkg:text-amber-800 flex items-center gap-1.5">
+                                        <span>{pkg.icon}</span>
+                                        <span className="truncate">{pkg.name}</span>
+                                      </div>
+                                      <div className="text-[11px] text-slate-500 group-hover/pkg:text-slate-700 mt-0.5 truncate">
+                                        {pkg.details}
+                                      </div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-lg shrink-0">
+                                      Select Package
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 4. ROUND TRIP & ONE-WAY DROP: STRICTLY OUTSTATION & PILGRIMAGE PRESETS */}
+                          {(tripMode === 'Round Trip' || tripMode === 'One-Way Drop') && (
+                            <div>
+                              <div className="flex items-center justify-between px-1 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-2">
+                                <span>Indian Destinations & Google Maps</span>
+                                <div className="flex items-center gap-1.5">
+                                  {isSearchingPlaces && <RefreshCw className="w-2.5 h-2.5 animate-spin text-red-500" />}
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowDestSuggestions(false)}
+                                    className="text-slate-400 hover:text-slate-600 text-xs px-1 cursor-pointer"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+
+                              {destinationSuggestions.length > 0 ? (
+                                <div className="space-y-1 mb-3">
+                                  {destinationSuggestions.map((item, idx) => (
+                                    <button
+                                      key={`${item.name}-${idx}`}
+                                      type="button"
+                                      onClick={() => handleSelectDestination(item)}
+                                      className="w-full text-left px-2.5 py-2 hover:bg-red-50 rounded-xl transition-colors flex items-start gap-2.5 group/item cursor-pointer"
+                                    >
+                                      <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform" />
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-bold text-slate-800 group-hover/item:text-red-700 truncate">
+                                          {item.name}
+                                        </div>
+                                        <div className="text-[10px] text-slate-400 truncate">
+                                          {item.displayName}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                toCity.trim().length >= 2 && (
+                                  <div className="p-2 text-center text-xs text-slate-400">
+                                    {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city, hotel, or paste Google Maps link'}
+                                  </div>
+                                )
+                              )}
+
+                              {/* Quick Popular Presets for Outstation */}
+                              <div>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-2">
+                                  Popular Outstation & Pilgrimage Presets
+                                </span>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {POPULAR_DESTINATION_PRESETS.map((preset) => (
+                                    <button
+                                      key={preset.name}
+                                      type="button"
+                                      onClick={() => handleSelectDestination({ name: preset.location })}
+                                      className="text-left px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-red-50 border border-slate-200/80 hover:border-red-200 text-xs font-semibold text-slate-800 hover:text-red-700 transition-colors flex items-center gap-2 truncate cursor-pointer shadow-2xs"
+                                    >
+                                      <span className="text-sm shrink-0">{preset.icon}</span>
+                                      <span className="truncate">{preset.name}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                         </div>
                       )}
                     </div>

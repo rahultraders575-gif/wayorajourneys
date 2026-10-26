@@ -118,6 +118,25 @@ export const POPULAR_DESTINATION_PRESETS = [
   { name: 'Ooty Queen of Hills', location: 'Ooty, Tamil Nadu', icon: '🌲' },
 ];
 
+export const POPULAR_OFFICE_PRESETS = [
+  { name: 'Manyata Tech Park', location: 'Manyata Tech Park, Hebbal, Bengaluru', details: 'Gate 1 / Main Reception Lobby', icon: '🏢', city: 'Bengaluru' },
+  { name: 'Electronic City', location: 'Electronic City Phase 1, Bengaluru', details: 'Infosys & Wipro Tech Corridor', icon: '🏢', city: 'Bengaluru' },
+  { name: 'RMZ Ecospace & Ecoworld', location: 'RMZ Ecospace, Bellandur, Bengaluru', details: 'Outer Ring Road Tech Corridor', icon: '🏢', city: 'Bengaluru' },
+  { name: 'ITPL Whitefield', location: 'ITPL, Whitefield, Bengaluru', details: 'International Tech Park Bangalore', icon: '🏢', city: 'Bengaluru' },
+  { name: 'Hitec City Cyber Towers', location: 'Hitec City, Madhapur, Hyderabad', details: 'Cyber Gateway & Mindspace', icon: '🏢', city: 'Hyderabad' },
+  { name: 'Financial District', location: 'Financial District, Gachibowli, Hyderabad', details: 'WaveRock, Amazon & Microsoft SEZ', icon: '🏢', city: 'Hyderabad' },
+  { name: 'BKC Bandra Kurla', location: 'Bandra Kurla Complex (BKC), Mumbai', details: 'Financial & Corporate Capital', icon: '🏢', city: 'Mumbai' },
+  { name: 'DLF Cyber City', location: 'DLF Cyber City, Gurugram, Delhi NCR', details: 'Cyber Hub & Building 10 Lobby', icon: '🏢', city: 'Delhi' },
+];
+
+export const POPULAR_HOURLY_PRESETS = [
+  { name: '4 Hours / 40 KM', location: 'Local City Chauffeur (4 Hrs / 40 Km)', details: 'City Errands, Doctor Visits & Local Meetings', icon: '⏱️' },
+  { name: '8 Hours / 80 KM', location: 'Full Day Chauffeur (8 Hrs / 80 Km)', details: 'Full Day Business, Shopping & City Sightseeing', icon: '⏱️' },
+  { name: '12 Hours / 120 KM', location: 'Extended Day Chauffeur (12 Hrs / 120 Km)', details: 'Extended Metro Day, Weddings & Multi-Stops', icon: '⏱️' },
+  { name: 'Central Business District', location: 'CBD Central Hub (MG Road / Brigade Rd)', details: 'Commercial St & Corporate Meetings', icon: '🛍️' },
+  { name: 'Boutique Cafes & Dinner', location: 'Indiranagar / Koramangala / Lavelle Rd', details: 'Flexible Evening Dinner & Leisure Chauffeur', icon: '☕' },
+];
+
 export interface AirportTerminal {
   id: string;
   name: string;
