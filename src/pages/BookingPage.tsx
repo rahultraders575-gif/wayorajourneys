@@ -7,7 +7,14 @@ import {
   Wifi, Wind, ArrowRight, User, Sparkles, ChevronRight
 } from 'lucide-react';
 
-import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+import { 
+  calculateTripRouteAndPrice, 
+  fetchLiveMapRoute, 
+  searchMapLocations, 
+  POPULAR_DESTINATION_PRESETS,
+  MapLocationItem,
+  CITY_COORDINATES
+} from '../utils/geoDistancePrice';
 
 export const BookingPage: React.FC = () => {
   const { 
@@ -29,16 +36,108 @@ export const BookingPage: React.FC = () => {
   const [tripType, setTripType] = useState(bookingSearchDetails.tripType || 'Outstation One-way');
   const [fromLocation, setFromLocation] = useState(bookingSearchDetails.fromCity || userLocation || 'Kengeri, Bengaluru');
   const [toLocation, setToLocation] = useState(bookingSearchDetails.toCity || 'Tirupati, Andhra Pradesh');
-  const [pickupDate, setPickupDate] = useState(bookingSearchDetails.pickupDate || 'Fri, 16 Oct 2026');
-  const [pickupTime, setPickupTime] = useState(bookingSearchDetails.pickupTime || '03:00 AM');
-
-  // Dynamic route distance & time calculation from live coordinates
-  const routeCalc = calculateTripRouteAndPrice({
-    originName: fromLocation,
-    originCoords: userCoords,
-    destinationName: toLocation,
-    tripType: tripType as any,
+  const [pickupDate, setPickupDate] = useState(() => {
+    if (bookingSearchDetails.pickupDate && bookingSearchDetails.pickupDate.includes('-')) {
+      return bookingSearchDetails.pickupDate;
+    }
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
   });
+  const [pickupTime, setPickupTime] = useState(bookingSearchDetails.pickupTime || '06:00');
+
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | null>(CITY_COORDINATES.tirupati);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<MapLocationItem[]>([]);
+  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
+  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
+  const [isFetchingMapRoute, setIsFetchingMapRoute] = useState(false);
+  const [liveMapData, setLiveMapData] = useState<{ distanceKm?: number; durationMinutes?: number; summary?: string } | null>(null);
+
+  // Debounced auto-fetch place suggestions from Maps
+  useEffect(() => {
+    if (!toLocation || toLocation.trim().length < 2) {
+      setDestinationSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingPlaces(true);
+      try {
+        const results = await searchMapLocations(toLocation);
+        setDestinationSuggestions(results);
+      } catch {
+        // silent
+      } finally {
+        setIsSearchingPlaces(false);
+      }
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [toLocation]);
+
+  // Handle selecting a destination
+  const handleSelectDestination = (dest: { name: string; displayName?: string; lat?: number; lng?: number }) => {
+    setToLocation(dest.name);
+    if (dest.lat && dest.lng) {
+      setDestinationCoords({ lat: dest.lat, lng: dest.lng });
+    }
+    setShowDestSuggestions(false);
+  };
+
+  // Auto-fetch real-time road driving route & duration from OpenStreetMap OSRM
+  useEffect(() => {
+    const originC = userCoords || CITY_COORDINATES.hyderabad;
+    const destC = destinationCoords || CITY_COORDINATES.tirupati;
+
+    let active = true;
+    const fetchRoute = async () => {
+      setIsFetchingMapRoute(true);
+      try {
+        const route = await fetchLiveMapRoute(originC, destC);
+        if (active && route) {
+          setLiveMapData(route);
+        }
+      } catch {
+        // silent
+      } finally {
+        if (active) setIsFetchingMapRoute(false);
+      }
+    };
+
+    fetchRoute();
+    return () => {
+      active = false;
+    };
+  }, [fromLocation, toLocation, userCoords, destinationCoords]);
+
+  // Dynamic route distance, travel duration & reach time calculation
+  const [routeCalc, setRouteCalc] = useState(() =>
+    calculateTripRouteAndPrice({
+      originName: fromLocation,
+      originCoords: userCoords,
+      destinationName: toLocation,
+      destinationCoords,
+      tripType: tripType as any,
+      departureDate: pickupDate,
+      departureTime: pickupTime,
+    })
+  );
+
+  useEffect(() => {
+    const calc = calculateTripRouteAndPrice({
+      originName: fromLocation,
+      originCoords: userCoords,
+      destinationName: toLocation,
+      destinationCoords,
+      tripType: tripType as any,
+      departureDate: pickupDate,
+      departureTime: pickupTime,
+      liveDistanceKm: liveMapData?.distanceKm,
+      liveDurationMinutes: liveMapData?.durationMinutes,
+      highwaySummary: liveMapData?.summary,
+    });
+    setRouteCalc(calc);
+  }, [fromLocation, toLocation, tripType, userCoords, destinationCoords, pickupDate, pickupTime, liveMapData]);
 
   // Passenger "Your Details" form states
   const [title, setTitle] = useState('Mr');
@@ -250,16 +349,89 @@ export const BookingPage: React.FC = () => {
               />
             </div>
 
-            {/* TO */}
-            <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">TO</span>
-              <input
-                type="text"
-                value={toLocation}
-                onChange={(e) => setToLocation(e.target.value)}
-                placeholder="Goa"
-                className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none truncate mt-0.5"
-              />
+            {/* TO (DESTINATION DROP WITH MAPS AUTO-FETCH) */}
+            <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2 relative">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">TO</span>
+                {isFetchingMapRoute ? (
+                  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded flex items-center gap-1 animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                    <span>Maps...</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                    <Check className="w-2.5 h-2.5 text-emerald-600" />
+                    <span>Map</span>
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={toLocation}
+                  onFocus={() => setShowDestSuggestions(true)}
+                  onChange={(e) => {
+                    setToLocation(e.target.value);
+                    setShowDestSuggestions(true);
+                  }}
+                  placeholder="Goa, Tirupati, Bengaluru"
+                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none truncate mt-0.5 pr-4"
+                />
+              </div>
+
+              {/* Map Autocomplete Suggestions Dropdown */}
+              {showDestSuggestions && (
+                <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-in fade-in zoom-in-95 max-h-64 overflow-y-auto">
+                  <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+                    <span>Maps Destination</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowDestSuggestions(false)}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {destinationSuggestions.length > 0 ? (
+                    destinationSuggestions.map((item, idx) => (
+                      <button
+                        key={`${item.name}-${idx}`}
+                        type="button"
+                        onClick={() => handleSelectDestination(item)}
+                        className="w-full text-left px-2 py-1.5 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 group/item cursor-pointer"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-bold text-slate-800 truncate">
+                            {item.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            {item.displayName}
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-2 text-center text-xs text-slate-400">
+                      {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city or temple'}
+                    </div>
+                  )}
+
+                  <div className="mt-2 pt-2 border-t border-slate-100 grid grid-cols-2 gap-1">
+                    {POPULAR_DESTINATION_PRESETS.slice(0, 4).map((p) => (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => handleSelectDestination({ name: p.location })}
+                        className="text-left px-2 py-1 rounded bg-slate-50 hover:bg-red-50 text-[10px] font-semibold text-slate-700 truncate cursor-pointer"
+                      >
+                        {p.icon} {p.name.split(' ')[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* PICK-UP DATE */}
@@ -306,6 +478,43 @@ export const BookingPage: React.FC = () => {
 
         </div>
       </section>
+
+      {/* Dynamic Live Highway Radar Banner */}
+      <div className="bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 py-2.5 text-xs shadow-2xs">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-600 text-white font-extrabold text-[10px] shadow-2xs">
+              <Navigation className="w-3 h-3" />
+              <span>LIVE MAP RADAR</span>
+            </span>
+            <span className="font-extrabold text-slate-900">
+              {fromLocation.split(',')[0]} ➔ {toLocation.split(',')[0]}
+            </span>
+            <span className="bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200 text-slate-700 font-bold flex items-center gap-1">
+              <Compass className="w-3 h-3 text-red-500" />
+              <span>{routeCalc.distanceKm} km</span>
+            </span>
+            <span className="bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-200 text-slate-700 font-bold flex items-center gap-1">
+              <Clock className="w-3 h-3 text-amber-500" />
+              <span>Drive {routeCalc.durationFormatted}</span>
+            </span>
+            <span className="bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
+              <span>🏁</span>
+              <span>{routeCalc.fullReachString}</span>
+            </span>
+            {routeCalc.isLiveMapRoute && (
+              <span className="hidden lg:inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                <Navigation className="w-2.5 h-2.5 text-blue-600" />
+                <span>{routeCalc.highwaySummary}</span>
+              </span>
+            )}
+          </div>
+
+          <div className="text-[11px] text-slate-500 font-medium hidden sm:block">
+            All-Inclusive Outstation Chauffeur Tariff Guaranteed
+          </div>
+        </div>
+      </div>
 
       {/* ================= STEPPER PROGRESS BAR ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-2 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -533,7 +742,10 @@ export const BookingPage: React.FC = () => {
                     🛣️ {routeCalc.distanceKm} km Total
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
-                    ⏱️ Est. {routeCalc.durationFormatted}
+                    ⏱️ Drive {routeCalc.durationFormatted}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    🏁 {routeCalc.fullReachString}
                   </span>
                 </div>
               </div>

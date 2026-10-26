@@ -184,7 +184,12 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
 
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 flex items-center gap-1.5 shadow-2xs">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
-            <span>{activeRoute.durationFormatted}</span>
+            <span>Drive {activeRoute.durationFormatted}</span>
+          </span>
+
+          <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-1.5 shadow-2xs">
+            <span>🏁</span>
+            <span>{computed.fullReachString}</span>
           </span>
 
           {tollIncluded && (
@@ -381,13 +386,16 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
             <g transform={`translate(${pEnd.x}, ${pEnd.y})`}>
               <circle cx="0" cy="0" r="14" fill="#E11D48" opacity="0.25" />
               <circle cx="0" cy="0" r="8" fill="#E11D48" stroke="#FFFFFF" strokeWidth="2" />
-              <g transform="translate(-75, -42)">
-                <rect x="0" y="0" width="150" height="32" rx="10" fill="#0F172A" stroke="#E11D48" strokeWidth="1.5" />
-                <circle cx="14" cy="16" r="7" fill="#E11D48" />
-                <text x="14" y="19" textAnchor="middle" fontSize="9" fontWeight="900" fill="#FFFFFF">B</text>
-                <text x="26" y="14" fontSize="8" fontWeight="bold" fill="#94A3B8">DESTINATION</text>
-                <text x="26" y="24" fontSize="9.5" fontWeight="black" fill="#FFFFFF">
+              <g transform="translate(-85, -46)">
+                <rect x="0" y="0" width="170" height="36" rx="10" fill="#0F172A" stroke="#E11D48" strokeWidth="1.5" />
+                <circle cx="15" cy="18" r="7.5" fill="#E11D48" />
+                <text x="15" y="21" textAnchor="middle" fontSize="9" fontWeight="900" fill="#FFFFFF">B</text>
+                <text x="28" y="13" fontSize="7.5" fontWeight="bold" fill="#94A3B8">DESTINATION DROP</text>
+                <text x="28" y="23" fontSize="9.5" fontWeight="black" fill="#FFFFFF">
                   {cleanDestination.slice(0, 15)}
+                </text>
+                <text x="28" y="32" fontSize="7.5" fontWeight="bold" fill="#34D399">
+                  🏁 Reach: {computed.reachTimeFormatted}
                 </text>
               </g>
             </g>

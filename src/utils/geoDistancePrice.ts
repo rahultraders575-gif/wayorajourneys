@@ -8,6 +8,14 @@ export interface LatLng {
   lng: number;
 }
 
+export interface MapLocationItem {
+  name: string;
+  displayName: string;
+  lat: number;
+  lng: number;
+  category?: 'city' | 'temple' | 'hillstation' | 'beach' | 'airport';
+}
+
 export interface RouteCalculationResult {
   origin: string;
   originCoords?: LatLng;
@@ -16,7 +24,14 @@ export interface RouteCalculationResult {
   distanceKm: number;
   durationMinutes: number;
   durationFormatted: string;
+  departureFormatted: string;
+  reachTimeFormatted: string;
+  reachDateFormatted: string;
+  isNextDay: boolean;
+  fullReachString: string;
   isGpsAccurate: boolean;
+  isLiveMapRoute: boolean;
+  highwaySummary: string;
   rates: {
     sedan: { ratePerKm: number; totalFare: number; advance25: number; name: string };
     innova: { ratePerKm: number; totalFare: number; advance25: number; name: string };
@@ -32,7 +47,7 @@ export interface RouteCalculationResult {
   };
 }
 
-// Well-known coordinates across South & Central India for instant distance lookups
+// Well-known coordinates across South, Central & North India for instant lookups
 export const CITY_COORDINATES: Record<string, LatLng> = {
   // Hubs
   hyderabad: { lat: 17.385, lng: 78.4867 },
@@ -68,7 +83,34 @@ export const CITY_COORDINATES: Record<string, LatLng> = {
   pune: { lat: 18.5204, lng: 73.8567 },
   mumbai: { lat: 19.0760, lng: 72.8777 },
   delhi: { lat: 28.6139, lng: 77.2090 },
+  jaipur: { lat: 26.9124, lng: 75.7873 },
+  udaipur: { lat: 24.5854, lng: 73.7125 },
+  agra: { lat: 27.1767, lng: 78.0081 },
+  coorg: { lat: 12.3375, lng: 75.8069 },
+  kodaikanal: { lat: 10.2381, lng: 77.4892 },
+  wayanad: { lat: 11.6854, lng: 76.1320 },
+  pondicherry: { lat: 11.9416, lng: 79.8083 },
+  mahabaleshwar: { lat: 17.9237, lng: 73.6586 },
+  lonavala: { lat: 18.7557, lng: 73.4091 },
+  kochi: { lat: 9.9312, lng: 76.2673 },
+  madurai: { lat: 9.9252, lng: 78.1198 },
+  ayodhya: { lat: 26.7922, lng: 82.1998 },
+  rishikesh: { lat: 30.0869, lng: 78.2676 },
 };
+
+/**
+ * Curated top destination presets for one-tap booking & live map auto-fetch
+ */
+export const POPULAR_DESTINATION_PRESETS = [
+  { name: 'Tirupati Balaji', location: 'Tirupati, Andhra Pradesh', icon: '🛕' },
+  { name: 'Srisailam Jyotirlinga', location: 'Srisailam, Andhra Pradesh', icon: '🕉️' },
+  { name: 'Goa Beaches', location: 'Goa, India', icon: '🏖️' },
+  { name: 'Bengaluru Silicon City', location: 'Bengaluru, Karnataka', icon: '🏙️' },
+  { name: 'Shirdi Sai Baba', location: 'Shirdi, Maharashtra', icon: '✨' },
+  { name: 'Araku Valley & Borra', location: 'Araku, Andhra Pradesh', icon: '⛰️' },
+  { name: 'Vijayawada Kanaka Durga', location: 'Vijayawada, Andhra Pradesh', icon: '🏛️' },
+  { name: 'Ooty Queen of Hills', location: 'Ooty, Tamil Nadu', icon: '🌲' },
+];
 
 /**
  * Standard cab tariff structure (rate per km in INR)
@@ -127,6 +169,9 @@ export function lookupCityCoords(query: string): LatLng | null {
   if (clean.includes('kashi') || clean.includes('varanasi') || clean.includes('banaras')) {
     return CITY_COORDINATES.kashi;
   }
+  if (clean.includes('mallikarjuna')) {
+    return CITY_COORDINATES.srisailam;
+  }
 
   return null;
 }
@@ -143,38 +188,225 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
+ * Calculates accurate Reach Time / Arrival Time based on departure date, time, and travel duration
+ */
+export function calculateReachTime(params: {
+  departureDate?: string;
+  departureTime?: string;
+  durationMinutes: number;
+}): {
+  departureFormatted: string;
+  reachTimeFormatted: string;
+  reachDateFormatted: string;
+  isNextDay: boolean;
+  fullReachString: string;
+} {
+  const { departureDate, departureTime = '06:00', durationMinutes } = params;
+
+  // Parse time
+  const [hourStr, minStr] = departureTime.split(':');
+  const depHour = parseInt(hourStr || '6', 10);
+  const depMin = parseInt(minStr || '0', 10);
+
+  // Format Departure time (12h AM/PM)
+  const depPeriod = depHour >= 12 ? 'PM' : 'AM';
+  const depHour12 = depHour % 12 === 0 ? 12 : depHour % 12;
+  const departureFormatted = `${depHour12}:${depMin.toString().padStart(2, '0')} ${depPeriod}`;
+
+  // Base departure timestamp
+  let baseDate = new Date();
+  if (departureDate && departureDate.includes('-')) {
+    const [y, m, d] = departureDate.split('-').map(Number);
+    baseDate = new Date(y, m - 1, d, depHour, depMin, 0);
+  } else {
+    baseDate.setHours(depHour, depMin, 0, 0);
+  }
+
+  // Reach timestamp
+  const reachDate = new Date(baseDate.getTime() + durationMinutes * 60 * 1000);
+
+  const reachHour = reachDate.getHours();
+  const reachMin = reachDate.getMinutes();
+  const reachPeriod = reachHour >= 12 ? 'PM' : 'AM';
+  const reachHour12 = reachHour % 12 === 0 ? 12 : reachHour % 12;
+  const reachTimeFormatted = `${reachHour12}:${reachMin.toString().padStart(2, '0')} ${reachPeriod}`;
+
+  const isNextDay = reachDate.getDate() !== baseDate.getDate();
+  const daysDiff = Math.round((reachDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  let reachDateFormatted = 'Same Day';
+  if (daysDiff === 1 || isNextDay) {
+    reachDateFormatted = 'Next Day (+1)';
+  } else if (daysDiff > 1) {
+    reachDateFormatted = `+${daysDiff} Days`;
+  }
+
+  const fullReachString = isNextDay
+    ? `Reach ${reachTimeFormatted} (${reachDateFormatted})`
+    : `Reach by ${reachTimeFormatted} Today`;
+
+  return {
+    departureFormatted,
+    reachTimeFormatted,
+    reachDateFormatted,
+    isNextDay,
+    fullReachString,
+  };
+}
+
+/**
+ * Auto-fetch live driving route and real-time distance from OpenStreetMap OSRM Routing Engine
+ */
+export async function fetchLiveMapRoute(
+  origin: LatLng,
+  destination: LatLng
+): Promise<{ distanceKm: number; durationMinutes: number; summary: string } | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2600); // 2.6s timeout
+
+    const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=false&steps=false`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const best = data.routes[0];
+      const distanceKm = Math.round(best.distance / 1000);
+      const durationMinutes = Math.round(best.duration / 60);
+      return {
+        distanceKm: Math.max(35, distanceKm),
+        durationMinutes: Math.max(30, durationMinutes),
+        summary: best.legs?.[0]?.summary || 'National Express Highway Corridor',
+      };
+    }
+  } catch {
+    // Network or timeout - fallback to Haversine
+  }
+  return null;
+}
+
+/**
+ * Live search and autocomplete for Indian destinations from Maps (Nominatim + Highway Directory)
+ */
+export async function searchMapLocations(query: string): Promise<MapLocationItem[]> {
+  if (!query || query.trim().length < 2) return [];
+  const qClean = query.trim().toLowerCase();
+
+  // 1. Instant local index lookup
+  const localMatches: MapLocationItem[] = [];
+  for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+    if (key.includes(qClean) || qClean.includes(key)) {
+      const formatted = key.charAt(0).toUpperCase() + key.slice(1);
+      localMatches.push({
+        name: formatted,
+        displayName: `${formatted}, India (Highway Chauffeur Hub)`,
+        lat: coords.lat,
+        lng: coords.lng,
+        category: 'city',
+      });
+    }
+  }
+
+  // 2. Query OpenStreetMap Nominatim for exact landmarks, hotels, airports, or addresses
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2200);
+    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      query
+    )}&countrycodes=in&addressdetails=1&limit=6`;
+    const res = await fetch(nominatimUrl, {
+      signal: controller.signal,
+      headers: {
+        'Accept-Language': 'en',
+      },
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const items = await res.json();
+      const osmMatches: MapLocationItem[] = items.map((item: any) => ({
+        name: item.name || item.display_name.split(',')[0],
+        displayName: item.display_name,
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        category: item.type === 'aerodrome' ? 'airport' : item.type === 'place_of_worship' ? 'temple' : 'city',
+      }));
+
+      const combined = [...localMatches, ...osmMatches];
+      const seen = new Set<string>();
+      return combined.filter((item) => {
+        const id = item.name.toLowerCase();
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      }).slice(0, 7);
+    }
+  } catch {
+    // Fall back to local
+  }
+
+  return localMatches.slice(0, 7);
+}
+
+/**
  * Universal Route & Price Calculator
- * Supports: One-way, Round-trip, Live GPS coordinates
+ * Supports: One-way, Round-trip, Live GPS, Custom Departure Time, and Live Map overrides
  */
 export function calculateTripRouteAndPrice(params: {
   originName: string;
   originCoords?: LatLng | null;
   destinationName: string;
   destinationCoords?: LatLng | null;
-  tripType?: 'Round Trip' | 'One-Way Drop' | 'ROUND_TRIP' | 'ONE_WAY';
+  tripType?: 'Round Trip' | 'One-Way Drop' | 'ROUND_TRIP' | 'ONE_WAY' | string;
   driverDays?: number;
+  departureDate?: string;
+  departureTime?: string;
+  liveDistanceKm?: number;
+  liveDurationMinutes?: number;
+  highwaySummary?: string;
 }): RouteCalculationResult {
-  const { originName, originCoords, destinationName, destinationCoords, tripType = 'Round Trip', driverDays = 1 } = params;
+  const {
+    originName,
+    originCoords,
+    destinationName,
+    destinationCoords,
+    tripType = 'Round Trip',
+    driverDays = 1,
+    departureDate,
+    departureTime = '06:00',
+    liveDistanceKm,
+    liveDurationMinutes,
+    highwaySummary = 'National Highway Corridor',
+  } = params;
 
   // Resolve origin coords
-  let oCoords = originCoords || lookupCityCoords(originName) || CITY_COORDINATES.hyderabad;
+  const oCoords = originCoords || lookupCityCoords(originName) || CITY_COORDINATES.hyderabad;
   // Resolve destination coords
-  let dCoords = destinationCoords || lookupCityCoords(destinationName) || CITY_COORDINATES.tirupati;
+  const dCoords = destinationCoords || lookupCityCoords(destinationName) || CITY_COORDINATES.tirupati;
 
-  // Compute road distance
-  let oneWayDistanceKm = calculateHaversineDistanceKm(oCoords, dCoords);
+  // Compute road distance: use live map measurement if available, otherwise Haversine curvature
+  let oneWayDistanceKm = liveDistanceKm || calculateHaversineDistanceKm(oCoords, dCoords);
 
   // Minimum local outstation billing baseline
   if (oneWayDistanceKm < 35) {
-    // Local / Airport / City transfer
     oneWayDistanceKm = Math.max(35, oneWayDistanceKm);
   }
 
-  const isRoundTrip = tripType === 'Round Trip' || tripType === 'ROUND_TRIP';
+  const isRoundTrip = tripType === 'Round Trip' || tripType === 'ROUND_TRIP' || tripType === 'Outstation Round-trip';
   const billableDistanceKm = isRoundTrip ? oneWayDistanceKm * 2 : oneWayDistanceKm;
 
-  // Approximate driving speed on Indian highways (~55 km/h avg including tolls and traffic)
-  const durationMinutes = Math.round((oneWayDistanceKm / 55) * 60);
+  // Driving duration in minutes
+  const durationMinutes =
+    liveDurationMinutes || Math.round((oneWayDistanceKm / 55) * 60);
+
+  // Calculate Reach / Arrival Time details
+  const reachDetails = calculateReachTime({
+    departureDate,
+    departureTime,
+    durationMinutes,
+  });
 
   // Calculate pricing for each cab category
   const driverDaysCount = Math.max(1, driverDays || (isRoundTrip ? Math.ceil(billableDistanceKm / 450) : 1));
@@ -202,7 +434,14 @@ export function calculateTripRouteAndPrice(params: {
     distanceKm: billableDistanceKm,
     durationMinutes,
     durationFormatted: formatDuration(durationMinutes),
+    departureFormatted: reachDetails.departureFormatted,
+    reachTimeFormatted: reachDetails.reachTimeFormatted,
+    reachDateFormatted: reachDetails.reachDateFormatted,
+    isNextDay: reachDetails.isNextDay,
+    fullReachString: reachDetails.fullReachString,
     isGpsAccurate: Boolean(originCoords),
+    isLiveMapRoute: Boolean(liveDistanceKm),
+    highwaySummary,
     rates: {
       sedan: calculateForCab('sedan'),
       innova: calculateForCab('innova'),
@@ -218,3 +457,4 @@ export function calculateTripRouteAndPrice(params: {
     },
   };
 }
+

@@ -125,58 +125,30 @@ export const MobileBottomNav: React.FC = () => {
               </button>
             </div>
 
-            {/* User and Captain Login Options */}
-            <div className="grid grid-cols-2 gap-2">
-              {/* Passenger Login Card */}
-              <div 
-                onClick={() => {
-                  setHubSheetOpen(false);
-                  openAuthModal('user');
-                }}
-                className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-red-300 flex flex-col justify-between cursor-pointer transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-full bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-bold text-xs">
-                    {currentRider ? currentRider.name.slice(0, 1).toUpperCase() : <User className="w-3.5 h-3.5" />}
-                  </div>
-                  <span className="text-[9px] uppercase font-bold text-red-600 tracking-wider">Passenger</span>
+            {/* Rider Account Strip */}
+            <div 
+              onClick={() => {
+                setHubSheetOpen(false);
+                openAuthModal();
+              }}
+              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-red-300 flex items-center justify-between cursor-pointer transition-colors shadow-xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-bold text-xs">
+                  {currentRider ? currentRider.name.slice(0, 2).toUpperCase() : <User className="w-4 h-4" />}
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900 block text-xs truncate">
-                    {currentRider ? currentRider.name : 'Passenger Login'}
+                  <span className="font-bold text-slate-900 block text-xs">
+                    {currentRider ? currentRider.name : 'Sign In / Register'}
                   </span>
-                  <span className="text-[10px] text-slate-500 block truncate">
-                    {currentRider ? currentRider.phone : 'Book & Track'}
+                  <span className="text-[10px] text-slate-500 block">
+                    {currentRider ? `${currentRider.phone} · Active Rider` : 'Quick 1-tap rider account'}
                   </span>
                 </div>
               </div>
-
-              {/* Captain Login Card */}
-              <div 
-                onClick={() => {
-                  setHubSheetOpen(false);
-                  openAuthModal('captain');
-                }}
-                className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 hover:border-amber-400 flex flex-col justify-between cursor-pointer transition-colors shadow-xs"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 font-bold text-xs relative">
-                    <UserCheck className="w-3.5 h-3.5" />
-                    {currentCaptain?.dutyStatus === 'On Duty' && (
-                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    )}
-                  </div>
-                  <span className="text-[9px] uppercase font-bold text-amber-800 tracking-wider">Captain</span>
-                </div>
-                <div>
-                  <span className="font-bold text-slate-900 block text-xs truncate">
-                    {currentCaptain ? currentCaptain.name : 'Captain Login'}
-                  </span>
-                  <span className="text-[10px] text-slate-500 block truncate">
-                    {currentCaptain ? currentCaptain.dutyStatus : 'Cockpit & Trips'}
-                  </span>
-                </div>
-              </div>
+              <span className="text-[10px] text-red-700 font-bold px-2 py-1 rounded-lg bg-red-50 border border-red-200">
+                {currentRider ? 'Manage' : 'Sign In'}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">

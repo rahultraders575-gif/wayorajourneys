@@ -83,14 +83,12 @@ interface CmsContextType {
     finalAmount?: number
   ) => void;
 
-  // Authentication & Profile (User / Passenger & Captain Chauffeur Partner)
+  // Rider Authentication & User Profile
   currentRider: RiderProfile | null;
   loginRider: (data: { name: string; phone: string; email?: string; city?: string }) => void;
   logoutRider: () => void;
   isAuthModalOpen: boolean;
-  authModalRole: 'user' | 'captain';
-  setAuthModalRole: (role: 'user' | 'captain') => void;
-  openAuthModal: (role?: 'user' | 'captain') => void;
+  openAuthModal: () => void;
   closeAuthModal: () => void;
 
   // General Data
@@ -182,7 +180,6 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalRole, setAuthModalRole] = useState<'user' | 'captain'>('user');
 
   useEffect(() => {
     if (currentRider) {
@@ -703,12 +700,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Signed out from rider profile', 'info');
   };
 
-  const openAuthModal = (role?: 'user' | 'captain') => {
-    if (role) {
-      setAuthModalRole(role);
-    }
-    setIsAuthModalOpen(true);
-  };
+  const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
   return (
@@ -753,8 +745,6 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginRider,
         logoutRider,
         isAuthModalOpen,
-        authModalRole,
-        setAuthModalRole,
         openAuthModal,
         closeAuthModal,
         blogs,

@@ -12,7 +12,14 @@ import {
   UserCheck, User, Menu, ChevronUp, Shield, X, Luggage, Plane, Hotel, Home, BookOpen
 } from 'lucide-react';
 
-import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+import { 
+  calculateTripRouteAndPrice, 
+  fetchLiveMapRoute, 
+  searchMapLocations, 
+  POPULAR_DESTINATION_PRESETS,
+  MapLocationItem,
+  CITY_COORDINATES
+} from '../utils/geoDistancePrice';
 
 export const HomePage: React.FC = () => {
   const {
@@ -22,7 +29,6 @@ export const HomePage: React.FC = () => {
   } = useCms();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authDropdownOpen, setAuthDropdownOpen] = useState(false);
 
   // Navigation items with related icons for the minimal header
   const navItems: { id: PageId; label: string; icon: React.ReactNode }[] = [
@@ -61,10 +67,25 @@ export const HomePage: React.FC = () => {
   const [fromAddress, setFromAddress] = useState('Hitec City / Airport / Doorstep');
   const [toCity, setToCity] = useState('Tirupati, Andhra Pradesh');
   const [toDropDetails, setToDropDetails] = useState('Temple Darshan / Hotel Drop');
-  const [departureDate, setDepartureDate] = useState('Tomorrow, 24 Oct');
-  const [departureTime, setDepartureTime] = useState('06:00 AM · Sunrise Departure');
-  const [returnDate, setReturnDate] = useState('27 Oct\'26');
-  const [returnTime, setReturnTime] = useState('09:00 PM · Evening Return');
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | null>(CITY_COORDINATES.tirupati);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<MapLocationItem[]>([]);
+  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
+  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
+  const [isFetchingMapRoute, setIsFetchingMapRoute] = useState(false);
+  const [liveMapData, setLiveMapData] = useState<{ distanceKm?: number; durationMinutes?: number; summary?: string } | null>(null);
+
+  const [departureDate, setDepartureDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [departureTime, setDepartureTime] = useState('06:00');
+  const [returnDate, setReturnDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().split('T')[0];
+  });
+  const [returnTime, setReturnTime] = useState('21:00');
   const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
 
   // Dropdown toggles
@@ -78,26 +99,96 @@ export const HomePage: React.FC = () => {
     }
   }, [userLocation]);
 
-  // Real-time automatic route & price calculation
+  // Debounced auto-fetch place suggestions from Maps (OpenStreetMap & Highway Directory) as user types
+  useEffect(() => {
+    if (!toCity || toCity.trim().length < 2) {
+      setDestinationSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingPlaces(true);
+      try {
+        const results = await searchMapLocations(toCity);
+        setDestinationSuggestions(results);
+      } catch {
+        // silent
+      } finally {
+        setIsSearchingPlaces(false);
+      }
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [toCity]);
+
+  // Handle selecting a destination from map suggestions or popular quick presets
+  const handleSelectDestination = (dest: { name: string; displayName?: string; lat?: number; lng?: number }) => {
+    setToCity(dest.name);
+    if (dest.displayName) {
+      const parts = dest.displayName.split(',');
+      setToDropDetails(parts.slice(1, 3).join(',').trim() || 'Verified Map Landmark Drop');
+    }
+    if (dest.lat && dest.lng) {
+      setDestinationCoords({ lat: dest.lat, lng: dest.lng });
+    }
+    setShowDestSuggestions(false);
+  };
+
+  // Auto-fetch real-time driving road route & duration from OpenStreetMap OSRM
+  useEffect(() => {
+    const originC = userCoords || CITY_COORDINATES.hyderabad;
+    const destC = destinationCoords || CITY_COORDINATES.tirupati;
+
+    let active = true;
+    const fetchRoute = async () => {
+      setIsFetchingMapRoute(true);
+      try {
+        const route = await fetchLiveMapRoute(originC, destC);
+        if (active && route) {
+          setLiveMapData(route);
+        }
+      } catch {
+        // silent fallback
+      } finally {
+        if (active) setIsFetchingMapRoute(false);
+      }
+    };
+
+    fetchRoute();
+    return () => {
+      active = false;
+    };
+  }, [fromCity, toCity, userCoords, destinationCoords]);
+
+  // Real-time automatic route & price & reach time calculation
   const [routeCalc, setRouteCalc] = useState(() =>
     calculateTripRouteAndPrice({
       originName: fromCity,
       originCoords: userCoords,
       destinationName: toCity,
+      destinationCoords,
       tripType: tripMode,
+      departureDate,
+      departureTime,
     })
   );
 
-  // Recalculate whenever live location, pickup city, destination city, or trip mode changes
+  // Recalculate whenever live location, pickup city, destination, departure time, or map route changes
   useEffect(() => {
     const calc = calculateTripRouteAndPrice({
       originName: fromCity,
       originCoords: userCoords,
       destinationName: toCity,
+      destinationCoords,
       tripType: tripMode,
+      departureDate,
+      departureTime,
+      liveDistanceKm: liveMapData?.distanceKm,
+      liveDurationMinutes: liveMapData?.durationMinutes,
+      highwaySummary: liveMapData?.summary,
     });
     setRouteCalc(calc);
-  }, [fromCity, toCity, tripMode, userCoords]);
+  }, [fromCity, toCity, tripMode, userCoords, destinationCoords, departureDate, departureTime, liveMapData]);
 
   const handleGetLiveLocation = async () => {
     const loc = await detectUserLocation(true);
@@ -234,119 +325,33 @@ export const HomePage: React.FC = () => {
               {/* Right Zone: Partner CTA & Rider Profile Pill */}
               <div className="flex items-center gap-2 xl:gap-3 shrink-0">
 
-                {/* Direct Captain Cockpit Link (Desktop) */}
+                {/* Become a Partner Button */}
                 <button
                   type="button"
                   onClick={() => handleNavClick('captain')}
-                  className={`hidden xl:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap ${
-                    currentCaptain
-                      ? 'bg-amber-50 text-amber-800 border-amber-300'
-                      : 'bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 border-slate-200'
-                  }`}
+                  className="hidden xl:flex items-center gap-1.5 bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
                 >
-                  <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                  <span>{currentCaptain ? `Cockpit (${currentCaptain.dutyStatus})` : 'Captain Partner'}</span>
+                  <UserCheck className="w-3.5 h-3.5 text-red-600" />
+                  <span>Become a Partner</span>
+                  <ChevronDown className="w-3 h-3 text-slate-500" />
                 </button>
 
-                {/* Interactive Login Dropdown (User & Captain) */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setAuthDropdownOpen(!authDropdownOpen)}
-                    className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:border-red-300 shrink-0 whitespace-nowrap"
-                    title="Login as Passenger or Captain"
-                  >
-                    {currentCaptain ? (
-                      <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-black border border-amber-300 relative">
-                        <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                        {currentCaptain.dutyStatus === 'On Duty' && (
-                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        )}
-                      </div>
-                    ) : currentRider ? (
-                      <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-black ring-1 ring-white">
-                        {currentRider.name.slice(0, 1).toUpperCase()}
-                      </div>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">
-                        <User className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-
-                    <span className="truncate max-w-[80px] sm:max-w-[110px] whitespace-nowrap font-bold">
-                      {currentCaptain
-                        ? `Capt. ${currentCaptain.name.split(' ')[0]}`
-                        : currentRider
-                        ? currentRider.name.split(' ')[0]
-                        : 'Sign In'}
-                    </span>
-                    <ChevronDown className={`w-3 h-3 text-slate-500 shrink-0 transition-transform ${authDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {authDropdownOpen && (
-                    <div 
-                      className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 text-xs space-y-1"
-                      onClick={() => setAuthDropdownOpen(false)}
-                    >
-                      <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                        Choose Login Portal
-                      </div>
-
-                      {/* Option 1: Passenger / User */}
-                      <button
-                        type="button"
-                        onClick={() => openAuthModal('user')}
-                        className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
-                          currentRider ? 'bg-red-50 text-red-700 font-bold' : 'hover:bg-slate-50 text-slate-800'
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                          <User className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-900 block truncate">
-                              {currentRider ? currentRider.name : 'Passenger Login'}
-                            </span>
-                            {currentRider && <span className="text-[9px] text-emerald-600 font-black">ACTIVE</span>}
-                          </div>
-                          <span className="text-[10px] text-slate-500 block truncate">
-                            {currentRider ? currentRider.phone : 'Book rides, track cabs & OTP'}
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Option 2: Captain Partner */}
-                      <button
-                        type="button"
-                        onClick={() => openAuthModal('captain')}
-                        className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors cursor-pointer ${
-                          currentCaptain ? 'bg-amber-50 text-amber-800 font-bold' : 'hover:bg-slate-50 text-slate-800'
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                          <UserCheck className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-slate-900 block truncate">
-                              {currentCaptain ? `Capt. ${currentCaptain.name}` : 'Captain Login'}
-                            </span>
-                            {currentCaptain && (
-                              <span className="text-[9px] text-emerald-600 font-black">
-                                {currentCaptain.dutyStatus}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-slate-500 block truncate">
-                            {currentCaptain ? `${currentCaptain.vehicleModel}` : 'Chauffeur cockpit & trips'}
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Rider Profile Pill */}
+                <button
+                  type="button"
+                  onClick={openAuthModal}
+                  className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-900 text-xs font-semibold pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200 transition-all cursor-pointer shadow-xs hover:scale-102 shrink-0 whitespace-nowrap"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+                    alt="User Profile"
+                    className="w-6 h-6 rounded-full object-cover ring-1 ring-white shrink-0"
+                  />
+                  <span className="truncate max-w-[80px] sm:max-w-[110px] whitespace-nowrap">
+                    {currentRider ? currentRider.name : 'Aarav Sharma'}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
+                </button>
 
                 {/* Mobile Menu Toggle Button */}
                 <button
@@ -365,37 +370,11 @@ export const HomePage: React.FC = () => {
             {/* Mobile Expanded Menu Drawer */}
             {mobileMenuOpen && (
               <div className="lg:hidden mt-3 pt-3 border-t border-slate-200 space-y-1.5 animate-in fade-in bg-white/95 rounded-2xl p-3 shadow-lg">
-                {/* Mobile Login Options */}
-                <div className="grid grid-cols-2 gap-2 pb-2 mb-2 border-b border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      openAuthModal('user');
-                    }}
-                    className="py-2.5 px-3 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <User className="w-3.5 h-3.5 text-red-600" />
-                    <span>{currentRider ? 'Passenger' : 'Passenger Login'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      openAuthModal('captain');
-                    }}
-                    className="py-2.5 px-3 text-xs font-bold rounded-xl bg-amber-50 text-amber-800 border border-amber-300 flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                    <span>{currentCaptain ? 'Captain' : 'Captain Login'}</span>
-                  </button>
-                </div>
-
                 {navItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-800 transition-colors"
                   >
                     <span className="text-red-600">{item.icon}</span>
                     <span>{item.label}</span>
@@ -407,8 +386,8 @@ export const HomePage: React.FC = () => {
                     onClick={() => handleNavClick('captain')}
                     className="py-2 text-center text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center gap-1.5"
                   >
-                    <UserCheck className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Captain Cockpit</span>
+                    <UserCheck className="w-3.5 h-3.5 text-red-600" />
+                    <span>Captain</span>
                   </button>
                   <button
                     type="button"
@@ -702,19 +681,54 @@ export const HomePage: React.FC = () => {
                       />
                     </div>
 
-                    {/* Tile 2: TO (DESTINATION) */}
+                    {/* Tile 2: TO (DESTINATION DROP WITH MAPS AUTO-FETCH) */}
                     <div className="md:col-span-4 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative group">
-                      <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1.5">
-                        DESTINATION DROP
-                      </span>
-                      <input
-                        type="text"
-                        required
-                        value={toCity}
-                        onChange={(e) => setToCity(e.target.value)}
-                        placeholder="e.g. Tirupati Balaji, AP"
-                        className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none placeholder-neutral-400"
-                      />
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-red-500" />
+                          DESTINATION DROP
+                        </span>
+                        {isFetchingMapRoute ? (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-amber-200 animate-pulse">
+                            <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                            <span>Auto-fetching route...</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
+                            <Check className="w-2.5 h-2.5 text-emerald-600" />
+                            <span>Map Connected</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          value={toCity}
+                          onFocus={() => setShowDestSuggestions(true)}
+                          onChange={(e) => {
+                            setToCity(e.target.value);
+                            setShowDestSuggestions(true);
+                          }}
+                          placeholder="e.g. Tirupati, Goa, Bengaluru, Shirdi"
+                          className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none placeholder-neutral-400 pr-6"
+                        />
+                        {toCity && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setToCity('');
+                              setShowDestSuggestions(false);
+                            }}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-0.5 cursor-pointer"
+                            title="Clear"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
                       <input
                         type="text"
                         value={toDropDetails}
@@ -722,6 +736,74 @@ export const HomePage: React.FC = () => {
                         placeholder="Hotel, Temple, or Sightseeing Drop"
                         className="w-full bg-transparent text-[11px] text-neutral-500 font-medium focus:outline-none truncate mt-0.5"
                       />
+
+                      {/* Reach Time & Distance Summary Chip directly inside the Destination tile */}
+                      <div className="mt-2.5 pt-2 border-t border-neutral-200/60 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-700 font-bold flex items-center gap-1">
+                          <Compass className="w-3 h-3 text-red-500" />
+                          <span>{routeCalc.distanceKm} km</span>
+                          <span className="text-slate-400 font-normal">({routeCalc.durationFormatted})</span>
+                        </span>
+                        <span className="text-emerald-800 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 flex items-center gap-1 shadow-2xs">
+                          <Clock className="w-3 h-3 text-emerald-600" />
+                          <span>{routeCalc.reachTimeFormatted}</span>
+                        </span>
+                      </div>
+
+                      {/* Map Autocomplete Suggestions Dropdown */}
+                      {showDestSuggestions && (
+                        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-40 animate-in fade-in zoom-in-95 max-h-72 overflow-y-auto">
+                          <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+                            <span>OpenStreetMap Indian Destinations</span>
+                            {isSearchingPlaces && <RefreshCw className="w-2.5 h-2.5 animate-spin text-red-500" />}
+                          </div>
+
+                          {destinationSuggestions.length > 0 ? (
+                            destinationSuggestions.map((item, idx) => (
+                              <button
+                                key={`${item.name}-${idx}`}
+                                type="button"
+                                onClick={() => handleSelectDestination(item)}
+                                className="w-full text-left px-2.5 py-2 hover:bg-red-50 rounded-xl transition-colors flex items-start gap-2.5 group/item cursor-pointer"
+                              >
+                                <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform" />
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-xs font-bold text-slate-800 group-hover/item:text-red-700 truncate">
+                                    {item.name}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 truncate">
+                                    {item.displayName}
+                                  </div>
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="p-2 text-center text-xs text-slate-400">
+                              {isSearchingPlaces ? 'Searching OpenStreetMap...' : 'Type any city or temple in India'}
+                            </div>
+                          )}
+
+                          {/* Quick Popular Presets */}
+                          <div className="mt-2 pt-2 border-t border-slate-100">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block px-2 mb-1.5">
+                              Popular Outstation Presets
+                            </span>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {POPULAR_DESTINATION_PRESETS.slice(0, 6).map((preset) => (
+                                <button
+                                  key={preset.name}
+                                  type="button"
+                                  onClick={() => handleSelectDestination({ name: preset.location })}
+                                  className="text-left px-2 py-1.5 rounded-lg bg-slate-50 hover:bg-red-50 text-[10px] font-semibold text-slate-700 hover:text-red-700 transition-colors flex items-center gap-1.5 truncate cursor-pointer"
+                                >
+                                  <span>{preset.icon}</span>
+                                  <span className="truncate">{preset.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Tile 3: CAB TYPE & SEATS CLASS */}
@@ -958,8 +1040,18 @@ export const HomePage: React.FC = () => {
                       </span>
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
                         <Clock className="w-3 h-3 text-amber-500" />
-                        <span>Est. {routeCalc.durationFormatted}</span>
+                        <span>Drive {routeCalc.durationFormatted}</span>
                       </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                        <span>🏁</span>
+                        <span>{routeCalc.fullReachString}</span>
+                      </span>
+                      {routeCalc.isLiveMapRoute && (
+                        <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                          <Navigation className="w-2.5 h-2.5 text-blue-600" />
+                          <span>{routeCalc.highwaySummary}</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Auto-Calculated Price for Selected Cab */}
