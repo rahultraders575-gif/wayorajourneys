@@ -7,6 +7,10 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM = process.env.EMAIL_FROM || 'Wayora Journeys <onboarding@resend.dev>';
 
 async function sendResendEmail(params: { to: string; subject: string; html: string }) {
+  if (!RESEND_API_KEY) {
+    console.log(`[EMAIL SIMULATED] Key not set. Would deliver to ${params.to}`);
+    return { success: true, simulated: true };
+  }
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -31,6 +35,60 @@ async function sendResendEmail(params: { to: string; subject: string; html: stri
     }
   } catch (err: any) {
     console.error(`❌ [RESEND EXCEPTION]`, err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+// ================= LIVE FAST2SMS DISPATCH ENGINE =================
+const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
+
+async function sendFast2Sms(params: { numbers: string; message: string; otpCode?: string }) {
+  if (!FAST2SMS_API_KEY) {
+    console.log(`[SMS SIMULATED] Key not set. Would deliver to ${params.numbers}`);
+    return { success: true, simulated: true };
+  }
+
+  try {
+    // Clean numbers (extract 10-digit Indian mobile number)
+    const cleanNumbers = params.numbers.replace(/\D/g, '').slice(-10);
+    if (cleanNumbers.length !== 10) {
+      console.warn(`⚠️ [FAST2SMS] Invalid mobile number: ${params.numbers}`);
+      return { success: false, error: 'Invalid 10-digit mobile number' };
+    }
+
+    // Fast2SMS OTP or Quick SMS route
+    const payload = params.otpCode
+      ? {
+          variables_values: params.otpCode,
+          route: 'otp',
+          numbers: cleanNumbers,
+        }
+      : {
+          message: params.message,
+          language: 'english',
+          route: 'q',
+          numbers: cleanNumbers,
+        };
+
+    const res = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+      method: 'POST',
+      headers: {
+        authorization: FAST2SMS_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (data.return) {
+      console.log(`✅ [FAST2SMS SUCCESS] Delivered to ${cleanNumbers} | Request ID: ${data.request_id}`);
+      return { success: true, requestId: data.request_id };
+    } else {
+      console.warn(`⚠️ [FAST2SMS WARN]`, data.message);
+      return { success: false, error: data.message };
+    }
+  } catch (err: any) {
+    console.error(`❌ [FAST2SMS EXCEPTION]`, err.message);
     return { success: false, error: err.message };
   }
 }
@@ -408,6 +466,15 @@ apiRouter.post('/otp/send', (req: Request, res: Response) => {
             <p style="font-size: 12px; color: #64748b;">This OTP code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
           </div>
         `,
+      });
+    }
+
+    // If channel is SMS or WhatsApp, dispatch via Fast2SMS Live API!
+    if (channel === 'sms' || (!recipient.includes('@') && /^\+?[0-9\s-]{10,14}$/.test(recipient))) {
+      sendFast2Sms({
+        numbers: recipient,
+        otpCode: code,
+        message: `Your Wayora Journeys login verification OTP code is: ${code}. Valid for 10 minutes.`,
       });
     }
 
@@ -944,7 +1011,11 @@ apiRouter.post('/notifications/daily-offers/broadcast', (req: Request, res: Resp
 
     if (channels.includes('sms')) {
       console.log(`📱 [SMS BROADCAST] Sent to ${smsSubscribers.length} passengers via SMS Gateway`);
-      console.log(`   SMS Text: "Wayora Alert: ${offerTitle}. Use coupon ${couponCode} for instant savings. Book: wayora.in/cab"`);
+      const targetPhone = customRecipientPhone || '9182471876';
+      sendFast2Sms({
+        numbers: targetPhone,
+        message: `Wayora Journeys Daily Deal: ${offerTitle}. Apply code ${couponCode} for instant savings on your ride. Book now: https://wayorajourneys.com`,
+      });
       if (customRecipientPhone) console.log(`   -> Direct SMS test to: ${customRecipientPhone}`);
     }
     console.log(`======================================================\n`);
