@@ -900,13 +900,13 @@ export const HomePage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
 
                     {/* Tile 4: PICKUP DATE & TIME */}
-                    <div className="lg:col-span-3 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative group">
+                    <div className="lg:col-span-3 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-red-500" />
-                          PICKUP DATE & TIME
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                          <span>PICKUP DATE</span>
                         </span>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => {
@@ -934,40 +934,39 @@ export const HomePage: React.FC = () => {
                       </div>
 
                       {/* Interactive HTML5 Date Input */}
-                      <div className="flex items-center gap-2">
+                      <div>
                         <input
                           type="date"
                           required
                           value={departureDate.includes('-') ? departureDate : new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                           onChange={(e) => setDepartureDate(e.target.value)}
-                          className="w-full bg-white sm:bg-transparent border sm:border-0 border-neutral-200 rounded-lg px-2 sm:px-0 py-1 sm:py-0 text-sm sm:text-base font-bold text-neutral-900 focus:outline-none cursor-pointer"
+                          className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none cursor-pointer"
                         />
                       </div>
 
-                      {/* Interactive HTML5 Time Input */}
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      {/* Interactive HTML5 Time Input with clean single clock */}
+                      <div className="flex items-center gap-2 mt-1 pt-1 border-t border-neutral-200/50">
                         <input
                           type="time"
                           value={departureTime.includes(':') && departureTime.length <= 5 ? departureTime : '06:00'}
                           onChange={(e) => setDepartureTime(e.target.value)}
-                          className="bg-transparent text-xs font-semibold text-neutral-600 focus:outline-none cursor-pointer"
+                          className="bg-transparent text-xs font-bold text-neutral-700 focus:outline-none cursor-pointer w-20"
                         />
-                        <span className="text-[10px] text-neutral-400">· Early Morning Chauffeur</span>
+                        <span className="text-[10px] text-neutral-400 truncate">· Early Chauffeur</span>
                       </div>
                     </div>
 
                     {/* Tile 5: RETURN DATE & TIME */}
-                    <div className={`lg:col-span-3 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative ${
+                    <div className={`lg:col-span-3 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors relative flex flex-col justify-between ${
                       tripMode !== 'Round Trip' ? 'bg-neutral-100/60 opacity-60' : 'bg-[#F8FAFC] hover:bg-neutral-100/70'
                     }`}>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-neutral-400" />
-                          RETURN DATE & TIME
+                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                          <span>RETURN DATE</span>
                         </span>
                         {tripMode !== 'Round Trip' ? (
-                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">
                             {tripMode === 'Airport' ? 'Airport Drop' : tripMode === 'Office' ? 'Office Drop' : tripMode === 'Hourly Rental' ? 'Hourly Package' : 'One-Way'}
                           </span>
                         ) : (
@@ -979,7 +978,7 @@ export const HomePage: React.FC = () => {
                               setReturnDate(ret.toISOString().split('T')[0]);
                               setReturnTime('21:00');
                             }}
-                            className="text-[9px] font-bold text-slate-600 bg-slate-200/70 hover:bg-slate-200 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+                            className="text-[9px] font-bold text-slate-600 bg-slate-200/70 hover:bg-slate-200 px-2 py-0.5 rounded-md cursor-pointer transition-colors shrink-0"
                           >
                             +3 Days
                           </button>
@@ -987,62 +986,61 @@ export const HomePage: React.FC = () => {
                       </div>
 
                       {/* Interactive HTML5 Return Date Input */}
-                      <div className="flex items-center gap-2">
+                      <div>
                         <input
                           type={tripMode !== 'Round Trip' ? 'text' : 'date'}
                           disabled={tripMode !== 'Round Trip'}
                           value={tripMode !== 'Round Trip' ? (tripMode === 'Airport' ? 'Airport Drop (Direct)' : tripMode === 'Office' ? 'Office Commute (Direct)' : tripMode === 'Hourly Rental' ? 'Local Hourly Package' : 'One-Way Drop') : (returnDate.includes('-') ? returnDate : new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0])}
                           onChange={(e) => setReturnDate(e.target.value)}
-                          className="w-full bg-white sm:bg-transparent border sm:border-0 border-neutral-200 rounded-lg px-2 sm:px-0 py-1 sm:py-0 text-sm sm:text-base font-bold text-neutral-900 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                          className="w-full bg-transparent text-sm sm:text-base font-bold text-neutral-900 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
                         />
                       </div>
 
                       {/* Interactive HTML5 Return Time Input */}
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      <div className="flex items-center gap-2 mt-1 pt-1 border-t border-neutral-200/50">
                         <input
                           type={tripMode !== 'Round Trip' ? 'text' : 'time'}
                           disabled={tripMode !== 'Round Trip'}
-                          value={tripMode !== 'Round Trip' ? 'No Return Required' : (returnTime.includes(':') && returnTime.length <= 5 ? returnTime : '21:00')}
+                          value={tripMode !== 'Round Trip' ? 'Direct Drop' : (returnTime.includes(':') && returnTime.length <= 5 ? returnTime : '21:00')}
                           onChange={(e) => setReturnTime(e.target.value)}
-                          className="bg-transparent text-xs font-semibold text-neutral-600 focus:outline-none disabled:cursor-not-allowed cursor-pointer"
+                          className="bg-transparent text-xs font-bold text-neutral-700 focus:outline-none disabled:cursor-not-allowed cursor-pointer w-20"
                         />
                         {tripMode === 'Round Trip' && (
-                          <span className="text-[10px] text-neutral-400">· Evening Drop</span>
+                          <span className="text-[10px] text-neutral-400 truncate">· Evening Return</span>
                         )}
                       </div>
                     </div>
 
                     {/* Tile 6: FARE INCLUSIONS */}
-                    <div className="lg:col-span-2 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors flex flex-col justify-between">
+                    <div className="lg:col-span-3 bg-[#F8FAFC] hover:bg-neutral-100/70 border border-neutral-200/70 rounded-2xl p-4 sm:p-5 transition-colors flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
                           TARIFF POLICY
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/70">
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70">
                           Fixed
                         </span>
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-emerald-700 flex items-center gap-1.5">
+                        <div className="text-sm sm:text-base font-bold text-emerald-700 flex items-center gap-1.5">
                           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>All Inclusive</span>
                         </div>
-                        <div className="text-[10px] text-neutral-500 font-medium mt-1">
-                          Tolls + Driver Batta + GST
+                        <div className="text-[11px] text-neutral-500 font-medium mt-1 truncate">
+                          Tolls + Driver Batta + GST Included
                         </div>
                       </div>
                     </div>
 
                     {/* Tile 7: SEARCH CABS & FARES BUTTON */}
-                    <div className="lg:col-span-4 h-full flex items-stretch">
+                    <div className="lg:col-span-3 h-full flex items-stretch">
                       <button
                         type="submit"
-                        className="w-full h-full min-h-[64px] sm:min-h-[72px] bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-extrabold text-sm sm:text-base tracking-wider uppercase rounded-2xl px-6 py-4 flex items-center justify-center gap-2.5 shadow-xl shadow-red-500/25 active:scale-[0.99] transition-all cursor-pointer"
+                        className="w-full h-full min-h-[64px] sm:min-h-[72px] bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-extrabold text-sm sm:text-base tracking-wider uppercase rounded-2xl px-5 py-4 flex items-center justify-center gap-2 shadow-xl shadow-red-500/25 active:scale-[0.99] transition-all cursor-pointer select-none"
                       >
-                        <Car className="w-5 h-5 text-white" />
-                        <span>SEARCH CABS & FARES</span>
-                        <ArrowRight className="w-4 h-4 text-white" />
+                        <Car className="w-5 h-5 text-white shrink-0" />
+                        <span className="truncate">SEARCH CABS</span>
+                        <ArrowRight className="w-4 h-4 text-white shrink-0" />
                       </button>
                     </div>
 
