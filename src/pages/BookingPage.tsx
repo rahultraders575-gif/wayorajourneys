@@ -5,7 +5,7 @@ import {
   Car, Star, Check, MapPin, Calendar, Clock, 
   ShieldCheck, Phone, CheckCircle2, Search, Sliders,
   Wifi, Wind, ArrowRight, User, Sparkles, ChevronRight,
-  Compass, Navigation, X
+  Compass, Navigation, X, RefreshCw, Users, Heart
 } from 'lucide-react';
 
 import { 
@@ -17,13 +17,14 @@ import {
   CITY_COORDINATES
 } from '../utils/geoDistancePrice';
 import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
+import { FamilyRideModal, FamilyRideDetails } from '../components/FamilyRideModal';
 
 export const BookingPage: React.FC = () => {
 
   const { 
     setActivePage, openAuthModal, currentRider,
     addBooking, showToast, bookingSearchDetails, setBookingSearchDetails,
-    userLocation, userCoords
+    userLocation, userCoords, isLocating, detectUserLocation
   } = useCms();
 
   // Sub-navigation view inside Booking Page:
@@ -48,6 +49,48 @@ export const BookingPage: React.FC = () => {
     return d.toISOString().split('T')[0];
   });
   const [pickupTime, setPickupTime] = useState(bookingSearchDetails.pickupTime || '06:00');
+
+  // Family Ride / Book for Someone Else States
+  const [isBookingForFamily, setIsBookingForFamily] = useState(bookingSearchDetails.isBookingForFamily || false);
+  const [familyMemberName, setFamilyMemberName] = useState(bookingSearchDetails.familyMemberName || '');
+  const [familyMemberPhone, setFamilyMemberPhone] = useState(bookingSearchDetails.familyMemberPhone || '');
+  const [familyPickupAddress, setFamilyPickupAddress] = useState(bookingSearchDetails.familyPickupAddress || '');
+  const [familyNotes, setFamilyNotes] = useState(bookingSearchDetails.familyNotes || '');
+  const [familyAssistanceTags, setFamilyAssistanceTags] = useState<string[]>(['🧰 Doorstep Luggage Help']);
+  const [showFamilyModal, setShowFamilyModal] = useState(false);
+
+  // Live Location detector for FROM field
+  const handleGetLiveLocation = async () => {
+    const loc = await detectUserLocation(true);
+    if (loc) {
+      setFromLocation(loc);
+      setIsBookingForFamily(false);
+      showToast(`GPS verified: ${loc}`, 'success');
+    }
+  };
+
+  const handleApplyFamilyRide = (details: FamilyRideDetails) => {
+    setIsBookingForFamily(true);
+    setFamilyMemberName(details.passengerName);
+    setFamilyMemberPhone(details.passengerPhone);
+    setFamilyNotes(details.notes || '');
+    if (details.assistanceTags) setFamilyAssistanceTags(details.assistanceTags);
+    if (details.doorstepAddress) {
+      setFamilyPickupAddress(details.doorstepAddress);
+      setFromLocation(details.doorstepAddress);
+    }
+    showToast(`Ride booked for ${details.passengerName || 'Family'}!`, 'success');
+  };
+
+  const handleResetFamilyRide = () => {
+    setIsBookingForFamily(false);
+    setFamilyMemberName('');
+    setFamilyMemberPhone('');
+    setFamilyPickupAddress('');
+    setFamilyNotes('');
+    if (userLocation) setFromLocation(userLocation);
+    showToast('Switched to booking for myself', 'info');
+  };
 
   const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | null>(CITY_COORDINATES.tirupati);
   const [destinationSuggestions, setDestinationSuggestions] = useState<MapLocationItem[]>([]);
@@ -283,9 +326,20 @@ export const BookingPage: React.FC = () => {
 
   const handleFinalBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const primaryPassengerName = isBookingForFamily && familyMemberName 
+      ? familyMemberName 
+      : `${title} ${firstName} ${lastName}`.trim();
+    const primaryPassengerPhone = isBookingForFamily && familyMemberPhone 
+      ? familyMemberPhone 
+      : mobileNumber;
+
+    const familyDetailString = isBookingForFamily 
+      ? ` · [👨‍👩‍👧 RIDE FOR FAMILY: Passenger: ${familyMemberName || 'Family Member'} (${familyMemberPhone || 'No Phone'}) · Booker: ${title} ${firstName} ${lastName} (${mobileNumber}) · Special Assistance: ${familyNotes || 'Doorstep care'}]`
+      : '';
+
     const newBooking = addBooking({
-      customerName: `${title} ${firstName} ${lastName}`.trim(),
-      customerPhone: mobileNumber,
+      customerName: primaryPassengerName,
+      customerPhone: primaryPassengerPhone,
       pickupLocation: fromLocation,
       destination: toLocation,
       travelDate: pickupDate,
@@ -297,7 +351,7 @@ export const BookingPage: React.FC = () => {
       estimatedTotal: couponApplied ? selectedCar.price - 20 : selectedCar.price,
       advancePaid: couponApplied ? selectedCar.price - 20 : selectedCar.price,
       tripType: tripType === 'Outstation One-way' ? 'ONE_WAY' : 'ROUND_TRIP',
-      notes: `Booked via Car Booking Page · Email: ${email} · Coupon: ${couponApplied ? couponCode : 'None'}`
+      notes: `Booked via Car Booking Page · Email: ${email} · Coupon: ${couponApplied ? couponCode : 'None'}${familyDetailString}`
     });
 
     setBookingSuccessId(newBooking.id);
@@ -359,16 +413,74 @@ export const BookingPage: React.FC = () => {
               </select>
             </div>
 
-            {/* FROM (Corrected typo from FORM) */}
-            <div className="bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-200 rounded-xl px-3 py-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">FROM</span>
+            {/* FROM (Live Location or Book for Family or Custom Pickup) */}
+            <div className={`bg-slate-50 hover:bg-slate-100/80 transition-colors border rounded-xl px-3 py-2 relative ${
+              isBookingForFamily ? 'border-rose-300 ring-1 ring-rose-100 bg-rose-50/20' : 'border-slate-200'
+            }`}>
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <span>FROM</span>
+                  {isBookingForFamily && (
+                    <span className="text-[9px] font-extrabold text-rose-700 bg-rose-100/90 px-1 py-0.2 rounded">
+                      Family
+                    </span>
+                  )}
+                </span>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Live GPS Location Button */}
+                  <button
+                    type="button"
+                    onClick={handleGetLiveLocation}
+                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded border transition-colors flex items-center gap-1 cursor-pointer ${
+                      !isBookingForFamily && userLocation && fromLocation === userLocation
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 border-slate-200'
+                    }`}
+                    title="Auto-detect current live GPS location"
+                  >
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 ${isLocating ? 'inline-flex' : 'hidden'}`} />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600" />
+                    </span>
+                    <RefreshCw className={`w-2 h-2 ${isLocating ? 'animate-spin' : ''}`} />
+                    <span>{isLocating ? 'GPS...' : 'Live'}</span>
+                  </button>
+
+                  {/* Book for Family Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowFamilyModal(true)}
+                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded border transition-colors flex items-center gap-1 cursor-pointer ${
+                      isBookingForFamily
+                        ? 'bg-rose-600 text-white border-rose-600 shadow-2xs font-extrabold'
+                        : 'bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border-slate-200'
+                    }`}
+                    title="Book ride for family or parents"
+                  >
+                    <span>👨‍👩‍👧</span>
+                    <span>{isBookingForFamily ? 'Family' : 'Family'}</span>
+                  </button>
+                </div>
+              </div>
+
               <input
                 type="text"
                 value={fromLocation}
                 onChange={(e) => setFromLocation(e.target.value)}
-                placeholder="Mumbai"
+                placeholder={isBookingForFamily ? "Family doorstep city or address" : "Mumbai"}
                 className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-800 focus:outline-none truncate mt-0.5"
               />
+
+              {isBookingForFamily && (
+                <div 
+                  onClick={() => setShowFamilyModal(true)}
+                  className="text-[10px] text-rose-600 font-semibold truncate cursor-pointer hover:underline flex items-center gap-1 mt-0.5"
+                >
+                  <span>For: {familyMemberName || 'Family Member'}</span>
+                  {familyMemberPhone && <span className="text-slate-400">({familyMemberPhone})</span>}
+                </div>
+              )}
             </div>
 
             {/* TO (DESTINATION DROP WITH MAPS AUTO-FETCH) */}
@@ -496,7 +608,16 @@ export const BookingPage: React.FC = () => {
               type="button"
               onClick={() => {
                 setBookingSearchDetails({
-                  tripType, fromCity: fromLocation, toCity: toLocation, pickupDate, pickupTime
+                  tripType,
+                  fromCity: fromLocation,
+                  toCity: toLocation,
+                  pickupDate,
+                  pickupTime,
+                  isBookingForFamily,
+                  familyMemberName,
+                  familyMemberPhone,
+                  familyPickupAddress,
+                  familyNotes,
                 });
                 setCurrentView('search');
                 showToast(`Searching cabs from ${fromLocation} to ${toLocation}`, 'info');
@@ -524,6 +645,23 @@ export const BookingPage: React.FC = () => {
               <span className="text-red-500 font-black">➔</span>
               <span className="text-red-700 truncate max-w-[140px] sm:max-w-[200px]">{toLocation.split(',')[0]}</span>
             </div>
+
+            {isBookingForFamily ? (
+              <button
+                type="button"
+                onClick={() => setShowFamilyModal(true)}
+                className="bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-800 font-extrabold flex items-center gap-1 shadow-2xs cursor-pointer transition-colors"
+                title="Click to view or edit family ride details"
+              >
+                <span>👨‍👩‍👧</span>
+                <span>Ride for Family: {familyMemberName || 'Family'}</span>
+              </button>
+            ) : userLocation && fromLocation === userLocation ? (
+              <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
+                <span>📍</span>
+                <span>Live GPS Pickup</span>
+              </span>
+            ) : null}
 
             <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-slate-700 font-bold flex items-center gap-1 shadow-2xs">
               <Compass className="w-3.5 h-3.5 text-red-500" />
@@ -899,6 +1037,80 @@ export const BookingPage: React.FC = () => {
                   Your chauffeur assignment and live trip tracking link will be sent to the contact details provided below.
                 </p>
               </div>
+
+              {/* Rider Selection: Myself vs Family Member */}
+              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-800">Who is traveling in this cab?</span>
+                  {isBookingForFamily && (
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                      Family Care Active
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleResetFamilyRide}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      !isBookingForFamily
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5 text-red-600" />
+                    <span>Traveling Myself</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowFamilyModal(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isBookingForFamily
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-rose-600'
+                    }`}
+                  >
+                    <span>👨‍👩‍👧</span>
+                    <span>Booking for Family / Others</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* If Booking for Family, show Family Passenger Card */}
+              {isBookingForFamily && (
+                <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-red-50/50 to-amber-50/30 border border-rose-200 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm shadow-xs">
+                        👨‍👩‍👧
+                      </span>
+                      <div>
+                        <div className="text-xs font-black text-slate-900">
+                          Family Passenger: {familyMemberName || 'Family Member'} {familyMemberPhone ? `· ${familyMemberPhone}` : ''}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium">
+                          Chauffeur will coordinate directly with this passenger at {fromLocation}.
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowFamilyModal(true)}
+                      className="text-xs font-bold text-rose-700 hover:text-rose-800 bg-white px-3 py-1 rounded-lg border border-rose-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                      Edit Details
+                    </button>
+                  </div>
+
+                  {familyNotes && (
+                    <div className="text-xs text-rose-800 bg-white/90 p-2.5 rounded-xl border border-rose-100 font-medium">
+                      <strong>Chauffeur Instructions:</strong> {familyNotes}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Form fields */}
               <form onSubmit={handleFinalBookingSubmit} className="space-y-5">
@@ -1434,6 +1646,23 @@ export const BookingPage: React.FC = () => {
           setToLocation(loc.name);
           setDestinationCoords({ lat: loc.lat, lng: loc.lng });
         }}
+      />
+
+      {/* Book Ride for Family or Someone Else Modal */}
+      <FamilyRideModal
+        isOpen={showFamilyModal}
+        onClose={() => setShowFamilyModal(false)}
+        initialDetails={{
+          enabled: isBookingForFamily,
+          passengerName: familyMemberName,
+          passengerPhone: familyMemberPhone,
+          doorstepAddress: familyPickupAddress || fromLocation,
+          notes: familyNotes,
+          assistanceTags: familyAssistanceTags,
+        }}
+        onApply={handleApplyFamilyRide}
+        onReset={handleResetFamilyRide}
+        currentLiveLocation={userLocation || undefined}
       />
 
     </div>

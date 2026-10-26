@@ -17,6 +17,11 @@ export interface BookingSearchDetails {
   toCity: string;
   pickupDate: string;
   pickupTime: string;
+  isBookingForFamily?: boolean;
+  familyMemberName?: string;
+  familyMemberPhone?: string;
+  familyPickupAddress?: string;
+  familyNotes?: string;
 }
 
 interface ToastInfo {
