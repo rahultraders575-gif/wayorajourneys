@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useCms, PageId } from '../context/CmsContext';
 import { 
   Car, Compass, Shield, UserCheck, Menu, 
-  MapPin, Building2, BookOpen, Settings, X, PlusCircle, User 
+  MapPin, Building2, BookOpen, Settings, X, PlusCircle, User, Navigation 
 } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
@@ -125,29 +125,29 @@ export const MobileBottomNav: React.FC = () => {
               </button>
             </div>
 
-            {/* Rider Account Strip */}
+            {/* Rider Flight-Deck & Account Strip */}
             <div 
               onClick={() => {
                 setHubSheetOpen(false);
-                openAuthModal();
+                handleTabClick('rider');
               }}
-              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-red-300 flex items-center justify-between cursor-pointer transition-colors shadow-xs"
+              className="p-3.5 rounded-2xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 hover:border-red-400 flex items-center justify-between cursor-pointer transition-all shadow-xs"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-bold text-xs">
-                  {currentRider ? currentRider.name.slice(0, 2).toUpperCase() : <User className="w-4 h-4" />}
+                <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-red-600/30 shrink-0">
+                  <Navigation className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-900 block text-xs">
-                    {currentRider ? currentRider.name : 'Sign In / Register'}
+                  <span className="font-extrabold text-slate-900 block text-xs">
+                    {currentRider ? `Rider Deck: ${currentRider.name}` : 'Rider Flight-Deck & Live GPS'}
                   </span>
-                  <span className="text-[10px] text-slate-500 block">
-                    {currentRider ? `${currentRider.phone} · Active Rider` : 'Quick 1-tap rider account'}
+                  <span className="text-[10px] text-red-700 block font-medium">
+                    {currentRider ? `${currentRider.phone} · Active Profile` : 'Live radar, family console, SOS & wallet'}
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] text-red-700 font-bold px-2 py-1 rounded-lg bg-red-50 border border-red-200">
-                {currentRider ? 'Manage' : 'Sign In'}
+              <span className="text-[10px] text-white font-bold px-2 py-1 rounded-lg bg-red-600 shadow-xs shrink-0">
+                Open &rarr;
               </span>
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCms, PageId } from '../context/CmsContext';
-import { Menu, X, Shield, ArrowRight, UserCheck, User, Phone, Car } from 'lucide-react';
+import { Menu, X, Shield, ArrowRight, UserCheck, User, Phone, Car, Navigation } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { 
@@ -89,6 +89,20 @@ export const Header: React.FC = () => {
                 <span className="tracking-tight">{settings.phone}</span>
               </a>
 
+              {/* Rider Dashboard Cockpit Trigger */}
+              <button
+                onClick={() => handleNavClick('rider')}
+                className={`hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all cursor-pointer shrink-0 ${
+                  activePage === 'rider'
+                    ? 'bg-red-50 text-red-700 border-red-300 shadow-xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600'
+                }`}
+                title="Rider Flight-Deck & Live GPS Tracking"
+              >
+                <Navigation className="w-3.5 h-3.5 text-red-600" />
+                <span>Rider Deck</span>
+              </button>
+
               {/* Captain Cockpit Trigger */}
               <button
                 onClick={() => handleNavClick('captain')}
@@ -111,9 +125,19 @@ export const Header: React.FC = () => {
               {/* Rider Account Trigger */}
               <button
                 type="button"
-                onClick={openAuthModal}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs shrink-0"
-                title={currentRider ? `Signed in as ${currentRider.name}` : 'Rider Sign In'}
+                onClick={() => {
+                  if (currentRider) {
+                    handleNavClick('rider');
+                  } else {
+                    openAuthModal();
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors cursor-pointer shadow-xs shrink-0 ${
+                  activePage === 'rider'
+                    ? 'bg-red-50 text-red-700 border-red-300'
+                    : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                }`}
+                title={currentRider ? `Go to Rider Dashboard (${currentRider.name})` : 'Rider Sign In'}
               >
                 <div className="w-5 h-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-black shrink-0">
                   {currentRider ? currentRider.name.slice(0, 1) : <User className="w-3 h-3" />}
@@ -183,20 +207,27 @@ export const Header: React.FC = () => {
               <span>Call 24/7 Helpline: {settings.phone}</span>
             </a>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => handleNavClick('rider')}
+                className="py-2.5 px-2 text-[11px] font-semibold rounded-xl bg-slate-50 text-slate-700 border border-slate-200 flex flex-col items-center justify-center gap-1 hover:bg-red-50 text-center"
+              >
+                <Navigation className="w-4 h-4 text-red-600" />
+                <span className="leading-tight">Rider Deck</span>
+              </button>
               <button
                 onClick={() => handleNavClick('captain')}
-                className="py-2.5 px-3 text-xs font-semibold rounded-xl bg-slate-50 text-slate-700 border border-slate-200 flex items-center justify-center gap-2 hover:bg-red-50"
+                className="py-2.5 px-2 text-[11px] font-semibold rounded-xl bg-slate-50 text-slate-700 border border-slate-200 flex flex-col items-center justify-center gap-1 hover:bg-red-50 text-center"
               >
                 <UserCheck className="w-4 h-4 text-red-600" />
-                <span>Captain Cockpit</span>
+                <span className="leading-tight">Captain</span>
               </button>
               <button
                 onClick={() => handleNavClick('cms')}
-                className="py-2.5 px-3 text-xs font-semibold rounded-xl bg-slate-50 text-slate-700 border border-slate-200 flex items-center justify-center gap-2 hover:bg-red-50"
+                className="py-2.5 px-2 text-[11px] font-semibold rounded-xl bg-slate-50 text-slate-700 border border-slate-200 flex flex-col items-center justify-center gap-1 hover:bg-red-50 text-center"
               >
                 <Shield className="w-4 h-4 text-red-600" />
-                <span>CMS Admin</span>
+                <span className="leading-tight">Admin CMS</span>
               </button>
             </div>
 

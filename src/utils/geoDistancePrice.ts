@@ -13,7 +13,7 @@ export interface MapLocationItem {
   displayName: string;
   lat: number;
   lng: number;
-  category?: 'city' | 'temple' | 'hillstation' | 'beach' | 'airport';
+  category?: 'city' | 'temple' | 'hillstation' | 'beach' | 'airport' | 'googlemaps';
 }
 
 export interface RouteCalculationResult {
@@ -32,6 +32,8 @@ export interface RouteCalculationResult {
   isGpsAccurate: boolean;
   isLiveMapRoute: boolean;
   highwaySummary: string;
+  isSameLocation?: boolean;
+  sameLocationWarning?: string;
   rates: {
     sedan: { ratePerKm: number; totalFare: number; advance25: number; name: string };
     innova: { ratePerKm: number; totalFare: number; advance25: number; name: string };
@@ -468,7 +470,49 @@ export function calculateReachTime(params: {
 export async function fetchLiveMapRoute(
   origin: LatLng,
   destination: LatLng
-): Promise<{ distanceKm: number; durationMinutes: number; summary: string } | null> {
+): Promise<{ distanceKm: number; durationMinutes: number; summary: string; isSameLocation?: boolean } | null> {
+  // Proximity check: If points are virtually identical (< 400m apart)
+  const directDist = calculateHaversineDistanceKm(origin, destination);
+  if (directDist < 0.4) {
+    return {
+      distanceKm: 0,
+      durationMinutes: 0,
+      summary: 'Same Location Selected',
+      isSameLocation: true,
+    };
+  }
+
+  // Tier 1: Try local backend route calculator for instant sub-millisecond calculation
+  try {
+    const backendCtrl = new AbortController();
+    const bTimeout = setTimeout(() => backendCtrl.abort(), 1800);
+    const bRes = await fetch('/api/route/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        originCoords: origin,
+        destinationCoords: destination,
+      }),
+      signal: backendCtrl.signal,
+    });
+    clearTimeout(bTimeout);
+
+    if (bRes.ok) {
+      const bData = await bRes.json();
+      if (bData.success && bData.estimate?.distanceKm) {
+        return {
+          distanceKm: bData.estimate.distanceKm,
+          durationMinutes: bData.estimate.durationMinutes || Math.round((bData.estimate.distanceKm / 65) * 60),
+          summary: bData.estimate.highwaySummary || 'National Highway Corridor',
+          isSameLocation: false,
+        };
+      }
+    }
+  } catch {
+    // Fall through to OSRM / Haversine
+  }
+
+  // Tier 2: Try OpenStreetMap OSRM routing engine
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2600); // 2.6s timeout
@@ -483,10 +527,21 @@ export async function fetchLiveMapRoute(
       const best = data.routes[0];
       const distanceKm = Math.round(best.distance / 1000);
       const durationMinutes = Math.round(best.duration / 60);
+
+      if (distanceKm === 0 || best.distance < 400) {
+        return {
+          distanceKm: 0,
+          durationMinutes: 0,
+          summary: 'Same Location Selected',
+          isSameLocation: true,
+        };
+      }
+
       return {
-        distanceKm: Math.max(35, distanceKm),
-        durationMinutes: Math.max(30, durationMinutes),
+        distanceKm: Math.max(1, distanceKm),
+        durationMinutes: Math.max(1, durationMinutes),
         summary: best.legs?.[0]?.summary || 'National Express Highway Corridor',
+        isSameLocation: false,
       };
     }
   } catch {
@@ -745,6 +800,63 @@ export async function searchMapLocations(query: string): Promise<MapLocationItem
 }
 
 /**
+ * Detects if pickup and destination represent the exact same location or are within close proximity (< 400 meters)
+ */
+export function isSameLocation(
+  originName?: string | null,
+  destinationName?: string | null,
+  originCoords?: LatLng | null,
+  destinationCoords?: LatLng | null
+): boolean {
+  if (!originName || !destinationName) return false;
+
+  // 1. Direct coordinate proximity
+  if (
+    originCoords &&
+    destinationCoords &&
+    typeof originCoords.lat === 'number' &&
+    typeof destinationCoords.lat === 'number' &&
+    originCoords.lat !== 0 &&
+    destinationCoords.lat !== 0
+  ) {
+    const rawDistKm = calculateHaversineDistanceKm(originCoords, destinationCoords);
+    if (rawDistKm < 0.4) {
+      return true;
+    }
+  }
+
+  // 2. Normalized text matching
+  const clean = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+
+  const n1 = clean(originName);
+  const n2 = clean(destinationName);
+
+  if (n1 === n2) return true;
+
+  // 3. Substring / Token matching for multi-line location descriptions
+  const tokens1 = n1.split(' ').filter((t) => t.length > 3);
+  const tokens2 = n2.split(' ').filter((t) => t.length > 3);
+  const commonTokens = tokens1.filter((t) => tokens2.includes(t));
+
+  // If both mention the same specific local area (e.g. Vrishabhavathi, Kempegowda, etc.)
+  if (commonTokens.length >= 2) {
+    if (originCoords && destinationCoords) {
+      const dist = calculateHaversineDistanceKm(originCoords, destinationCoords);
+      if (dist < 1.0) return true;
+    } else if (commonTokens.length >= 3) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Universal Route & Price Calculator
  * Supports: One-way, Round-trip, Live GPS, Custom Departure Time, and Live Map overrides
  */
@@ -780,13 +892,54 @@ export function calculateTripRouteAndPrice(params: {
   // Resolve destination coords
   const dCoords = destinationCoords || lookupCityCoords(destinationName) || CITY_COORDINATES.tirupati;
 
-  // Compute road distance: use live map measurement if available, otherwise Haversine curvature
-  let oneWayDistanceKm = liveDistanceKm || calculateHaversineDistanceKm(oCoords, dCoords);
+  // Detect if pickup and destination are the exact same location
+  const isIdentical =
+    isSameLocation(originName, destinationName, oCoords, dCoords) ||
+    (typeof liveDistanceKm === 'number' && liveDistanceKm === 0);
 
-  // Minimum local outstation billing baseline
-  if (oneWayDistanceKm < 35) {
-    oneWayDistanceKm = Math.max(35, oneWayDistanceKm);
+  if (isIdentical) {
+    return {
+      origin: originName,
+      originCoords: oCoords,
+      destination: destinationName,
+      destinationCoords: dCoords,
+      distanceKm: 0,
+      durationMinutes: 0,
+      durationFormatted: '0 mins',
+      departureFormatted: departureTime || '06:00',
+      reachTimeFormatted: departureTime || '06:00',
+      reachDateFormatted: departureDate || 'Today',
+      isNextDay: false,
+      fullReachString: 'Same Location Selected',
+      isGpsAccurate: Boolean(originCoords),
+      isLiveMapRoute: true,
+      highwaySummary: 'Same Location Selected',
+      isSameLocation: true,
+      sameLocationWarning: 'Pickup and destination cannot be the same location. Please select a different drop destination.',
+      rates: {
+        sedan: { name: CAB_RATES.sedan.name, ratePerKm: CAB_RATES.sedan.rate, totalFare: 0, advance25: 0 },
+        innova: { name: CAB_RATES.innova.name, ratePerKm: CAB_RATES.innova.rate, totalFare: 0, advance25: 0 },
+        suv: { name: CAB_RATES.suv.name, ratePerKm: CAB_RATES.suv.rate, totalFare: 0, advance25: 0 },
+        tempo: { name: CAB_RATES.tempo.name, ratePerKm: CAB_RATES.tempo.rate, totalFare: 0, advance25: 0 },
+        ev: { name: CAB_RATES.ev.name, ratePerKm: CAB_RATES.ev.rate, totalFare: 0, advance25: 0 },
+      },
+      inclusions: {
+        gst: '0%',
+        toll: 'No Toll',
+        driverAllowance: 0,
+        nightCharges: 0,
+      },
+    };
   }
+
+  // Compute road distance: use live map measurement if available, otherwise Haversine curvature
+  let oneWayDistanceKm =
+    typeof liveDistanceKm === 'number'
+      ? liveDistanceKm
+      : calculateHaversineDistanceKm(oCoords, dCoords);
+
+  // If valid journey with distinct locations
+  oneWayDistanceKm = Math.max(1, oneWayDistanceKm);
 
   const isRoundTrip = tripType === 'Round Trip' || tripType === 'ROUND_TRIP' || tripType === 'Outstation Round-trip';
   const billableDistanceKm = isRoundTrip ? oneWayDistanceKm * 2 : oneWayDistanceKm;
@@ -836,6 +989,7 @@ export function calculateTripRouteAndPrice(params: {
     isGpsAccurate: Boolean(originCoords),
     isLiveMapRoute: Boolean(liveDistanceKm),
     highwaySummary,
+    isSameLocation: false,
     rates: {
       sedan: calculateForCab('sedan'),
       innova: calculateForCab('innova'),

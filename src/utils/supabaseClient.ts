@@ -14,8 +14,8 @@ export async function checkSupabaseConnection(): Promise<{ connected: boolean; l
     const { error } = await supabase.from('bookings').select('id', { count: 'exact', head: true });
     const latencyMs = Math.round(performance.now() - start);
     
-    // In Supabase, if the table doesn't exist yet, it returns a 404/PGRST error but confirms connection is live!
-    if (!error || error.code === '42P01' || error.code === 'PGRST204') {
+    // In Supabase, if the table doesn't exist yet, it returns 42P01 / PGRST204 / PGRST205 error but confirms connection is live!
+    if (!error || error.code === '42P01' || error.code === 'PGRST204' || error.code === 'PGRST205') {
       return { connected: true, latencyMs };
     }
     

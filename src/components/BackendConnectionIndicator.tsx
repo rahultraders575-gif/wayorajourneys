@@ -21,11 +21,11 @@ export const BackendConnectionIndicator: React.FC = () => {
         setStatus('offline');
       }
     } catch {
-      setStatus('connected'); // Fallback in-client mock
-      setLatency(14);
+      setStatus('offline');
+      setLatency(null);
       setDetails({
-        connection: { status: 'ONLINE', latencyMs: 14, endpointsCount: 14 },
-        services: { userAuth: 'ACTIVE', captainAuth: 'ACTIVE', otpEngine: 'ACTIVE', dailyOffers: 'ACTIVE' },
+        connection: { status: 'OFFLINE_SANDBOX', latencyMs: 0, endpointsCount: 14 },
+        services: { userAuth: 'CLIENT_CACHE', captainAuth: 'CLIENT_CACHE', otpEngine: 'SANDBOX', dailyOffers: 'OFFLINE' },
       });
     }
   };

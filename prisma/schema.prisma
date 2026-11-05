@@ -1,0 +1,92 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  RIDER
+  CORPORATE_ADMIN
+  CAPTAIN
+  ADMIN
+}
+
+enum AccountType {
+  INDIVIDUAL
+  CORPORATE
+}
+
+model User {
+  id              String       @id @default(uuid())
+  fullName        String
+  phone           String       @unique
+  email           String       @unique
+  isPhoneVerified Boolean      @default(false)
+  role            Role         @default(RIDER)
+  accountType     AccountType  @default(INDIVIDUAL)
+  
+  // Corporate Travel Tax Info (Optional)
+  companyName     String?
+  gstin           String?
+  
+  // Comfort Preferences
+  preferredTemp   String?      @default("22C") // e.g., "19C", "22C", "25C", "Cool"
+  silentRide      Boolean      @default(false)
+  
+  // Relations
+  bookings        Booking[]
+  savedAddresses  SavedAddress[]
+  familyMembers   FamilyContact[]
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  otpHash   String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id              String       @id @default(uuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  pickupLocation  String
+  destination     String
+  travelDate      String
+  travelTime      String
+  vehicleTier     String
+  ratePerKm       Float
+  estimatedTotal  Float
+  advancePaid     Float
+  status          String       @default("Confirmed")
+  createdAt       DateTime     @default(now())
+}
+
+model SavedAddress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tag       String   // "Home", "Work", "Airport", "Other"
+  label     String
+  address   String
+  city      String
+}
+
+model FamilyContact {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
+  relationship String   // "Parents", "Spouse", "Sister", "Corporate Guest"
+  phone        String
+  pickupNotes  String?
+}
+

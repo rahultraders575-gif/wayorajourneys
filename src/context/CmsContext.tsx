@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  TourPackage, Vehicle, Booking, BlogPost, CompanySettings, 
-  BookingStatus, ThemeMode, CaptainProfile, RiderProfile 
+import {
+  TourPackage, Vehicle, Booking, BlogPost, CompanySettings,
+  BookingStatus, ThemeMode, CaptainProfile, RiderProfile
 } from '../types';
-import { 
-  INITIAL_PACKAGES, INITIAL_VEHICLES, INITIAL_BOOKINGS, 
+import {
+  INITIAL_PACKAGES, INITIAL_VEHICLES, INITIAL_BOOKINGS,
   INITIAL_BLOG_POSTS, INITIAL_SETTINGS, INITIAL_CAPTAINS,
-  INITIAL_RIDERS 
+  INITIAL_RIDERS
 } from '../data/initialData';
 
-export type PageId = 'home' | 'booking' | 'packages' | 'fleet' | 'planner' | 'corporate' | 'blog' | 'about' | 'cms' | 'captain';
+export type PageId = 'home' | 'booking' | 'packages' | 'fleet' | 'planner' | 'corporate' | 'blog' | 'about' | 'cms' | 'captain' | 'rider';
 
 export interface BookingSearchDetails {
   tripType: string;
@@ -35,7 +35,7 @@ interface CmsContextType {
   setActivePage: (page: PageId) => void;
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
-  
+
   // Real Mobile App Framing & Layout Mode
   mobileShellMode: boolean;
   setMobileShellMode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -76,14 +76,21 @@ interface CmsContextType {
   // Captain / Chauffeur Partner Cockpit
   captains: CaptainProfile[];
   currentCaptain: CaptainProfile | null;
+  registerCaptain: (data: Partial<CaptainProfile> & {
+    name: string;
+    phone: string;
+    pin: string;
+    vehicleModel: string;
+    vehicleNumber: string;
+  }) => CaptainProfile;
   loginCaptain: (captainIdOrPhone: string, pin?: string) => boolean;
   logoutCaptain: () => void;
   updateCaptainDuty: (duty: CaptainProfile['dutyStatus']) => void;
   updateTripOdometer: (
-    bookingId: string, 
-    startKm: number, 
-    endKm?: number, 
-    toll?: number, 
+    bookingId: string,
+    startKm: number,
+    endKm?: number,
+    toll?: number,
     parking?: number,
     finalAmount?: number
   ) => void;
@@ -175,13 +182,20 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Rider Authentication Profile (Defaults to demo rider for instant ready-to-test flow)
+  // Rider Authentication Profile (Defaults to null for clean live deployment)
   const [currentRider, setCurrentRider] = useState<RiderProfile | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.RIDER);
-      return saved ? JSON.parse(saved) : INITIAL_RIDERS[0];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.name === 'Aarav Sharma' || parsed?.id === 'rider-01' || parsed?.email === 'aarav.sharma@example.com') {
+          return null;
+        }
+        return parsed;
+      }
+      return null;
     } catch {
-      return INITIAL_RIDERS[0];
+      return null;
     }
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -222,7 +236,14 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [bookings, setBookings] = useState<Booking[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
-      return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+        return INITIAL_BOOKINGS;
+      }
+      return INITIAL_BOOKINGS;
     } catch {
       return INITIAL_BOOKINGS;
     }
@@ -242,7 +263,14 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [captains, setCaptains] = useState<CaptainProfile[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.CAPTAINS);
-      return saved ? JSON.parse(saved) : INITIAL_CAPTAINS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+        return INITIAL_CAPTAINS;
+      }
+      return INITIAL_CAPTAINS;
     } catch {
       return INITIAL_CAPTAINS;
     }
@@ -251,11 +279,52 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Current logged in captain
   const [currentCaptainId, setCurrentCaptainId] = useState<string | null>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.ACTIVE_CAPTAIN_ID) || null;
+      const savedId = localStorage.getItem(STORAGE_KEYS.ACTIVE_CAPTAIN_ID);
+      if (savedId === 'cpt-01' || savedId === 'cpt-02' || savedId === 'cpt-03' || savedId === 'cpt-04') {
+        return null;
+      }
+      return savedId || null;
     } catch {
       return null;
     }
   });
+
+  // Auto-purge any stale demo mock data stored in user's localStorage
+  useEffect(() => {
+    try {
+      const savedRider = localStorage.getItem(STORAGE_KEYS.RIDER);
+      if (savedRider) {
+        const parsed = JSON.parse(savedRider);
+        if (parsed?.id === 'rider-01' || parsed?.name === 'Aarav Sharma' || parsed?.email === 'aarav.sharma@example.com') {
+          localStorage.removeItem(STORAGE_KEYS.RIDER);
+          setCurrentRider(null);
+        }
+      }
+      const savedCaptains = localStorage.getItem(STORAGE_KEYS.CAPTAINS);
+      if (savedCaptains) {
+        const parsed = JSON.parse(savedCaptains);
+        if (Array.isArray(parsed) && parsed.some((c) => c.id === 'cpt-01' || c.name === 'Ramesh Goud')) {
+          localStorage.removeItem(STORAGE_KEYS.CAPTAINS);
+          setCaptains([]);
+        }
+      }
+      const activeCaptainId = localStorage.getItem(STORAGE_KEYS.ACTIVE_CAPTAIN_ID);
+      if (activeCaptainId === 'cpt-01' || activeCaptainId === 'cpt-02' || activeCaptainId === 'cpt-03' || activeCaptainId === 'cpt-04') {
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_CAPTAIN_ID);
+        setCurrentCaptainId(null);
+      }
+      const savedBookings = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
+      if (savedBookings) {
+        const parsed = JSON.parse(savedBookings);
+        if (Array.isArray(parsed) && parsed.some((b) => b.id === 'WY-8891' || b.id === 'WY-8892' || b.customerName === 'Sanjay Deshmukh')) {
+          localStorage.removeItem(STORAGE_KEYS.BOOKINGS);
+          setBookings([]);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const [blogs] = useState<BlogPost[]>(INITIAL_BLOG_POSTS);
 
@@ -565,6 +634,56 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Captain Partner System
   const currentCaptain = captains.find((c) => c.id === currentCaptainId) || null;
 
+  const registerCaptain = (data: Partial<CaptainProfile> & {
+    name: string;
+    phone: string;
+    pin: string;
+    vehicleModel: string;
+    vehicleNumber: string;
+  }): CaptainProfile => {
+    const newCaptain: CaptainProfile = {
+      id: `cpt-${Date.now().toString(36)}`,
+      rating: 5.0,
+      totalTrips: 0,
+      dutyStatus: 'Available (Standby)',
+      fastagBalance: 1000,
+      todayEarnings: 0,
+      joinedYear: new Date().getFullYear(),
+      vehicleYear: data.vehicleYear || new Date().getFullYear(),
+      drivingLicenseNumber: data.drivingLicenseNumber || 'TS-COMMERCIAL',
+      verificationStatus: data.verificationStatus || 'Pending Verification',
+      onboardingStatus: data.onboardingStatus || 'Pending Approval',
+      photoUrl: data.uniformPortraitPhoto || data.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+      ...data,
+      name: data.name,
+      phone: data.phone,
+      pin: data.pin || '1234',
+      vehicleModel: data.vehicleModel,
+      vehicleNumber: data.vehicleNumber,
+    };
+
+    setCaptains((prev) => {
+      const updated = [newCaptain, ...prev.filter((c) => c.phone !== data.phone)];
+      try {
+        localStorage.setItem(STORAGE_KEYS.CAPTAINS, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+
+    setCurrentCaptainId(newCaptain.id);
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_CAPTAIN_ID, newCaptain.id);
+    } catch {
+      // ignore
+    }
+
+    showToast(`Welcome Captain ${newCaptain.name}! You are registered & logged in.`, 'success');
+    setActivePage('captain');
+    return newCaptain;
+  };
+
   const loginCaptain = (idOrPhone: string, pin?: string): boolean => {
     const found = captains.find(
       (c) => c.id === idOrPhone || c.phone === idOrPhone || c.name.toLowerCase().includes(idOrPhone.toLowerCase())
@@ -580,7 +699,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActivePage('captain');
       return true;
     }
-    showToast('Captain not found in fleet roster', 'error');
+    showToast('Captain not found in fleet roster. Please register your profile.', 'error');
     return false;
   };
 
@@ -598,10 +717,10 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateTripOdometer = (
-    bookingId: string, 
-    startKm: number, 
-    endKm?: number, 
-    toll = 0, 
+    bookingId: string,
+    startKm: number,
+    endKm?: number,
+    toll = 0,
     parking = 0,
     finalAmount?: number
   ) => {
@@ -742,6 +861,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteBooking,
         captains,
         currentCaptain,
+        registerCaptain,
         loginCaptain,
         logoutCaptain,
         updateCaptainDuty,

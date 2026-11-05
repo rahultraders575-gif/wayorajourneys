@@ -1,4 +1,6 @@
 import { TourPackage, Vehicle, Booking, BlogPost, CompanySettings, CaptainProfile, RiderProfile } from '../types';
+import { INITIAL_ADMIN_BOOKINGS, INITIAL_ADMIN_CAPTAINS } from './adminInitialData';
+import { INITIAL_DEMO_RIDER } from './riderInitialData';
 
 export const INITIAL_PACKAGES: TourPackage[] = [
   {
@@ -15,7 +17,32 @@ export const INITIAL_PACKAGES: TourPackage[] = [
     featured: true,
     imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=1000&q=80',
     highlights: ['Venkateswara Temple Darshan', 'Tiruchanur Padmavathi Temple', 'Kapila Theertham Falls', 'Scenic Ghat road cruise'],
-    recommendedCar: 'Dzire or Ertiga'
+    recommendedCar: 'Dzire or Ertiga',
+    seasonality: 'All Year',
+    terrainRestrictedVehicles: ['Maruti Suzuki Dzire', 'Toyota Innova Crysta', 'Maruti Suzuki Ertiga'],
+    inclusionsList: ['Chilled AC Vehicle', 'Toll & State Border Taxes Included', 'Chauffeur Night Allowance', 'Doorstep Pickup & Return'],
+    exclusionsList: ['Special Darshan Tickets (Rs 300 SED)', 'Personal Accommodation & Pooja Fees'],
+    itinerary: [
+      {
+        dayNumber: 1,
+        title: 'Hyderabad Departure & Scenic NH44 Transit to Tirupati',
+        highlights: ['5:00 AM Doorstep pickup', 'Breakfast at Kurnool Highway Oasis', 'Check-in at Tirupati foothill hotel', 'Evening Padmavathi Ammavari Temple darshan'],
+        description: 'Smooth highway drive across Rayalaseema. Chauffeur guides you through toll booths with zero delay.',
+        hotelNotes: 'Recommended: Fortune Select Grand Ridge or Marasa Sarovar Premiere, Tirupati.',
+      },
+      {
+        dayNumber: 2,
+        title: 'Tirumala Ghat Ascent & Sri Venkateswara Swamy Darshan',
+        highlights: ['Alipiri security check assistance', 'Scenic First Ghat Road drive', 'Special Entry Darshan (Vaikuntam Q Complex)', 'Sacred Laddu Prasadam collection'],
+        description: 'Chauffeur navigates uphill ghat curves with calm speed adherence. Parking reserved at Rambagicha.',
+      },
+      {
+        dayNumber: 3,
+        title: 'Kapila Theertham, Chandragiri Fort & Return Transit',
+        highlights: ['Kapila Theertham waterfall temple', 'Heritage Chandragiri Royal Fort', 'Return cruise to Hyderabad doorstep'],
+        description: 'Comfortable return drive arriving Hyderabad by 9:30 PM with luggage drop right at your home gate.',
+      },
+    ],
   },
   {
     id: 'goa',
@@ -31,7 +58,11 @@ export const INITIAL_PACKAGES: TourPackage[] = [
     featured: true,
     imageUrl: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1000&q=80',
     highlights: ['Baga & Calangute Beach', 'Old Goa Bom Jesus Basilica', 'Fort Aguada Viewpoint', 'Mandovi River Sunset Cruise'],
-    recommendedCar: 'Innova Crysta or Etios'
+    recommendedCar: 'Innova Crysta or Etios',
+    seasonality: 'Monsoon & Winter',
+    terrainRestrictedVehicles: ['Toyota Innova Crysta', 'Toyota Fortuner VIP'],
+    inclusionsList: ['Dedicated Chauffeur on Disposal', 'Interstate Commercial Tourist Permit', 'All Tolls & Goa Border Entry', 'Fuel & Fuel Surcharges'],
+    exclusionsList: ['Water Sports & Jet Ski Packages', 'Mandovi River Cruise Entry Tickets'],
   },
   {
     id: 'araku',
@@ -47,7 +78,11 @@ export const INITIAL_PACKAGES: TourPackage[] = [
     featured: true,
     imageUrl: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1000&q=80',
     highlights: ['Borra Caves Stalactites', 'Ananthagiri Coffee Estates', 'Katiki Waterfalls', 'Vizag Beach Road Extension'],
-    recommendedCar: 'Innova or Ertiga'
+    recommendedCar: 'Innova or Ertiga',
+    seasonality: 'Monsoon & Winter',
+    terrainRestrictedVehicles: ['Toyota Innova Crysta', 'Maruti Suzuki Ertiga', 'Toyota Fortuner VIP'],
+    inclusionsList: ['Chilled AC Vehicle with Ghat Road Driving Specialist', 'All State Highway Tolls', 'Chauffeur Night Stays & Meals'],
+    exclusionsList: ['Borra Caves Train/Jeep Safari', 'Tribal Museum Entry Fees'],
   },
   {
     id: 'srisailam',
@@ -207,7 +242,17 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 300,
     features: ['High Fuel Efficiency', 'Chilled Air Conditioning', 'Bluetooth Audio', 'Compact City Maneuverability'],
     imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=900&q=80',
-    popular: false
+    popular: false,
+    plateNumber: 'TS 07 UA 3110',
+    vehicleYear: 2023,
+    ownershipType: 'Chauffeur Attached',
+    compliance: {
+      rcExpiry: '2038-05-12',
+      fitnessExpiry: '2027-04-10',
+      insuranceExpiry: '2027-02-15',
+      permitExpiry: '2028-06-20',
+      pucExpiry: '2027-01-05',
+    },
   },
   {
     id: 'car-sedan',
@@ -220,7 +265,17 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 300,
     features: ['Plush Velvet Seats', 'Spacious Legroom & Boot', 'Silent Highway Cabin', 'Chilled Climate Control'],
     imageUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80',
-    popular: true
+    popular: true,
+    plateNumber: 'KA 01 MJ 8820',
+    vehicleYear: 2024,
+    ownershipType: 'Company Owned',
+    compliance: {
+      rcExpiry: '2039-08-20',
+      fitnessExpiry: '2028-08-15',
+      insuranceExpiry: '2027-09-10',
+      permitExpiry: '2029-01-14',
+      pucExpiry: '2027-03-25',
+    },
   },
   {
     id: 'car-etios',
@@ -233,7 +288,17 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 300,
     features: ['Toyota Legendary Suspension', 'Supreme Rear Seat Recline', 'High Ground Clearance', '592L Massive Boot Space'],
     imageUrl: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=900&q=80',
-    popular: false
+    popular: false,
+    plateNumber: 'MH 01 DK 1009',
+    vehicleYear: 2023,
+    ownershipType: 'Company Owned',
+    compliance: {
+      rcExpiry: '2038-03-10',
+      fitnessExpiry: '2027-03-01',
+      insuranceExpiry: '2026-11-20', // Expiring soon warning!
+      permitExpiry: '2028-04-12',
+      pucExpiry: '2026-12-05',
+    },
   },
   {
     id: 'car-ertiga',
@@ -246,7 +311,18 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 300,
     features: ['Dual AC Vents (Rear Rows)', 'Flexible Foldable Third Row', 'USB Quick Charging Ports', 'Family Friendly Safety Cage'],
     imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80',
-    popular: true
+    popular: true,
+    plateNumber: 'TS 10 AB 3344',
+    vehicleYear: 2024,
+    ownershipType: 'Chauffeur Attached',
+    inMaintenance: true,
+    compliance: {
+      rcExpiry: '2039-01-15',
+      fitnessExpiry: '2028-02-18',
+      insuranceExpiry: '2027-04-30',
+      permitExpiry: '2028-11-10',
+      pucExpiry: '2027-02-14',
+    },
   },
   {
     id: 'car-innova',
@@ -259,7 +335,17 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 300,
     features: ['Captain Seats Ergonomics', 'Powerful 2.4L Diesel Engine', 'Whisper-Quiet Insulation', 'Unbeatable Ghat Road Comfort'],
     imageUrl: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=900&q=80',
-    popular: true
+    popular: true,
+    plateNumber: 'TS 09 UB 4421',
+    vehicleYear: 2024,
+    ownershipType: 'Company Owned',
+    compliance: {
+      rcExpiry: '2039-06-18',
+      fitnessExpiry: '2028-06-12',
+      insuranceExpiry: '2027-05-24',
+      permitExpiry: '2029-08-30',
+      pucExpiry: '2027-04-10',
+    },
   },
   {
     id: 'car-tempo',
@@ -272,94 +358,21 @@ export const INITIAL_VEHICLES: Vehicle[] = [
     minimumKmPerDay: 350,
     features: ['Individual Reclining Seats', 'Surround Sound Audio System', 'Overhead Reading Lamps', 'Large Panoramic Tinted Windows'],
     imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=900&q=80',
-    popular: false
+    popular: false,
+    plateNumber: 'AP 03 BL 7789',
+    vehicleYear: 2024,
+    ownershipType: 'Company Owned',
+    compliance: {
+      rcExpiry: '2039-11-04',
+      fitnessExpiry: '2028-10-22',
+      insuranceExpiry: '2027-08-14',
+      permitExpiry: '2029-03-19',
+      pucExpiry: '2027-05-18',
+    },
   }
 ];
 
-export const INITIAL_BOOKINGS: Booking[] = [
-  {
-    id: 'WY-8891',
-    createdAt: '2026-10-22 09:30 AM',
-    customerName: 'Sanjay Deshmukh',
-    customerPhone: '+91 98490 12345',
-    pickupLocation: 'Banjara Hills, Hyderabad',
-    destination: 'Tirupati Tirumala Darshan',
-    travelDate: '2026-10-25',
-    travelTime: '05:30',
-    tripType: 'ROUND_TRIP',
-    passengers: 4,
-    vehicleName: 'Toyota Innova Crysta',
-    ratePerKm: 19,
-    advancePaymentType: '25%',
-    estimatedTotal: 21280,
-    advancePaid: 5320,
-    status: 'Confirmed',
-    assignedDriver: 'Ramesh Goud (Chauffeur #04)',
-    assignedCarNumber: 'TS 09 UB 4519',
-    notes: 'Senior citizen on board. Requested smooth driving.'
-  },
-  {
-    id: 'WY-8892',
-    createdAt: '2026-10-22 11:15 AM',
-    customerName: 'Priya Nambiar',
-    customerPhone: '+91 97034 56789',
-    pickupLocation: 'Secunderabad Railway Station',
-    destination: 'Srisailam Jyotirlinga Tour',
-    travelDate: '2026-10-24',
-    travelTime: '06:00',
-    tripType: 'ROUND_TRIP',
-    passengers: 3,
-    vehicleName: 'Maruti Suzuki Dzire',
-    ratePerKm: 15,
-    advancePaymentType: '100%',
-    estimatedTotal: 6600,
-    advancePaid: 6600,
-    status: 'Assigned',
-    assignedDriver: 'Bikshapathi K (Chauffeur #12)',
-    assignedCarNumber: 'TS 08 EX 8820',
-    notes: 'Paid full advance online.'
-  },
-  {
-    id: 'WY-8893',
-    createdAt: '2026-10-22 03:45 PM',
-    customerName: 'Aditya Roy',
-    customerPhone: '+91 91212 99881',
-    pickupLocation: 'Gachibowli, Hyderabad',
-    destination: 'Goa Coastal Getaway',
-    travelDate: '2026-10-28',
-    travelTime: '05:00',
-    tripType: 'ROUND_TRIP',
-    passengers: 6,
-    vehicleName: 'Toyota Innova Crysta',
-    ratePerKm: 19,
-    advancePaymentType: '25%',
-    estimatedTotal: 25840,
-    advancePaid: 6460,
-    status: 'New',
-    notes: 'Needs rooftop luggage carrier.'
-  },
-  {
-    id: 'WY-8894',
-    createdAt: '2026-10-21 07:10 PM',
-    customerName: 'Anil Kumar Varma',
-    customerPhone: '+91 98855 43210',
-    pickupLocation: 'Madhapur, Hyderabad',
-    destination: 'Hyderabad Airport (RGIA)',
-    travelDate: '2026-10-23',
-    travelTime: '03:30',
-    tripType: 'AIRPORT',
-    passengers: 2,
-    vehicleName: 'Maruti Suzuki Dzire',
-    ratePerKm: 15,
-    advancePaymentType: '25%',
-    estimatedTotal: 1800,
-    advancePaid: 450,
-    status: 'En Route',
-    assignedDriver: 'Mohammed Ismail (Chauffeur #07)',
-    assignedCarNumber: 'TS 07 UA 3192',
-    notes: 'Flight departure 07:15 AM.'
-  }
-];
+export const INITIAL_BOOKINGS: Booking[] = INITIAL_ADMIN_BOOKINGS;
 
 export const INITIAL_BLOG_POSTS: BlogPost[] = [
   {
@@ -405,97 +418,8 @@ export const INITIAL_SETTINGS: CompanySettings = {
   freeCancellationHours: 2
 };
 
-export const INITIAL_CAPTAINS: CaptainProfile[] = [
-  {
-    id: 'cpt-01',
-    name: 'Ramesh Goud',
-    phone: '+91 98490 55112',
-    pin: '1234',
-    vehicleModel: 'Toyota Innova Crysta',
-    vehicleNumber: 'TS 09 UB 4519',
-    photoUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=400&q=80',
-    rating: 4.95,
-    totalTrips: 428,
-    dutyStatus: 'On Duty',
-    drivingLicenseNumber: 'TS-09-2018-0048192',
-    fastagBalance: 2450,
-    todayEarnings: 3200,
-    joinedYear: 2021
-  },
-  {
-    id: 'cpt-02',
-    name: 'Bikshapathi K',
-    phone: '+91 97034 66223',
-    pin: '1234',
-    vehicleModel: 'Maruti Suzuki Dzire AC',
-    vehicleNumber: 'TS 08 EX 8820',
-    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    rating: 4.92,
-    totalTrips: 315,
-    dutyStatus: 'On Duty',
-    drivingLicenseNumber: 'TS-08-2019-0091244',
-    fastagBalance: 1800,
-    todayEarnings: 1850,
-    joinedYear: 2022
-  },
-  {
-    id: 'cpt-03',
-    name: 'Mohammed Ismail',
-    phone: '+91 91212 77334',
-    pin: '1234',
-    vehicleModel: 'Toyota Etios Executive',
-    vehicleNumber: 'TS 07 UA 3192',
-    photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-    rating: 4.88,
-    totalTrips: 590,
-    dutyStatus: 'On Duty',
-    drivingLicenseNumber: 'TS-07-2017-0012903',
-    fastagBalance: 3120,
-    todayEarnings: 2400,
-    joinedYear: 2020
-  },
-  {
-    id: 'cpt-04',
-    name: 'Kiran Varma',
-    phone: '+91 98855 88445',
-    pin: '1234',
-    vehicleModel: 'Maruti Suzuki Ertiga MUV',
-    vehicleNumber: 'TS 10 UB 9021',
-    photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
-    rating: 4.91,
-    totalTrips: 280,
-    dutyStatus: 'Off Duty',
-    drivingLicenseNumber: 'TS-10-2020-0081290',
-    fastagBalance: 1250,
-    todayEarnings: 0,
-    joinedYear: 2023
-  }
-];
+export const INITIAL_CAPTAINS: CaptainProfile[] = INITIAL_ADMIN_CAPTAINS;
 
-export const INITIAL_RIDERS: RiderProfile[] = [
-  {
-    id: 'rider-01',
-    name: 'Aarav Sharma',
-    phone: '+91 98490 11223',
-    email: 'aarav.sharma@example.com',
-    city: 'Banjara Hills, Hyderabad',
-    createdAt: '2026-01-15'
-  },
-  {
-    id: 'rider-02',
-    name: 'Priya Nair',
-    phone: '+91 97012 33445',
-    email: 'priya.nair@example.com',
-    city: 'Gachibowli, Hyderabad',
-    createdAt: '2026-02-10'
-  },
-  {
-    id: 'rider-03',
-    name: 'Vikram Malhotra',
-    phone: '+91 99887 66554',
-    email: 'vikram.m@example.com',
-    city: 'Whitefield, Bengaluru',
-    createdAt: '2026-03-01'
-  }
-];
+export const INITIAL_RIDERS: RiderProfile[] = [INITIAL_DEMO_RIDER];
+
 

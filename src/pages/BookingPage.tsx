@@ -5,7 +5,7 @@ import {
   Car, Star, Check, MapPin, Calendar, Clock, 
   ShieldCheck, Phone, CheckCircle2, Search, Sliders,
   Wifi, Wind, ArrowRight, User, Sparkles, ChevronRight,
-  Compass, Navigation, X, RefreshCw, Users, Heart, Flag, Milestone
+  Compass, Navigation, X, RefreshCw, Users, Heart, Flag, Milestone, AlertTriangle
 } from 'lucide-react';
 import { PresetIcon } from '../components/PresetIcon';
 
@@ -189,15 +189,25 @@ export const BookingPage: React.FC = () => {
 
   // Passenger "Your Details" form states
   const [title, setTitle] = useState('Mr');
-  const [firstName, setFirstName] = useState(currentRider ? currentRider.name.split(' ')[0] : 'Aarav');
-  const [lastName, setLastName] = useState(currentRider ? currentRider.name.split(' ')[1] || 'Sharma' : 'Sharma');
-  const [email, setEmail] = useState(currentRider?.email || 'aarav.sharma@example.com');
+  const [firstName, setFirstName] = useState(currentRider ? currentRider.name.split(' ')[0] || '' : '');
+  const [lastName, setLastName] = useState(currentRider ? currentRider.name.split(' ').slice(1).join(' ') || '' : '');
+  const [email, setEmail] = useState(currentRider?.email || '');
   const [countryCode, setCountryCode] = useState('+91 (India)');
-  const [mobileNumber, setMobileNumber] = useState(currentRider ? currentRider.phone : '+91 98490 11223');
+  const [mobileNumber, setMobileNumber] = useState(currentRider?.phone || '');
   const [hasCoupon, setHasCoupon] = useState(true);
   const [couponCode, setCouponCode] = useState('WAYORA500');
   const [couponApplied, setCouponApplied] = useState(true);
   const [bookingSuccessId, setBookingSuccessId] = useState<string | null>(null);
+
+  // Sync with current logged in rider if profile is loaded or updated
+  useEffect(() => {
+    if (currentRider) {
+      if (!firstName && currentRider.name) setFirstName(currentRider.name.split(' ')[0] || '');
+      if (!lastName && currentRider.name) setLastName(currentRider.name.split(' ').slice(1).join(' ') || '');
+      if (!email && currentRider.email) setEmail(currentRider.email);
+      if (!mobileNumber && currentRider.phone) setMobileNumber(currentRider.phone);
+    }
+  }, [currentRider]);
 
   // Search Results & Filter states
   const [sortOrder, setSortOrder] = useState<'cheapest' | 'best' | 'quickest'>('cheapest');
@@ -623,6 +633,10 @@ export const BookingPage: React.FC = () => {
                   familyPickupAddress,
                   familyNotes,
                 });
+                if (routeCalc.isSameLocation) {
+                  showToast('Pickup and destination cannot be the same location. Please select a different drop destination.', 'error');
+                  return;
+                }
                 setCurrentView('search');
                 showToast(`Searching cabs from ${fromLocation} to ${toLocation}`, 'info');
               }}
@@ -637,56 +651,73 @@ export const BookingPage: React.FC = () => {
       </section>
 
       {/* Dynamic Live Highway Radar Banner */}
-      <div className="bg-gradient-to-r from-slate-50 via-white to-red-50/20 border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 py-3 text-xs shadow-2xs">
+      <div className={`border-b px-4 sm:px-6 lg:px-8 py-3 text-xs shadow-2xs transition-all ${
+        routeCalc.isSameLocation
+          ? 'bg-amber-50/60 border-amber-300'
+          : 'bg-gradient-to-r from-slate-50 via-white to-red-50/20 border-slate-200/90'
+      }`}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center flex-wrap gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white font-black text-[10px] shadow-xs tracking-wider uppercase">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-black text-[10px] shadow-xs tracking-wider uppercase ${
+              routeCalc.isSameLocation ? 'bg-amber-600 text-white' : 'bg-red-600 text-white'
+            }`}>
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              <span>LIVE RADAR</span>
+              <span>{routeCalc.isSameLocation ? 'SAME LOCATION' : 'LIVE RADAR'}</span>
             </span>
             <div className="flex items-center gap-1.5 text-slate-900 font-bold text-xs sm:text-sm">
               <span className="truncate max-w-[140px] sm:max-w-[200px]">{fromLocation.split(',')[0]}</span>
               <ArrowRight className="w-3.5 h-3.5 text-red-500 shrink-0" />
-              <span className="text-red-700 truncate max-w-[140px] sm:max-w-[200px]">{toLocation.split(',')[0]}</span>
+              <span className={`truncate max-w-[140px] sm:max-w-[200px] ${routeCalc.isSameLocation ? 'text-amber-700' : 'text-red-700'}`}>
+                {toLocation.split(',')[0]}
+              </span>
             </div>
 
-            {isBookingForFamily ? (
-              <button
-                type="button"
-                onClick={() => setShowFamilyModal(true)}
-                className="bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-800 font-extrabold flex items-center gap-1 shadow-2xs cursor-pointer transition-colors"
-                title="Click to view or edit family ride details"
-              >
-                <Users className="w-3.5 h-3.5 text-rose-600" />
-                <span>Ride for Family: {familyMemberName || 'Family'}</span>
-              </button>
-            ) : userLocation && fromLocation === userLocation ? (
-              <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Live GPS Pickup</span>
+            {routeCalc.isSameLocation ? (
+              <span className="bg-amber-100 text-amber-900 px-3 py-1 rounded-lg border border-amber-300 font-bold flex items-center gap-1.5 shadow-2xs">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Pickup and destination cannot be the same. Please choose a different drop location.</span>
               </span>
-            ) : null}
+            ) : (
+              <>
+                {isBookingForFamily ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowFamilyModal(true)}
+                    className="bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-800 font-extrabold flex items-center gap-1 shadow-2xs cursor-pointer transition-colors"
+                    title="Click to view or edit family ride details"
+                  >
+                    <Users className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Ride for Family: {familyMemberName || 'Family'}</span>
+                  </button>
+                ) : userLocation && fromLocation === userLocation ? (
+                  <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Live GPS Pickup</span>
+                  </span>
+                ) : null}
 
-            <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-slate-700 font-bold flex items-center gap-1 shadow-2xs">
-              <Compass className="w-3.5 h-3.5 text-red-500" />
-              <span>{routeCalc.distanceKm} km</span>
-            </span>
+                <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-slate-700 font-bold flex items-center gap-1 shadow-2xs">
+                  <Compass className="w-3.5 h-3.5 text-red-500" />
+                  <span>{routeCalc.distanceKm} km</span>
+                </span>
 
-            <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-slate-700 font-bold flex items-center gap-1 shadow-2xs">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span>Drive {routeCalc.durationFormatted}</span>
-            </span>
+                <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-slate-700 font-bold flex items-center gap-1 shadow-2xs">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Drive {routeCalc.durationFormatted}</span>
+                </span>
 
-            <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
-              <Flag className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{routeCalc.fullReachString}</span>
-            </span>
+                <span className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-extrabold flex items-center gap-1 shadow-2xs">
+                  <Flag className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{routeCalc.fullReachString}</span>
+                </span>
 
-            {routeCalc.isLiveMapRoute && routeCalc.highwaySummary && (
-              <span className="hidden xl:inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                <Navigation className="w-3 h-3 text-blue-600" />
-                <span className="truncate max-w-[140px]">{routeCalc.highwaySummary}</span>
-              </span>
+                {routeCalc.isLiveMapRoute && routeCalc.highwaySummary && (
+                  <span className="hidden xl:inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                    <Navigation className="w-3 h-3 text-blue-600" />
+                    <span className="truncate max-w-[140px]">{routeCalc.highwaySummary}</span>
+                  </span>
+                )}
+              </>
             )}
           </div>
 
@@ -1155,7 +1186,7 @@ export const BookingPage: React.FC = () => {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Aarav"
+                      placeholder="First Name"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     />
                   </div>
@@ -1170,7 +1201,7 @@ export const BookingPage: React.FC = () => {
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Sharma"
+                      placeholder="Last Name"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     />
                   </div>
@@ -1187,7 +1218,7 @@ export const BookingPage: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="aarav.sharma@example.com"
+                    placeholder="name@example.com"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                   />
                 </div>
@@ -1221,7 +1252,7 @@ export const BookingPage: React.FC = () => {
                       required
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value)}
-                      placeholder="+91 98490 11223"
+                      placeholder="98765 43210"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     />
                   </div>

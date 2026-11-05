@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCms } from '../context/CmsContext';
 import { TripType } from '../types';
-import { INITIAL_RIDERS } from '../data/initialData';
 import { RouteMiniMap } from './RouteMiniMap';
 import { 
   X, Check, ArrowRight, MessageSquare, Copy, ShieldCheck, 
@@ -9,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { calculateTripRouteAndPrice } from '../utils/geoDistancePrice';
+import { COUNTRY_CODES } from './UserAuthModal';
 
 export const BookingModal: React.FC = () => {
   const { 
@@ -23,6 +23,7 @@ export const BookingModal: React.FC = () => {
 
   // Essential booking fields ONLY
   const [name, setName] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [pickup, setPickup] = useState(userLocation || 'Hyderabad');
   const [destination, setDestination] = useState('');
@@ -97,9 +98,18 @@ export const BookingModal: React.FC = () => {
       return;
     }
 
+    if (routeCalc.isSameLocation) {
+      alert('Pickup and destination cannot be the same location. Please choose a different destination.');
+      return;
+    }
+
+    const fullPhone = phone.trim().startsWith('+')
+      ? phone.trim()
+      : `${countryCode} ${phone.trim().replace(/^0+/, '')}`;
+
     const newBooking = addBooking({
       customerName: name.trim(),
-      customerPhone: phone.trim(),
+      customerPhone: fullPhone,
       pickupLocation: pickup.trim(),
       destination: destination.trim(),
       travelDate,
@@ -210,18 +220,6 @@ export const BookingModal: React.FC = () => {
                       <User className="w-3.5 h-3.5 text-red-600" />
                       Your Contact Details (Only Name & Phone)
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const demo = INITIAL_RIDERS[0];
-                        setName(demo.name);
-                        setPhone(demo.phone);
-                        loginRider(demo);
-                      }}
-                      className="text-[10px] text-red-600 hover:text-red-700 font-semibold cursor-pointer underline"
-                    >
-                      Fill Demo Guest
-                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -235,14 +233,26 @@ export const BookingModal: React.FC = () => {
                         className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-xs"
                       />
                     </div>
-                    <div>
+                    <div className="flex rounded-xl bg-white border border-slate-200 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500 shadow-xs overflow-hidden">
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        aria-label="Country Code"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-2 py-2 border-r border-slate-200 outline-none cursor-pointer shrink-0 transition-colors"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code} value={c.code} className="text-slate-900 bg-white">
+                            {c.flag} {c.code}
+                          </option>
+                        ))}
+                      </select>
                       <input
                         type="tel"
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="Mobile Phone Number *"
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-xs"
+                        className="w-full px-2.5 py-2 bg-transparent text-slate-900 placeholder-slate-400 text-xs focus:outline-none font-medium"
                       />
                     </div>
                   </div>

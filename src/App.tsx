@@ -14,6 +14,7 @@ import { BookingModal } from './components/BookingModal';
 import { UserAuthModal } from './components/UserAuthModal';
 import { NotificationToast } from './components/NotificationToast';
 import { BackendConnectionIndicator } from './components/BackendConnectionIndicator';
+import { AiTravelConciergeModal } from './components/AiTravelConciergeModal';
 
 import { HomePage } from './pages/HomePage';
 import { PackagesPage } from './pages/PackagesPage';
@@ -24,23 +25,25 @@ import { BlogPage } from './pages/BlogPage';
 import { AboutContactPage } from './pages/AboutContactPage';
 import { CmsDashboard } from './pages/CmsDashboard';
 import { CaptainDashboard } from './pages/CaptainDashboard';
+import { RiderDashboard } from './pages/RiderDashboard';
 import { BookingPage } from './pages/BookingPage';
 
-import { Phone, MessageSquare, X, Headphones } from 'lucide-react';
+import { Phone, MessageSquare, X, Headphones, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { activePage, settings, isBookingModalOpen, isAuthModalOpen } = useCms();
   const { stop, start } = useLenis();
   const [mobileFabOpen, setMobileFabOpen] = useState(false);
+  const [isAiConciergeOpen, setIsAiConciergeOpen] = useState(false);
 
   // Stop Lenis inertia scrolling when a modal overlay is active
   useEffect(() => {
-    if (isBookingModalOpen || isAuthModalOpen) {
+    if (isBookingModalOpen || isAuthModalOpen || isAiConciergeOpen) {
       stop();
     } else {
       start();
     }
-  }, [isBookingModalOpen, isAuthModalOpen, stop, start]);
+  }, [isBookingModalOpen, isAuthModalOpen, isAiConciergeOpen, stop, start]);
 
   const renderCurrentPage = () => {
     switch (activePage) {
@@ -64,6 +67,8 @@ const AppContent: React.FC = () => {
         return <CmsDashboard />;
       case 'captain':
         return <CaptainDashboard />;
+      case 'rider':
+        return <RiderDashboard />;
       default:
         return <HomePage />;
     }
@@ -94,6 +99,17 @@ const AppContent: React.FC = () => {
 
         {/* Floating Action Buttons */}
         <div className="fixed z-40 flex flex-col items-end gap-2.5 pointer-events-auto bottom-20 md:bottom-8 right-4 md:right-7">
+          {/* AI Travel Concierge Floating Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsAiConciergeOpen(true)}
+            className="group px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-black text-xs shadow-xl shadow-red-600/35 border border-red-400/40 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            title="Chat with Wayora AI Travel Concierge"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300 animate-spin [animation-duration:5s]" />
+            <span className="hidden sm:inline tracking-tight font-extrabold">AI Concierge</span>
+          </button>
+
           <a
             href={`tel:${settings.phone}`}
             className="w-10 h-10 sm:w-11 sm:h-11 bg-white text-slate-800 hover:text-white hover:bg-red-600 rounded-full shadow-lg flex items-center justify-center border border-slate-200 hover:border-red-600 transition-all hover:scale-105 active:scale-95"
@@ -114,6 +130,12 @@ const AppContent: React.FC = () => {
         </div>
 
       </div>
+
+      {/* AI Travel Concierge Modal */}
+      <AiTravelConciergeModal 
+        isOpen={isAiConciergeOpen} 
+        onClose={() => setIsAiConciergeOpen(false)} 
+      />
 
       {/* Interactive Global Booking Modal */}
       <BookingModal />
