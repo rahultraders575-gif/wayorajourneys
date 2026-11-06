@@ -1,0 +1,38 @@
+# robots.txt for Wayora Journeys (Way Ora Journey)
+# https://wayorajourneys.com
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# Allow major search engine crawlers full access to assets
+User-agent: Googlebot
+Allow: /
+Allow: /images/
+Allow: /assets/
+
+User-agent: Googlebot-Image
+Allow: /images/
+
+User-agent: Bingbot
+Allow: /
+Allow: /images/
+Allow: /assets/
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+# Host and Canonical Sitemap
+Host: https://wayorajourneys.com
+Sitemap: https://wayorajourneys.com/sitemap.xml

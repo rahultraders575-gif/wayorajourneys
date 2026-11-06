@@ -80,7 +80,7 @@ export const Footer: React.FC = () => {
         {/* Minimal Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-[11px]">
           <div>
-            © {new Date().getFullYear()} Wayora Journeys. All rights reserved.
+            © {new Date().getFullYear()} Wayora Journeys (Way Ora Journey). India's #1 Outstation Cab &amp; Chauffeur Network.
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -90,7 +90,9 @@ export const Footer: React.FC = () => {
               CMS Admin
             </button>
             <span>·</span>
-            <span>All-Inclusive Tariffs</span>
+            <span>All-India Tourist Permits</span>
+            <span>·</span>
+            <span>24/7 Central Dispatch</span>
           </div>
         </div>
 

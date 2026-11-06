@@ -15,6 +15,7 @@ import { UserAuthModal } from './components/UserAuthModal';
 import { NotificationToast } from './components/NotificationToast';
 import { BackendConnectionIndicator } from './components/BackendConnectionIndicator';
 import { AiTravelConciergeModal } from './components/AiTravelConciergeModal';
+import { SeoHead } from './components/SeoHead';
 
 import { HomePage } from './pages/HomePage';
 import { PackagesPage } from './pages/PackagesPage';
@@ -76,6 +77,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-red-600 selection:text-white transition-colors">
+      {/* Dynamic SEO metadata manager for #1 Google search ranking */}
+      <SeoHead />
 
       {/* Main Responsive App Container: Automatic Normal Full Width on Desktop, Responsive Mobile on Mobile */}
       <div className="min-h-screen flex flex-col w-full">

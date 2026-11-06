@@ -32,6 +32,7 @@ import {
 } from '../utils/geoDistancePrice';
 import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
 import { FamilyRideModal, FamilyRideDetails } from '../components/FamilyRideModal';
+import { SeoAuthoritySection } from '../components/SeoAuthoritySection';
 
 
 // Cab Booking Trip Modes with Icons: Round Trip | One-Way Drop | Airport | Hourly Rental | Office
@@ -2150,6 +2151,9 @@ export const HomePage: React.FC = () => {
 
         </div>
       </section>
+
+      {/* ================= SEO AUTHORITY & FAQ SECTION (HIGH SEARCH RANKING OPTIMIZATION) ================= */}
+      <SeoAuthoritySection />
 
       {/* ================= SECTION 8: READY TO GO CTA BANNER (VIBRANT RED & WHITE) ================= */}
       <section className="py-20 bg-gradient-to-r from-red-700 via-rose-600 to-red-700 text-white relative border-t border-red-500 shadow-xl">

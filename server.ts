@@ -199,6 +199,31 @@ Keep responses concise, polite, and directly helpful.`;
 
 // ================= STATIC ASSETS & SPA ROUTING =================
 
+// Dedicated SEO routes for search engine crawlers (Googlebot, Bingbot)
+app.get('/sitemap.xml', (_req: Request, res: Response) => {
+  const sitemapPath = path.join(distPath, 'sitemap.xml');
+  const fallbackPath = path.join(__dirname, 'public', 'sitemap.xml');
+  const target = fs.existsSync(sitemapPath) ? sitemapPath : fallbackPath;
+  if (fs.existsSync(target)) {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.sendFile(target);
+  }
+  return res.status(404).send('Sitemap not found');
+});
+
+app.get('/robots.txt', (_req: Request, res: Response) => {
+  const robotsPath = path.join(distPath, 'robots.txt');
+  const fallbackPath = path.join(__dirname, 'public', 'robots.txt');
+  const target = fs.existsSync(robotsPath) ? robotsPath : fallbackPath;
+  if (fs.existsSync(target)) {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(target);
+  }
+  return res.status(404).send('Robots.txt not found');
+});
+
 // Static file serving with cache-control headers for production assets
 app.use(express.static(distPath, {
   maxAge: '1d',

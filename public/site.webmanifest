@@ -1,0 +1,21 @@
+{
+  "name": "Wayora Journeys (Way Ora Journey)",
+  "short_name": "Wayora Cab",
+  "description": "Premium outstation cabs, luxury chauffeur car rentals, round-trips, and airport transfers across India.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0c10",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/images/wayora-logo-light.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/images/wayora-logo-light.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

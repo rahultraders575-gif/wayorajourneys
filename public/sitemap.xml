@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Core Pages -->
+  <url>
+    <loc>https://wayorajourneys.com/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/hero-car-booking.jpg</image:loc>
+      <image:title>Wayora Journeys (Way Ora Journey) - Luxury Outstation Cabs and Chauffeur Fleet</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/booking</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/airport-vip.jpg</image:loc>
+      <image:title>Online Outstation Cab Booking - Wayora Journeys</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/fleet</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/city-cars-road.jpg</image:loc>
+      <image:title>Luxury Car Rental Fleet - Innova Crysta, Fortuner, Sedans - Wayora Journeys</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/tours</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/tirupati.jpg</image:loc>
+      <image:title>Pilgrimage and Holiday Outstation Tour Packages - Wayora Journeys</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/planner</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/corporate</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/blog</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/about-contact</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Popular Outstation & Pilgrimage Corridors -->
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-tirupati-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/tirupati.jpg</image:loc>
+      <image:title>Hyderabad to Tirupati Outstation Cab - Wayora Journeys</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-srisailam-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/srisailam.jpg</image:loc>
+      <image:title>Hyderabad to Srisailam Outstation Cab &amp; Temple Darshan Taxi</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-vijayawada-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-bangalore-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-shirdi-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-goa-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-warangal-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-visakhapatnam-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-kurnool-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-to-mantralayam-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/hyderabad-rgia-airport-taxi</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://wayorajourneys.com/images/airport-vip.jpg</image:loc>
+      <image:title>Rajiv Gandhi International Airport (RGIA) Hyderabad Luxury Cab Service</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/bangalore-kempegowda-airport-taxi</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://wayorajourneys.com/routes/chennai-airport-outstation-cab</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+</urlset>
